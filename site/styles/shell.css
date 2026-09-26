@@ -535,12 +535,6 @@ body {
   border-radius: 999px;
 }
 
-/* The inspected demo panel, marked quietly in place. */
-.specimen-stage [data-inspected] {
-  outline: 2px solid color-mix(in srgb, var(--accent-ink) 60%, transparent);
-  outline-offset: -2px;
-}
-
 .inspector-head {
   display: flex;
   align-items: center;

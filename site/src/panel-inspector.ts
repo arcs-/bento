@@ -202,11 +202,9 @@ export class PanelInspector {
 
   inspect(panel: BentoPanelElement): void {
     if (panel === this.#panel) return;
-    this.#panel?.removeAttribute("data-inspected");
     this.#sizeObserver.disconnect();
     this.#attributeObserver.disconnect();
     this.#panel = panel;
-    panel.setAttribute("data-inspected", "");
     this.#sizeObserver.observe(panel);
     this.#attributeObserver.observe(panel, { attributeFilter: watchedAttributes });
     this.#render();
