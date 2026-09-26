@@ -265,6 +265,44 @@ describe("animation", () => {
   });
 });
 
+/** Every frame moves on from the one before, and the end is reached only through the middle. */
+function expectSmooth(samples: readonly number[], from: number, to: number): void {
+  const direction = Math.sign(to - from);
+  samples.forEach((sample, index) => {
+    const previous = samples[index - 1] ?? from;
+    expect((sample - previous) * direction).toBeGreaterThanOrEqual(-0.5);
+  });
+  const firstAtEnd = samples.findIndex((sample) => isAt(sample, to));
+  expect(samples.slice(0, firstAtEnd).some((sample) => isBetween(sample, from, to))).toBe(true);
+}
+
+describe("a panel holding a nested group", () => {
+  const withNestedGroup = sidebarLayout('size="300px" min="150px" collapsible').replace(
+    '<div id="sidebar-content" style="height: 100px; background: rgb(0, 0, 255)"></div>',
+    `<bento-group orientation="vertical">
+      <bento-panel id="nested-top"></bento-panel>
+      <bento-separator></bento-separator>
+      <bento-panel id="nested-bottom" size="40%" min="56px" collapsible></bento-panel>
+    </bento-group>`,
+  );
+
+  test("opens and closes frame by frame, never showing its end size first", async () => {
+    await render(`<style>#sidebar { transition-duration: 500ms }</style>${withNestedGroup}`);
+    await activateUser();
+    const sidebar = panel("sidebar");
+
+    sidebar.collapsed = true;
+    expectSmooth(await sampleUntilAt(measureSidebar, 0), 300, 0);
+    sidebar.collapsed = false;
+    expectSmooth(await sampleUntilAt(measureSidebar, 300), 0, 300);
+    await pressKeys(separator("handle"), "{Enter}");
+    expectSmooth(await sampleUntilAt(measureSidebar, 0), 300, 0);
+    await pressKeys(separator("handle"), "{Enter}");
+    expectSmooth(await sampleUntilAt(measureSidebar, 300), 0, 300);
+    expect(sidebar.collapsed).toBe(false);
+  });
+});
+
 describe("reduced motion", () => {
   interface Observation {
     sidebarWidth: number;

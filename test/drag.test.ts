@@ -15,6 +15,7 @@ import {
   pressKeys,
   recordEvents,
   release,
+  removeRendered,
   render,
   sampleFrames,
   sampleUntilAt,
@@ -24,6 +25,12 @@ import {
   toggleStates,
   width,
 } from "./fixtures.ts";
+
+/** Parses a live `size` such as `"31.5%"` into its percentage. */
+function percent(size: string): number {
+  if (!size.endsWith("%")) throw new Error(`expected a % size, got "${size}"`);
+  return Number.parseFloat(size);
+}
 
 /** Writes a panel's size back on every `resize`, as a controlled React component does. */
 function echo(target: HTMLElementTagNameMap["bento-panel"]): void {
@@ -44,11 +51,14 @@ describe("drag", () => {
     expect(panel("main").size).toBe("");
   });
 
-  test("writes live sizes rounded to 0.01px, free of float noise", async () => {
+  test("writes live sizes rounded to 0.01 of their unit, free of float noise", async () => {
     await render(sidebarLayout('size="26.3%"'));
-
     await drag(separator("handle"), 7);
+    expect(panel("sidebar").size).toMatch(/^\d+(\.\d{1,2})?%$/);
 
+    removeRendered();
+    await render(sidebarLayout('size="263.3px"'));
+    await drag(separator("handle"), 7.3);
     expect(panel("sidebar").size).toMatch(/^\d+(\.\d{1,2})?px$/);
   });
 
@@ -100,20 +110,90 @@ describe("drag", () => {
     expect(width(aside)).toBeCloseTo(500, 0);
   });
 
-  test("between two flexible panels it gives the earlier one a size", async () => {
+  test("between two flexible panels the earlier gets a % share, the later stays flexible", async () => {
     await render(
       layout(`
         <bento-panel id="first"></bento-panel>
         <bento-separator id="handle"></bento-separator>
         <bento-panel id="second"></bento-panel>`),
     );
+    const space = groupSize.width - width(separator("handle"));
     const startWidth = width(panel("first"));
 
     await drag(separator("handle"), 100);
 
     expect(width(panel("first"))).toBeCloseTo(startWidth + 100, 0);
-    expect(pixels(panel("first").size)).toBeCloseTo(startWidth + 100, 0);
+    expect(percent(panel("first").size)).toBeCloseTo(((startWidth + 100) / space) * 100, 1);
     expect(panel("second").size).toBe("");
+  });
+
+  test("only the two neighbours change; other flexible panels keep their share as %", async () => {
+    await render(
+      layout(`
+        <bento-panel id="one"></bento-panel>
+        <bento-separator id="first-handle"></bento-separator>
+        <bento-panel id="two"></bento-panel>
+        <bento-separator id="second-handle"></bento-separator>
+        <bento-panel id="three"></bento-panel>`),
+    );
+    const separators = width(separator("first-handle")) + width(separator("second-handle"));
+    const [oneWidth, twoWidth] = ["one", "two"].map((id) => width(panel(id)));
+
+    await drag(separator("second-handle"), -100);
+
+    expect(width(panel("one"))).toBeCloseTo(oneWidth ?? 0, 0);
+    expect(width(panel("two"))).toBeCloseTo((twoWidth ?? 0) - 100, 0);
+    expect(panel("one").size).toMatch(/%$/);
+    expect(panel("two").size).toMatch(/%$/);
+    expect(panel("three").size).toBe("");
+
+    const [oneShare, twoShare] = ["one", "two"].map((id) => percent(panel(id).size) / 100);
+    group("layout").style.width = "800px";
+    await sampleUntilAt(() => width(panel("one")), (800 - separators) * (oneShare ?? 0));
+    expect(width(panel("two"))).toBeCloseTo((800 - separators) * (twoShare ?? 0), 0);
+  });
+
+  test("a px sidebar stays px; of the flexible panels beyond, only its neighbour changes", async () => {
+    await render(
+      layout(`
+        <bento-panel id="sidebar" size="200px"></bento-panel>
+        <bento-separator id="handle"></bento-separator>
+        <bento-panel id="main"></bento-panel>
+        <bento-separator></bento-separator>
+        <bento-panel id="aside"></bento-panel>`),
+    );
+    const asideWidth = width(panel("aside"));
+
+    await drag(separator("handle"), 50);
+
+    expect(panel("sidebar").size).toBe("250px");
+    expect(panel("main").size).toBe("");
+    expect(width(panel("aside"))).toBeCloseTo(asideWidth, 0);
+  });
+
+  test("a % size saved on resizeend and rendered back as the attribute round-trips", async () => {
+    await render(
+      layout(`
+        <bento-panel id="first"></bento-panel>
+        <bento-separator id="handle"></bento-separator>
+        <bento-panel id="second"></bento-panel>`),
+    );
+    let saved = "";
+    panel("first").addEventListener("resizeend", () => (saved = panel("first").size));
+    await drag(separator("handle"), 123);
+    const draggedWidth = width(panel("first"));
+    removeRendered();
+
+    await render(
+      layout(`
+        <bento-panel id="first" size="${saved}"></bento-panel>
+        <bento-separator id="handle"></bento-separator>
+        <bento-panel id="second"></bento-panel>`),
+    );
+
+    expect(saved).toMatch(/%$/);
+    expect(panel("first").size).toBe(saved);
+    expect(width(panel("first"))).toBeCloseTo(draggedWidth, 0);
   });
 
   test("with two sized panels the separator lands where the pointer does", async () => {

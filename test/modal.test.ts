@@ -459,6 +459,22 @@ describe("styling a modal panel", () => {
     expect(isColor(await colorAt(500, 250), darkRed)).toBe(true);
   });
 
+  test("overflow on the panel scrolls the sheet's content", async () => {
+    await render(`
+      <style>.drawer { overflow-y: auto }</style>
+      ${drawerLayout({ navContent: '<div style="block-size: 2000px"></div><button id="last">last</button>' })}`);
+    await enterModalMode();
+    await show("nav", "nav-content");
+    const before = button("nav-button").getBoundingClientRect().top;
+
+    button("last").scrollIntoView({ block: "end" });
+
+    expect(before - button("nav-button").getBoundingClientRect().top).toBeGreaterThan(1000);
+    expect(button("last").getBoundingClientRect().bottom).toBeLessThanOrEqual(
+      narrowViewport.height,
+    );
+  });
+
   test("a bottom sheet is plain CSS on the panel", async () => {
     await render(`
       <style>

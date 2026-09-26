@@ -21,6 +21,7 @@ import {
 } from "./events.ts";
 import { type GroupLink, joinGroup, leaveGroup, type Relayout } from "./link.ts";
 import { GroupMeasure } from "./measure.ts";
+import { formatLength, lengthLike } from "../model/length.ts";
 import { renderChildren, rescueFocus, separatorHidden, shownCollapsed } from "./children.ts";
 import {
   hidingPanels,
@@ -300,7 +301,7 @@ export class GroupCoordinator implements GroupLink {
     vetoed: ReadonlySet<BentoPanel>,
   ): { resized: BentoPanel[]; vetoed: ReadonlySet<BentoPanel> } {
     const committed = this.#committed;
-    const { panels: inGroup, resolved: current, layout: currentLayout } = committed;
+    const { panels: inGroup, layout: currentLayout, space } = committed;
     const before = inGroup.findIndex((panel) => panel === separator.previousElementSibling);
     const after = separator.nextElementSibling;
     const moves = before >= 0 && inGroup[before + 1] === after && sameShape(start, committed);
@@ -341,8 +342,10 @@ export class GroupCoordinator implements GroupLink {
     inGroup.forEach((panel, index) => {
       const request = proposal[index];
       if (!request) return;
-      if (request.size !== null && request.size !== current[index]?.size) {
-        panelAccess.resizedByUser(panel, request.size);
+      const kind = committed.requests[index]?.size ?? null;
+      const size = request.size === null ? null : lengthLike(kind, request.size, space ?? 0);
+      if (size && formatLength(size) !== panel.size) {
+        panelAccess.resizedByUser(panel, size);
         resized.push(panel);
       }
       if (toggled.includes(panel)) panelAccess.toggledByUser(panel, request.collapsed);

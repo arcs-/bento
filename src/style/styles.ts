@@ -12,17 +12,33 @@ function sheet(rules: string): CSSStyleSheet {
 
 export const groupSheet = sheet(`:host { display: flex; block-size: 100% }`);
 
+/** The panel's layout styles, which its wrappers take over from it to lay out its children. */
+const forwardedLayout =
+  "display: inherit; flex-flow: inherit; grid: inherit; gap: inherit; place-items: inherit; place-content: inherit";
+
 /**
+ * The panel's own box stays the group's flex item: `.clip` is out of its flow, so a `display`,
+ * grid or alignment of the app's on the panel only reaches the children, through the wrappers.
+ * `.clip` is the clipping box and the scroller, with the panel's `overflow`, clip by default;
+ * `.content`, the children's box, keeps at least `min` and freezes during toggles.
+ *
  * `.content` is the size container that `@container` queries in the panel resolve to. The host
  * is one too: without a container among its light DOM ancestors, WebKit never looks into the
  * shadow tree for nested content, only for the panel's direct children.
  */
 export const panelSheet = sheet(`
-:host { display: block; container-type: size; min-inline-size: 0; min-block-size: 0; transition: none 0.2s ease }
-.clip { display: flex; overflow: clip; inline-size: 100%; block-size: 100% }
-.content { flex: none; box-sizing: border-box; container-type: size; inline-size: 100%; block-size: 100% }
+:host {
+  display: block; position: relative; overflow: clip; container-type: size;
+  min-inline-size: 0; min-block-size: 0; transition: none 0.2s ease
+}
+.clip { position: absolute; inset: 0; overflow: inherit; ${forwardedLayout} }
+.content {
+  position: absolute; inset-block-start: 0; inset-inline-start: 0; box-sizing: border-box;
+  container-type: size; inline-size: 100%; block-size: 100%; ${forwardedLayout}
+}
+dialog > .clip { position: relative; flex: 1; display: block }
 dialog {
-  position: fixed; overflow: clip; color: inherit; box-sizing: inherit;
+  position: fixed; overflow: inherit; color: inherit; box-sizing: inherit;
   inline-size: inherit; block-size: inherit; min-inline-size: inherit; max-inline-size: inherit;
   min-block-size: inherit; max-block-size: inherit; inset: inherit; margin: inherit;
   padding: inherit; background: inherit; border: inherit; border-radius: inherit; box-shadow: inherit
@@ -58,17 +74,17 @@ function customPropertiesRule({ size, min, max, collapsedSize }: BentoCustomProp
 }
 
 function contentRules(axis: Axis, content: ContentState): string {
-  const direction = axis === "block" ? ".clip { flex-direction: column }" : "";
   switch (content.kind) {
     case "shown":
-      return `${direction} .content { min-${axis}-size: ${content.min} }`;
+      return `.content { min-${axis}-size: ${content.min} }`;
     case "hidden":
       return ".content { display: none }";
     case "rail":
-      return direction;
+      return "";
     case "frozen": {
-      const anchor = content.anchor === "end" ? ".clip { justify-content: flex-end }" : "";
-      return `${direction} ${anchor} .content { ${axis}-size: ${content.size}px }`;
+      const anchor = content.anchor === "end" ? `inset-${axis}: auto 0;` : "";
+      const physicalAxis = axis === "inline" ? "x" : "y";
+      return `.clip { overflow-${physicalAxis}: hidden } .content { ${anchor} ${axis}-size: ${content.size}px }`;
     }
   }
 }

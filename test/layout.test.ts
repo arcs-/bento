@@ -158,6 +158,107 @@ describe("sizes", () => {
   });
 });
 
+/** A panel `#styled` with the given style, three 40px children, separator `#handle`, `#main`. */
+function styledPanelLayout(style: string, groupAttributes = ""): string {
+  return layout(
+    `<bento-panel id="styled" size="300px" collapsible style="${style}">
+      <div id="first" style="flex: none; block-size: 40px; background: rgb(0, 0, 255)"></div>
+      <div id="second" style="flex: none; block-size: 40px"></div>
+      <div id="third" style="flex: none; block-size: 40px"></div>
+    </bento-panel>
+    <bento-separator id="handle"></bento-separator>
+    <bento-panel id="main"></bento-panel>`,
+    groupAttributes,
+  );
+}
+
+const boxOf = (id: string) => block(id).getBoundingClientRect();
+
+/** Scrolls `#third` into view and returns how far `#first` moved, as a scroller would. */
+function scrollToThird(): number {
+  const before = boxOf("first").top;
+  block("third").scrollIntoView({ block: "end" });
+  return before - boxOf("first").top;
+}
+
+describe("a panel's layout styles lay out and scroll its children", () => {
+  test("flex, direction and gap on the panel lay out its children", async () => {
+    await render(styledPanelLayout("display: flex; flex-direction: column; gap: 10px"));
+
+    expect(boxOf("second").top - boxOf("first").bottom).toBeCloseTo(10, 0);
+    expect(boxOf("third").top - boxOf("second").bottom).toBeCloseTo(10, 0);
+    expect(width(block("first"))).toBeCloseTo(300, 0);
+    expect(width(panel("styled"))).toBeCloseTo(300, 0);
+    expect(height(panel("styled"))).toBeCloseTo(groupSize.height, 0);
+  });
+
+  test("a grid on the panel lays out its children, and the panel stays the group's item", async () => {
+    await render(
+      styledPanelLayout("display: grid; grid-template-columns: 1fr 1fr; place-content: center"),
+    );
+
+    expect(width(block("first"))).toBeCloseTo(150, 0);
+    expect(boxOf("second").left - boxOf("first").left).toBeCloseTo(150, 0);
+    expect(boxOf("third").top).toBeGreaterThan(boxOf("first").top);
+    expect(width(panel("styled"))).toBeCloseTo(300, 0);
+    expect(panel("styled").getBoundingClientRect().left).toBeCloseTo(
+      group("layout").getBoundingClientRect().left,
+      0,
+    );
+  });
+
+  test("overflow on the panel scrolls its children; the panel's own box never scrolls", async () => {
+    await render(
+      styledPanelLayout("display: flex; flex-direction: column; gap: 200px; overflow-y: auto"),
+    );
+
+    expect(scrollToThird()).toBeGreaterThan(100);
+    expect(boxOf("third").bottom).toBeLessThanOrEqual(
+      panel("styled").getBoundingClientRect().bottom + 1,
+    );
+    expect(panel("styled").scrollTop).toBe(0);
+    expect(panel("styled").getBoundingClientRect().top).toBeCloseTo(
+      group("layout").getBoundingClientRect().top,
+      0,
+    );
+  });
+
+  test("in a vertical group, overflow on the group's axis scrolls too", async () => {
+    await render(
+      styledPanelLayout(
+        "display: flex; flex-direction: column; gap: 60px; overflow-y: auto",
+        'orientation="vertical"',
+      ).replace('size="300px"', 'size="100px"'),
+    );
+
+    expect(height(panel("styled"))).toBeCloseTo(100, 0);
+    expect(scrollToThird()).toBeGreaterThan(50);
+    expect(panel("styled").scrollTop).toBe(0);
+  });
+
+  test("a panel laid out with flex still collapses to 0, animated, and to a rail", async () => {
+    await render(styledPanelLayout("display: flex; flex-direction: column; gap: 10px"));
+    const styled = panel("styled");
+
+    await pressKeys(separator("handle"), "{Enter}");
+    const contentWidths: number[] = [];
+    const collapsing = await sampleUntilAt(() => {
+      if (width(styled) > 1) contentWidths.push(width(block("first")));
+      return width(styled);
+    }, 0);
+
+    expect(collapsing.some((sample) => sample > 1 && sample < 299)).toBe(true);
+    for (const contentWidth of contentWidths) expect(contentWidth).toBeCloseTo(300, 0);
+    expect(block("first").checkVisibility()).toBe(false);
+
+    styled.setAttribute("collapsed-size", "48px");
+    await frames();
+    expect(width(styled)).toBeCloseTo(48, 0);
+    expect(block("first").checkVisibility()).toBe(true);
+    expect(width(block("first"))).toBeCloseTo(48, 0);
+  });
+});
+
 describe("content", () => {
   test("one element with height: 100% fills the panel", async () => {
     await render(

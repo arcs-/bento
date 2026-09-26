@@ -24,9 +24,15 @@ export function formatLength({ amount, unit }: Length): string {
 
 export const formatPixels = (amount: number): string => formatLength({ amount, unit: "px" });
 
-/** A px length rounded to 0.01px, so a live size carries no float noise into what apps save. */
-export function pixelLength(amount: number): Length {
-  return { amount: Math.round(amount * 100) / 100, unit: "px" };
+/**
+ * A size the user made, as a length of the same kind as `kind`: px stays px, and a `%` or a
+ * flexible panel gets a `%` of `space`, so it keeps its share when the group resizes. Rounded to
+ * 0.01 of its unit, so a live size carries no float noise into what apps save.
+ */
+export function lengthLike(kind: Length | null, pixels: number, space: number): Length {
+  const unit = kind?.unit === "px" || space <= 0 ? "px" : "%";
+  const amount = unit === "px" ? pixels : (pixels / space) * 100;
+  return { amount: Math.round(amount * 100) / 100, unit };
 }
 
 /** Resolves a length against the group's space, which `%` is a share of. */

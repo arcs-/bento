@@ -3,7 +3,7 @@ import { setState, upgradeProperties } from "./element.ts";
 import { dispatchBeforeToggle, dispatchToggle } from "../group/events.ts";
 import { groupOf } from "../group/link.ts";
 import type { PanelRequest } from "../model/layout.ts";
-import { formatLength, type Length, parseLength, pixelLength } from "../model/length.ts";
+import { formatLength, type Length, parseLength } from "../model/length.ts";
 import { ModalSheet } from "./modal-sheet.ts";
 import { isCollapsed, type ModeEvent, nextMode, type PanelMode } from "../model/machines.ts";
 import type { PanelRender } from "../model/render.ts";
@@ -23,7 +23,7 @@ export interface PanelAccess {
   content(panel: BentoPanel): Element;
   render(panel: BentoPanel, render: PanelRender): void;
   /** A size the user dragged or keyed in. */
-  resizedByUser(panel: BentoPanel, size: number): void;
+  resizedByUser(panel: BentoPanel, size: Length): void;
   /** A collapse or expand the user asked for and nobody vetoed. */
   toggledByUser(panel: BentoPanel, collapsed: boolean): void;
   /** Double-click: the live value is back at the start and follows it again, like a form reset. */
@@ -229,7 +229,7 @@ export class BentoPanel extends HTMLElement implements BentoPanelElement {
       render: (panel, render) => panel.#render(render),
       resizedByUser: (panel, size) => {
         panel.#start.changedByUser("size");
-        panel.#size = pixelLength(size);
+        panel.#size = size;
       },
       toggledByUser: (panel, collapsed) => {
         panel.#start.changedByUser("collapsed");

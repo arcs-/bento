@@ -217,8 +217,10 @@ function snapsCollapsed(request: ResolvedRequest, target: number, snap: SnapRule
 /**
  * Moves one separator from the `start` layout, like react-resizable-panels: the nearest panel
  * on one side grows, the nearest on the other gives down to its `min` or snaps collapsed, and
- * further panels are pushed down to their `min`. Returns the new requests; a panel that fills
- * keeps filling, except that between two filling panels the earlier one gets a size. A panel
+ * further panels are pushed down to their `min`. Returns the new requests, sizes in px, and
+ * changes nothing but the neighbours and the pushed panels. One flexible neighbour, the later
+ * one of two, stays flexible; every other flexible panel gets its current size, so it keeps
+ * it. A panel
  * the move opens gets at least its `min`, even when the others cannot give that much: it is
  * the user's expand, and the layout makes room by its priority.
  */
@@ -272,14 +274,17 @@ export function moveSeparator(
   sizes[growing] = clamp(growerBox.size + given, opens ? grower.min : 0, grower.max);
   if (opens) next[growing] = { ...grower, collapsed: false };
 
-  const earlierFills = start[Math.min(growing, nearestShrinking)]?.fills ?? false;
-  const laterFills = start[Math.max(growing, nearestShrinking)]?.fills ?? false;
-  const sized = earlierFills && laterFills ? Math.min(growing, nearestShrinking) : -1;
+  const flexible = (index: number) =>
+    Boolean(start[index]?.fills && requests[index]?.size === null);
+  const neighbours = [Math.max(growing, nearestShrinking), Math.min(growing, nearestShrinking)];
+  const keeper = neighbours.find(flexible);
   return next.map((request, index) => {
     const box = start[index];
     const size = sizes[index] ?? 0;
-    const keepsSize = !box || request.collapsed || (box.fills && index !== sized);
-    return keepsSize || size === box.size ? request : { ...request, size };
+    if (!box || request.collapsed || index === keeper) return request;
+    if (flexible(index) && keeper !== undefined) return { ...request, size };
+    const lastFills = box.fills && request.size !== null;
+    return size === box.size || lastFills ? request : { ...request, size };
   });
 }
 
