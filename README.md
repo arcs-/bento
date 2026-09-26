@@ -31,7 +31,7 @@ Load `bento.js` as a blocking script in the `<head>`, so server-rendered HTML is
 - Style everything with your own CSS or utility classes; `:state(collapsed)` and `:state(modal)` expose live state.
 - React 19 typings: `bento/react`.
 
-Docs and live examples are on the website. Browser support: Baseline Widely available, browsers from March 2024 on.
+Docs and live examples: [arcs-.github.io/bento](https://arcs-.github.io/bento/). Browser support: Baseline Widely available, browsers from March 2024 on.
 
 ## Not included
 

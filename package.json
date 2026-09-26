@@ -9,7 +9,14 @@
     "splitter",
     "web-components"
   ],
+  "homepage": "https://arcs-.github.io/bento/",
+  "bugs": "https://github.com/arcs-/bento/issues",
   "license": "MIT",
+  "author": "Patrick Stillhart (https://stillh.art)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arcs-/bento.git"
+  },
   "files": [
     "dist"
   ],
