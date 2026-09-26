@@ -47,6 +47,8 @@ const scriptRules: readonly Rule[] = [
   { kind: "comment", pattern: /\/\*[\s\S]*?\*\/|\/\/[^\n]*/ },
   { kind: "string", pattern: /"(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*'|`(?:[^`\\]|\\.)*`/ },
   { kind: "keyword", pattern: tsKeywords },
+  /** JSX elements: lower-case names only, so a generic such as `useRef<Element>` stays plain. */
+  { kind: "tag", pattern: /<\/?[a-z][\w-]*|\/>/ },
   { kind: "number", pattern: /\b\d+(?:\.\d+)?(?:px|ms|%)?\b/ },
 ];
 
@@ -54,6 +56,8 @@ const cssRules: readonly Rule[] = [
   { kind: "comment", pattern: /\/\*[\s\S]*?\*\// },
   { kind: "string", pattern: /"[^"\n]*"|'[^'\n]*'/ },
   { kind: "keyword", pattern: /@[\w-]+|:state\([\w-]+\)|:not\(:defined\)|::?[\w-]+/ },
+  /** Selectors: names followed by a `{` before any `;` or `}`. */
+  { kind: "tag", pattern: /[.#]?[a-z][\w-]*(?=[^{};]*\{)/ },
   { kind: "attr", pattern: /--[\w-]+|[\w-]+(?=\s*:\s)/ },
   { kind: "number", pattern: /\b\d+(?:\.\d+)?(?:px|ms|s|%|vw|rem)?\b/ },
 ];

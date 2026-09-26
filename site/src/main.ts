@@ -6,6 +6,7 @@ import { EventLog } from "./event-log.ts";
 import { showLiveSizes } from "./live-readouts.ts";
 import { PanelInspector } from "./panel-inspector.ts";
 import { wireSectionLinks } from "./section-links.ts";
+import { wireDeviceSwitch } from "./device-switch.ts";
 import { wirePanelControls } from "./panel-controls.ts";
 
 function startEventLogs(): void {
@@ -29,6 +30,10 @@ function localStorageIfAvailable(): Storage | null {
 }
 
 function startDemos(): void {
+  const switcher = document.querySelector(".device-switch");
+  const device = document.querySelector<HTMLElement>("[data-device-frame]");
+  if (switcher && device) wireDeviceSwitch(switcher, device);
+
   const editor = document.querySelector<BentoPanelElement>("bento-panel#notes");
   if (editor) guardUnsavedChanges(editor);
 

@@ -11,10 +11,6 @@
   block-size: 20rem;
 }
 
-.demo-frame-bench {
-  block-size: 24rem;
-}
-
 .demo-content {
   display: flex;
   flex-direction: column;
@@ -56,17 +52,6 @@
   color: var(--ink-faint);
   font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
-}
-
-.frame-content {
-  padding: 0;
-}
-
-.frame-content iframe {
-  display: block;
-  inline-size: 100%;
-  block-size: 100%;
-  border: 0;
 }
 
 /* The editor that guards unsaved changes. */
@@ -124,4 +109,63 @@
   padding: 0;
   list-style: none;
   border: 0;
+}
+
+/* The modal demo: the same page in a device frame, a phone or a desktop wide. */
+.device-stage {
+  justify-items: center;
+}
+
+.device-switch {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  background: var(--frame);
+  border-radius: 999px;
+  box-shadow: var(--inset);
+}
+
+.device {
+  box-sizing: border-box;
+  inline-size: 360px;
+  max-inline-size: 100%;
+  block-size: 640px;
+  padding: 10px;
+  background: var(--metal);
+  border-radius: 30px;
+  box-shadow: var(--bevel), var(--raised);
+}
+
+.device[data-device-frame="desktop"] {
+  inline-size: 100%;
+  block-size: 420px;
+  border-radius: 14px;
+}
+
+.device iframe {
+  display: block;
+  inline-size: 100%;
+  block-size: 100%;
+  background: var(--surface);
+  border: 0;
+  border-radius: 22px;
+}
+
+.device[data-device-frame="desktop"] iframe {
+  border-radius: var(--radius-small);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .device {
+    transition:
+      inline-size 300ms ease,
+      block-size 300ms ease,
+      border-radius 300ms ease;
+  }
+}
+
+.device-caption {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.9375rem;
 }

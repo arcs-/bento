@@ -132,8 +132,9 @@ body {
   }
 }
 
-/* Anodized: the one main action of a demo. */
-.satin-button.anodized {
+/* Anodized: the one main action of a demo, or the chosen segment of a switch. */
+.satin-button.anodized,
+.satin-button[aria-pressed="true"] {
   color: var(--anodized-ink);
   text-shadow: none;
   background:
