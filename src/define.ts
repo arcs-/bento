@@ -1,6 +1,18 @@
-/* oxlint-disable unicorn/no-empty-file -- a stub until the elements are implemented */
 /**
  * The runtime entry, built to dist/bento.js. It registers the elements as a side effect and
  * never exports a value, so the build runs as a classic blocking `<script>` as well as an
- * `import "bento"` module.
+ * `import "bento"` module. An element already defined, by a second copy, is left alone.
  */
+import { BentoGroup } from "./group.ts";
+import { BentoPanel } from "./panel.ts";
+import { BentoSeparator } from "./separator.ts";
+
+const elements: Record<string, CustomElementConstructor> = {
+  "bento-group": BentoGroup,
+  "bento-panel": BentoPanel,
+  "bento-separator": BentoSeparator,
+};
+
+for (const [name, element] of Object.entries(elements)) {
+  if (!customElements.get(name)) customElements.define(name, element);
+}

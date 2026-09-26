@@ -25,6 +25,8 @@ export default defineConfig({
     include: ["test/**/*.test.ts"],
     globalSetup: ["test/build.ts"],
     setupFiles: ["test/setup.ts"],
+    /** The pointer is the page's, shared by every test file's frame, so files take turns. */
+    fileParallelism: false,
     browser: {
       enabled: true,
       provider: playwright(),
