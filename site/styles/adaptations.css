@@ -26,6 +26,18 @@
     border: 1px solid CanvasText;
   }
 
+  .flag,
+  .state-tag {
+    border: 1px solid CanvasText;
+  }
+
+  .flag-on,
+  .compare .differs td {
+    forced-color-adjust: none;
+    color: HighlightText;
+    background: Highlight;
+  }
+
   .satin-button[aria-expanded]::before,
   .satin-button::after {
     display: none;

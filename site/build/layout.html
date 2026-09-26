@@ -98,7 +98,7 @@
                   data-panel-inspector
                 >
                   <div class="inspector-head">
-                    <h2 id="panel-inspector-title">Panel</h2>
+                    <h2 id="panel-inspector-title" data-inspected-name>Panel</h2>
                     <button
                       class="satin-button drawer-close"
                       type="button"
@@ -107,20 +107,8 @@
                       Close
                     </button>
                   </div>
-                  <p class="inspector-note">
-                    <code data-inspected-name>none</code>. Click, focus or hover a panel.
-                  </p>
-                  <table class="inspector-table">
-                    <thead>
-                      <tr>
-                        <td></td>
-                        <th scope="col">Live</th>
-                        <th scope="col">Start</th>
-                      </tr>
-                    </thead>
-                    <tbody></tbody>
-                  </table>
-                  <dl class="inspector-facts"></dl>
+                  <p class="inspector-hint" data-inspector-hint>Click, focus or hover a panel.</p>
+                  <div class="inspector-body" data-inspector-body></div>
                 </section>
               </bento-panel>
               <bento-separator
