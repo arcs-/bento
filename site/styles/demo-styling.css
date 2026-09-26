@@ -1,4 +1,4 @@
-/* The box is the group itself: lacquered wood, padded, with a gap between the compartments. */
+/* The box is the group itself: a lacquered wood frame around a metal tray, with a gap between the compartments. */
 .lunch-box {
   --wood:
     linear-gradient(180deg, rgb(255 228 196 / 0.24), transparent 22% 78%, rgb(40 14 0 / 0.28)),
@@ -16,14 +16,18 @@
       transparent 23px 47px
     ),
     linear-gradient(90deg, #7e4220, #95542b 35%, #7a3e1d 62%, #8c4c26);
-  --wood-edge: inset 0 1px 0 rgb(255 226 190 / 0.4), inset 0 -1px 0 rgb(30 10 0 / 0.35);
   --wood-lift: 0 14px 30px -10px rgb(70 32 10 / 0.5), 0 0 0 1px rgb(70 32 10 / 0.35);
+  --tray-recess: inset 0 2px 5px rgb(20 28 38 / 0.35), inset 0 0 0 1px rgb(20 28 38 / 0.25);
+  /* The metal layers stay inside the frame; the wood fills the border under them. */
+  --metal-tray:
+    var(--sheen) padding-box, linear-gradient(180deg, var(--frame), var(--frame-deep)) padding-box;
 
   block-size: clamp(16rem, 42vh, 24rem);
-  padding: 12px;
-  background: var(--wood);
-  border-radius: 14px;
-  box-shadow: var(--wood-edge), var(--wood-lift);
+  padding: 6px;
+  border: 10px solid transparent;
+  border-radius: 16px;
+  background: var(--metal-tray), var(--wood);
+  box-shadow: var(--tray-recess), var(--wood-lift);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -173,7 +177,8 @@
 /* Below 560px the side dishes are a drawer: the sheet takes the panel's own styles. */
 #sides:state(modal) {
   inline-size: min(300px, 85vw);
-  padding: 12px;
-  background: var(--wood);
+  padding: 6px;
+  border: 10px solid transparent;
+  background: var(--metal-tray), var(--wood);
   --bento-backdrop: rgb(20 26 34 / 0.4);
 }
