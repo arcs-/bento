@@ -1,7 +1,7 @@
 import type { BentoSeparatorElement } from "./bento.ts";
 import { setState } from "./elements.ts";
 import { groupOf } from "./group-link.ts";
-import { BentoPanel, hasStartingSize } from "./panel.ts";
+import { BentoPanel, panelAccess } from "./panel.ts";
 import type { SeparatorRender } from "./render.ts";
 import { type Axis, separatorRules, separatorSheet } from "./styles.ts";
 
@@ -20,14 +20,21 @@ type PointerState =
       released: boolean;
     };
 
-/**
- * The panel a separator resizes and toggles: the neighbour its `aria-controls` names, else the
- * one with a starting size or `collapsible`, the later one on a tie.
- */
-export let primaryPanel!: (separator: BentoSeparator) => BentoPanel | null;
-export let renderSeparator!: (separator: BentoSeparator, render: SeparatorRender) => void;
+/** The group's access to its separators, kept off the element's public surface. */
+export interface SeparatorAccess {
+  /**
+   * The panel a separator resizes and toggles: the neighbour its `aria-controls` names, else
+   * the one with a starting size or `collapsible`, the later one on a tie.
+   */
+  primary(separator: BentoSeparator): BentoPanel | null;
+  render(separator: BentoSeparator, render: SeparatorRender): void;
+}
 
-const hasSizeOrCollapses = (panel: BentoPanel) => hasStartingSize(panel) || panel.collapsible;
+/** Created by the class's static block, which alone can reach the private members. */
+export let separatorAccess!: SeparatorAccess;
+
+const hasSizeOrCollapses = (panel: BentoPanel) =>
+  panelAccess.hasStartingSize(panel) || panel.collapsible;
 
 const coordinateOn = (axis: Axis, event: PointerEvent) =>
   axis === "inline" ? event.clientX : event.clientY;
@@ -73,8 +80,10 @@ export class BentoSeparator extends HTMLElement implements BentoSeparatorElement
   }
 
   static {
-    primaryPanel = (separator) => separator.#primary();
-    renderSeparator = (separator, render) => separator.#render(render);
+    separatorAccess = {
+      primary: (separator) => separator.#primary(),
+      render: (separator, render) => separator.#render(render),
+    };
   }
 
   #primary(): BentoPanel | null {

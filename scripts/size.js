@@ -11,3 +11,8 @@ const budgetShare = Math.round((gzippedByteCount / budgetBytes) * 100);
 console.log(
   `${bundlePath}: ${minifiedBytes.byteLength} B min, ${gzippedByteCount} B min+gzip, ${budgetShare}% of the ${budgetBytes} B budget`,
 );
+
+if (gzippedByteCount > budgetBytes) {
+  console.error(`${bundlePath} is over its budget by ${gzippedByteCount - budgetBytes} B`);
+  process.exitCode = 1;
+}

@@ -22,6 +22,8 @@ export function formatLength({ amount, unit }: Length): string {
   return `${amount}${unit}`;
 }
 
+export const formatPixels = (amount: number): string => formatLength({ amount, unit: "px" });
+
 /** A px length rounded to 0.01px, so a live size carries no float noise into what apps save. */
 export function pixelLength(amount: number): Length {
   return { amount: Math.round(amount * 100) / 100, unit: "px" };

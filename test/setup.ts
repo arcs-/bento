@@ -9,5 +9,6 @@ afterEach(async () => {
   await commands.pointerUp();
   removeRendered();
   await commands.emulateReducedMotion("no-preference");
+  await commands.emulateCoarsePointer(false);
   await page.viewport(testViewport.width, testViewport.height);
 });

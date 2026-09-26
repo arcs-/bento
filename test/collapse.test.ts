@@ -2,8 +2,10 @@ import { describe, expect, test } from "vitest";
 import { commands } from "vitest/browser";
 import {
   activateUser,
+  animationsDone,
   block,
   colorAtCenterOf,
+  doubleClick,
   drag,
   frames,
   group,
@@ -21,6 +23,7 @@ import {
   release,
   render,
   sampleFrames,
+  sampleUntil,
   sampleUntilAt,
   separator,
   settleAt,
@@ -32,6 +35,7 @@ import {
 
 const measureSidebar = () => width(panel("sidebar"));
 const endWidth = () => width(panel("end"));
+const startWidth = () => width(panel("start"));
 
 const isPartlyFaded = ({ red, blue }: Color) => blue > 200 && red > 20 && red < 235;
 const isFullBlue = ({ red, blue }: Color) => blue > 250 && red < 5;
@@ -106,28 +110,52 @@ describe("animation", () => {
   test("toggles take their timing from the panel's transition-duration and -timing-function", async () => {
     await render(`
       <style>
-        #sidebar { transition-duration: 600ms; transition-timing-function: linear }
+        #sidebar { transition-duration: 1200ms; transition-timing-function: linear }
         #sidebar.instant { transition-duration: 0s }
       </style>
       ${sidebarLayout('size="300px" collapsible')}`);
     const timeline: { elapsed: number; sidebarWidth: number }[] = [];
 
-    const start = performance.now();
     await pressKeys(separator("handle"), "{Enter}");
     await sampleUntilAt(() => {
       const sidebarWidth = measureSidebar();
-      timeline.push({ elapsed: performance.now() - start, sidebarWidth });
+      timeline.push({ elapsed: performance.now(), sidebarWidth });
       return sidebarWidth;
     }, 0);
 
-    const firstAtEnd = timeline.find(({ sidebarWidth }) => isAt(sidebarWidth, 0));
-    expect(firstAtEnd?.elapsed).toBeGreaterThan(450);
-    const nearHalfway = timeline.filter(({ elapsed }) => elapsed > 250 && elapsed < 350);
-    for (const { sidebarWidth } of nearHalfway) expect(sidebarWidth).toBeCloseTo(150, -2);
+    /** Speeds between samples, relative to each other, so a slow machine only adds samples. */
+    const moving = timeline.filter(({ sidebarWidth }) => isBetween(sidebarWidth, 300, 0));
+    const first = moving[0];
+    const last = moving.at(-1);
+    if (!first || !last) throw new Error("the toggle never moved");
+    const speed = (first.sidebarWidth - last.sidebarWidth) / (last.elapsed - first.elapsed);
+    expect(speed).toBeGreaterThan(300 / 1200 / 1.4);
+    expect(speed).toBeLessThan((300 / 1200) * 1.4);
+    const midpoint = (first.elapsed + last.elapsed) / 2;
+    const middle = moving.reduce((nearest, sample) =>
+      Math.abs(sample.elapsed - midpoint) < Math.abs(nearest.elapsed - midpoint) ? sample : nearest,
+    );
+    const linearAtMiddle = first.sidebarWidth - speed * (middle.elapsed - first.elapsed);
+    expect(Math.abs(middle.sidebarWidth - linearAtMiddle)).toBeLessThan(30);
 
     panel("sidebar").classList.add("instant");
     await pressKeys(separator("handle"), "{Enter}");
     for (const sample of await sampleFrames(measureSidebar)) expect(sample).toBeCloseTo(300, 0);
+  });
+
+  test("toggling back mid-way reverses from where the size is, without a jump", async () => {
+    await render(`
+      <style>#sidebar { transition-duration: 1200ms; transition-timing-function: linear }</style>
+      ${sidebarLayout('size="300px" collapsible')}`);
+
+    await pressKeys(separator("handle"), "{Enter}");
+    const collapsing = await sampleUntil(measureSidebar, (sample) => sample < 180);
+    const reversedAt = collapsing.at(-1) ?? 0;
+    await pressKeys(separator("handle"), "{Enter}");
+    const expanding = await sampleUntilAt(measureSidebar, 300);
+
+    for (const sample of expanding) expect(sample).toBeGreaterThan(reversedAt - 40);
+    expect(expanding.some((sample) => isBetween(sample, reversedAt, 300))).toBe(true);
   });
 
   test("snapping animates the size", async () => {
@@ -210,7 +238,7 @@ describe("reduced motion", () => {
   /** Screenshots are slower than frames; a long transition-duration gives them time to catch the fade. */
   async function observeUntil(done: (observation: Observation) => boolean): Promise<Observation[]> {
     const observations: Observation[] = [];
-    const deadline = performance.now() + 3000;
+    const deadline = performance.now() + 8000;
     while (performance.now() < deadline) {
       const observation = {
         sidebarWidth: measureSidebar(),
@@ -224,7 +252,7 @@ describe("reduced motion", () => {
 
   test("the size changes at once and the content cross-fades", async () => {
     await commands.emulateReducedMotion("reduce");
-    await render(sidebarLayout('size="300px" collapsible style="transition-duration: 1s"'));
+    await render(sidebarLayout('size="300px" collapsible style="transition-duration: 2s"'));
 
     await pressKeys(separator("handle"), "{Enter}");
     const collapsing = await observeUntil(({ sidebarWidth }) => isAt(sidebarWidth, 0));
@@ -318,5 +346,50 @@ describe("shrinking group", () => {
 
     expect(panel("end").collapsed).toBe(true);
     expect(width(panel("end"))).toBeCloseTo(0, 0);
+  });
+
+  test("the app writing collapsed on a panel the group collapsed makes the collapse its own", async () => {
+    await render(threeSidebars);
+    group("layout").style.width = "600px";
+    await expect.poll(() => panel("end").collapsed).toBe(true);
+
+    panel("end").collapsed = true;
+    await frames();
+    group("layout").style.width = "1000px";
+    await frames(5);
+    await animationsDone();
+
+    expect(panel("end").collapsed).toBe(true);
+    expect(width(panel("end"))).toBeCloseTo(0, 0);
+  });
+
+  test("a double-click resetting a group-collapsed panel to its collapsed start keeps it collapsed", async () => {
+    await render(threeSidebars.replace('id="start"', 'id="start" collapsed'));
+    await pressKeys(separator("start-handle"), "{Enter}");
+    await settleAt(startWidth, 300);
+    await pressKeys(separator("end-handle"), "{Enter}");
+    await pressKeys(separator("end-handle"), "{Enter}");
+    await settleAt(endWidth, 300);
+    group("layout").style.width = "700px";
+    await expect.poll(() => panel("start").collapsed).toBe(true);
+
+    await doubleClick(separator("start-handle"));
+    group("layout").style.width = "1000px";
+    await frames(5);
+    await animationsDone();
+
+    expect(panel("start").collapsed).toBe(true);
+    expect(startWidth()).toBeCloseTo(0, 0);
+  });
+
+  test("an attribute change that collapses its own panel fires nothing on it", async () => {
+    await render(threeSidebars);
+    const endEvents = recordEvents(panel("end"), ["beforetoggle", "toggle"]);
+
+    panel("end").setAttribute("min", "500px");
+
+    await expect.poll(() => panel("end").collapsed).toBe(true);
+    await frames(3);
+    expect(endEvents).toEqual([]);
   });
 });

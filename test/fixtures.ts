@@ -143,9 +143,16 @@ export function pageAnimations(): Animation[] {
   return [document, ...shadowRoots].flatMap((root) => root.getAnimations());
 }
 
-/** Waits until every running animation of the page has finished. */
+/**
+ * Waits until every running animation of the page has finished and its `finish` event, which
+ * the browser dispatches after the `finished` promise settles, has run, as when a sheet closes
+ * after its fade out. Animations that start meanwhile are waited for too.
+ */
 export async function animationsDone(): Promise<void> {
-  await Promise.all(pageAnimations().map((animation) => animation.finished.catch(() => {})));
+  for (let running = pageAnimations(); running.length > 0; running = pageAnimations()) {
+    await Promise.all(running.map((animation) => animation.finished.catch(() => {})));
+    await nextFrame();
+  }
 }
 
 /**
@@ -198,6 +205,21 @@ export async function sampleUntilAt(measure: () => number, end: number): Promise
     const sample = measure();
     samples.push(sample);
     framesAtEnd = isAt(sample, end) ? framesAtEnd + 1 : 0;
+  }
+  return samples;
+}
+
+/** Measures once per frame until `reached` holds for a sample, such as a toggle half-way. */
+export async function sampleUntil(
+  measure: () => number,
+  reached: (sample: number) => boolean,
+): Promise<number[]> {
+  const samples: number[] = [];
+  const deadline = performance.now() + settleTimeoutMs;
+  while (!samples.some(reached)) {
+    if (performance.now() > deadline) throw new Error(`never reached; last ${samples.at(-1)}`);
+    await nextFrame();
+    samples.push(measure());
   }
   return samples;
 }

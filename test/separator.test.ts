@@ -7,6 +7,7 @@ import {
   frames,
   group,
   height,
+  isAt,
   layout,
   moveBy,
   panel,
@@ -79,6 +80,15 @@ describe("keyboard", () => {
 
     expect(panel("sidebar").collapsed).toBe(false);
     expect(width(panel("sidebar"))).toBeCloseTo(130, 0);
+  });
+
+  test("Home on a collapsed panel keeps it at its smallest size", async () => {
+    await render(sidebarLayout('size="300px" min="200px" collapsible collapsed'));
+
+    await pressKeys(separator("handle"), "{Home}");
+
+    expect(panel("sidebar").collapsed).toBe(true);
+    expect(width(panel("sidebar"))).toBeCloseTo(0, 0);
   });
 
   test("arrow keys snap collapsed as soon as they go below min", async () => {
@@ -288,20 +298,37 @@ describe("accessibility", () => {
   );
 });
 
+/** Presses `offset` px beside the separator's line and drags 20px: did the sidebar follow? */
+async function dragsFrom(offset: number): Promise<boolean> {
+  const before = width(panel("sidebar"));
+  await press(separator("handle"), offset);
+  await moveBy(20);
+  await release();
+  const followed = !isAt(width(panel("sidebar")), before);
+  if (followed) await drag(separator("handle"), -20);
+  return followed;
+}
+
 describe("hit area", () => {
   test("is 24px wide, centered on the line", async () => {
     await render(sidebarLayout('size="300px"'));
 
-    await press(separator("handle"), 11);
-    await moveBy(50);
-    await release();
-    expect(width(panel("sidebar"))).toBeCloseTo(350, 0);
-
-    await press(separator("handle"), -13);
-    await moveBy(50);
-    await release();
-    expect(width(panel("sidebar"))).toBeCloseTo(350, 0);
+    for (const inside of [-11, 11]) expect(await dragsFrom(inside), `at ${inside}`).toBe(true);
+    for (const outside of [-13, 13]) expect(await dragsFrom(outside), `at ${outside}`).toBe(false);
   });
+
+  test.runIf(server.browser === "chromium")(
+    "is 40px wide on a coarse pointer, centered on the line",
+    async () => {
+      await commands.emulateCoarsePointer(true);
+      await render(sidebarLayout('size="300px"'));
+
+      for (const inside of [-19, 19]) expect(await dragsFrom(inside), `at ${inside}`).toBe(true);
+      for (const outside of [-21, 21]) {
+        expect(await dragsFrom(outside), `at ${outside}`).toBe(false);
+      }
+    },
+  );
 
   test("a positioned element in the next panel does not cover it", async () => {
     await render(

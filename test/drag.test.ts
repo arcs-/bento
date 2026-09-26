@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest";
 import { commands } from "vitest/browser";
 import {
   drag,
+  frames,
   group,
   groupSize,
   height,
@@ -12,6 +13,7 @@ import {
   pixels,
   press,
   pressKeys,
+  recordEvents,
   release,
   render,
   sampleFrames,
@@ -19,6 +21,7 @@ import {
   separator,
   settleAt,
   sidebarLayout,
+  toggleStates,
   width,
 } from "./fixtures.ts";
 
@@ -240,6 +243,84 @@ describe("an app echoing sizes back on resize, as a controlled React component d
 
     expect(width(panel("last"))).toBeCloseTo(300, 0);
     expect(width(panel("first"))).toBeCloseTo(300, 0);
+  });
+});
+
+/**
+ * On the first `resize`, writes the size the panel had before the drag back, a task later, as
+ * a controlled component lagging behind does; after that it stays out of the way.
+ */
+function echoOlderOnce(target: HTMLElementTagNameMap["bento-panel"]): void {
+  const older = target.size;
+  target.addEventListener(
+    "resize",
+    () => {
+      setTimeout(() => {
+        target.size = older;
+      });
+    },
+    { once: true },
+  );
+}
+
+describe("an app writing an older size back during the drag", () => {
+  test("keeps the snap past halfway, measured from where the drag started", async () => {
+    await render(sidebarLayout('size="300px" min="200px" collapsible'));
+    const sidebar = panel("sidebar");
+    echoOlderOnce(sidebar);
+
+    await press(separator("handle"));
+    await moveBy(-50);
+    await frames(2);
+    await moveBy(-160);
+    expect(sidebar.collapsed).toBe(true);
+    await release();
+  });
+
+  test("keeps the push-back: dragging back to the start restores every panel", async () => {
+    await render(
+      layout(`
+        <bento-panel id="first" size="300px"></bento-panel>
+        <bento-separator id="first-handle"></bento-separator>
+        <bento-panel id="middle" min="200px"></bento-panel>
+        <bento-separator id="second-handle"></bento-separator>
+        <bento-panel id="last" size="300px" min="100px"></bento-panel>`),
+    );
+    for (const id of ["first", "last"]) echoOlderOnce(panel(id));
+
+    await press(separator("first-handle"));
+    await moveBy(400);
+    await frames(2);
+    await moveBy(-400);
+    await release();
+
+    expect(width(panel("first"))).toBeCloseTo(300, 0);
+    expect(width(panel("last"))).toBeCloseTo(300, 0);
+  });
+});
+
+describe("a group-collapsed panel opened by a drag", () => {
+  test("opens as the user's expand: a cancelable beforetoggle, then to the front", async () => {
+    await render(
+      layout(`
+        <bento-panel id="start" size="300px" min="200px" collapsible></bento-panel>
+        <bento-separator></bento-separator>
+        <bento-panel id="main" min="300px"></bento-panel>
+        <bento-separator id="end-handle"></bento-separator>
+        <bento-panel id="end" size="300px" min="200px" collapsible></bento-panel>`),
+    );
+    group("layout").style.width = "650px";
+    await expect.poll(() => panel("end").collapsed).toBe(true);
+    const recorded = recordEvents(panel("end"), ["beforetoggle", "toggle"]);
+
+    await drag(separator("end-handle"), -250);
+
+    expect(toggleStates(recorded)).toEqual([
+      "beforetoggle closed→open cancelable",
+      "toggle closed→open",
+    ]);
+    expect(panel("end").collapsed).toBe(false);
+    expect(panel("start").collapsed).toBe(true);
   });
 });
 

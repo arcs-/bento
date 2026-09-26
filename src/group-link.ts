@@ -7,10 +7,10 @@ export type Relayout =
   /** Attributes, children, modes or the space changed: it never animates and announces every toggle. */
   | { readonly kind: "resettle" }
   /**
-   * `panel` toggled, by the app or by the user through the panel itself, who announce it or
-   * need not; it animates when `animate`.
+   * The app, or the user, wrote `panel`: whoever wrote it announces its changes, or needs
+   * none. It animates when `animate`, and then `panel` times the animation.
    */
-  | { readonly kind: "toggle"; readonly panel: BentoPanel; readonly animate: boolean }
+  | { readonly kind: "written"; readonly panel: BentoPanel; readonly animate: boolean }
   /** A separator moved; the size changes are the move's own, not the app's. */
   | { readonly kind: "move" };
 

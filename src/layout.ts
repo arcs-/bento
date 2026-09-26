@@ -64,7 +64,6 @@ export function resolveRequest(request: PanelRequest, space: number): ResolvedRe
 export interface PanelBox {
   readonly size: number;
   readonly collapsed: boolean;
-  readonly collapsedByGroup: boolean;
   /** Rendered flexible: it takes the remaining space. */
   readonly fills: boolean;
 }
@@ -100,7 +99,6 @@ interface Fit {
   need: number;
   size: number;
   collapsed: boolean;
-  collapsedByGroup: boolean;
   fills: boolean;
 }
 
@@ -148,7 +146,6 @@ export function layoutGroup(
     need: 0,
     size: 0,
     collapsed: request.collapsed,
-    collapsedByGroup: false,
     fills: false,
   }));
   markFillers(fits);
@@ -171,7 +168,6 @@ export function layoutGroup(
       overflow -= fit.need - collapsedSize;
       fit.need = collapsedSize;
       fit.collapsed = true;
-      fit.collapsedByGroup = true;
     }
   }
   for (const fit of lowestPriorityFirst) {
@@ -189,10 +185,9 @@ export function layoutGroup(
     space - fixedSpace,
   );
 
-  return fits.map(({ size, collapsed, collapsedByGroup, fills }) => ({
+  return fits.map(({ size, collapsed, fills }) => ({
     size,
     collapsed,
-    collapsedByGroup,
     fills,
   }));
 }
@@ -223,7 +218,9 @@ function snapsCollapsed(request: ResolvedRequest, target: number, snap: SnapRule
  * Moves one separator from the `start` layout, like react-resizable-panels: the nearest panel
  * on one side grows, the nearest on the other gives down to its `min` or snaps collapsed, and
  * further panels are pushed down to their `min`. Returns the new requests; a panel that fills
- * keeps filling, except that between two filling panels the earlier one gets a size.
+ * keeps filling, except that between two filling panels the earlier one gets a size. A panel
+ * the move opens gets at least its `min`, even when the others cannot give that much: it is
+ * the user's expand, and the layout makes room by its priority.
  */
 export function moveSeparator(
   requests: readonly ResolvedRequest[],
@@ -272,9 +269,7 @@ export function moveSeparator(
     given += gives;
     if (given >= wanted) break;
   }
-  if (opens && given < grower.min - grower.collapsedSize) return [...requests];
-
-  sizes[growing] = Math.min(growerBox.size + given, grower.max);
+  sizes[growing] = clamp(growerBox.size + given, opens ? grower.min : 0, grower.max);
   if (opens) next[growing] = { ...grower, collapsed: false };
 
   const earlierFills = start[Math.min(growing, nearestShrinking)]?.fills ?? false;
@@ -286,6 +281,17 @@ export function moveSeparator(
     const keepsSize = !box || request.collapsed || (box.fills && index !== sized);
     return keepsSize || size === box.size ? request : { ...request, size };
   });
+}
+
+/** Panels whose content a change hides: collapsed to 0 now, and not before. */
+const hidesContent = (box: PanelBox | undefined) => Boolean(box?.collapsed && box.size === 0);
+
+export function hidingPanels<Panel>(before: Snapshot<Panel>, next: Snapshot<Panel>): Panel[] {
+  return next.panels.filter(
+    (panel, index) =>
+      hidesContent(next.layout[index]) &&
+      !hidesContent(before.layout[before.panels.indexOf(panel)]),
+  );
 }
 
 /** The edge of a panel that stays put between two layouts; frozen content anchors there. */

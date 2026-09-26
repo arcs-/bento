@@ -128,11 +128,16 @@ export interface SeparatorLook {
   readonly dragging: boolean;
 }
 
+const lineWidth = 1;
+const hitAreaWidth = 24;
+const coarseHitAreaWidth = 40;
+
 export function separatorRules({ axis, hidden, dragging }: SeparatorLook): string {
-  const hitArea = (reach: number) => `:host::before { inset-${axis}: -${reach}px }`;
+  const hitArea = (width: number) =>
+    `:host::before { inset-${axis}: -${(width - lineWidth) / 2}px }`;
   return `
-    :host { ${axis}-size: 1px; cursor: ${axis === "inline" ? "col" : "row"}-resize }
-    ${hitArea(11.5)} @media (pointer: coarse) { ${hitArea(19.5)} }
+    :host { ${axis}-size: ${lineWidth}px; cursor: ${axis === "inline" ? "col" : "row"}-resize }
+    ${hitArea(hitAreaWidth)} @media (pointer: coarse) { ${hitArea(coarseHitAreaWidth)} }
     ${dragging ? ":host { background: Highlight }" : ""}
     ${hidden ? ":host { display: none !important }" : ""}`;
 }

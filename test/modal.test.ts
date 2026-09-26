@@ -9,6 +9,7 @@ import {
   frames,
   group,
   isColor,
+  pageAnimations,
   type Color,
   moveBy,
   panel,
@@ -239,10 +240,16 @@ describe("a shown modal panel", () => {
 const isPartlyGreen = ({ red, green: greenness }: Color) => red > 20 && greenness - red > 10;
 const isBackdrop = ({ red, green: greenness }: Color) => Math.abs(greenness - red) < 5;
 
-/** Screenshots are slower than frames; a long transition-duration gives them time to catch the fade. */
+/** How far the sheet's green shows through: 128 opaque, 0 at the grey backdrop. */
+const greenness = (color: Color) => color.green - color.red;
+
+/**
+ * Screenshots are slower than frames and slower still under load; a long transition-duration
+ * gives them time to catch the fade.
+ */
 async function colorsUntil(done: (color: Color) => boolean): Promise<Color[]> {
   const colors: Color[] = [];
-  const deadline = performance.now() + 3000;
+  const deadline = performance.now() + 8000;
   while (performance.now() < deadline) {
     const color = await colorAt(150, 250);
     colors.push(color);
@@ -255,7 +262,7 @@ describe("the sheet's fade", () => {
   test("fades in and out, timed by the panel, also under reduced motion; it closes after", async () => {
     await commands.emulateReducedMotion("reduce");
     await render(`
-      <style>.drawer { background-color: rgb(0, 128, 0); transition-duration: 1s }</style>
+      <style>.drawer { background-color: rgb(0, 128, 0); transition-duration: 2s }</style>
       ${drawerLayout()}`);
     await enterModalMode();
 
@@ -270,6 +277,92 @@ describe("the sheet's fade", () => {
 
     expect(showing.some(isPartlyGreen)).toBe(true);
     expect(hiding.some(isPartlyGreen)).toBe(true);
+    await expect.poll(() => block("nav-content").checkVisibility()).toBe(false);
+  });
+
+  test("showing it again mid-fade-out reverses the fade from where it got to", async () => {
+    await render(`
+      <style>
+        .drawer { background-color: rgb(0, 128, 0); transition: 2s linear }
+      </style>
+      ${drawerLayout()}`);
+    await enterModalMode();
+    await show("nav", "nav-content");
+
+    panel("nav").collapsed = true;
+    const fadingOut = await colorsUntil((color) => greenness(color) < 90);
+    panel("nav").collapsed = false;
+    const fadingBack = await colorsUntil((color) => isColor(color, green));
+
+    const reopenedAt = greenness(fadingOut.at(-1) ?? green);
+    for (const color of fadingBack) expect(greenness(color)).toBeGreaterThan(reopenedAt - 20);
+    expect(fadingBack.some((color) => greenness(color) < 118)).toBe(true);
+    expect(block("nav-content").checkVisibility()).toBe(true);
+  });
+});
+
+describe("a sheet while it fades or moves", () => {
+  const fading = `<style>.drawer { transition-duration: 600ms }</style>${drawerLayout({ aside: modalAside() })}`;
+
+  test("a second Escape or backdrop click during the fade-out asks nothing again", async () => {
+    await render(fading);
+    await enterModalMode();
+    await show("nav", "nav-content");
+    await clickThrough(button("nav-button"));
+    const recorded = recordEvents(panel("nav"), ["beforetoggle", "toggle"]);
+
+    await userEvent.keyboard("{Escape}");
+    await userEvent.keyboard("{Escape}");
+    await clickThrough(button("main-button"));
+    await animationsDone();
+
+    expect(toggleStates(recorded)).toEqual([
+      "beforetoggle open→closed cancelable",
+      "toggle open→closed",
+    ]);
+  });
+
+  test("moving a shown modal panel in the DOM, as a keyed reorder does, keeps it shown", async () => {
+    await render(drawerLayout());
+    await enterModalMode();
+    await show("nav", "nav-content");
+    const recorded = recordEvents(panel("nav"), ["beforetoggle", "toggle"]);
+
+    group("layout").insertBefore(panel("nav"), separator("handle"));
+    await frames(5);
+    await animationsDone();
+
+    expect(panel("nav").collapsed).toBe(false);
+    expect(block("nav-content").checkVisibility()).toBe(true);
+    expect(recorded).toEqual([]);
+  });
+
+  test("a listener collapsing the sheet that is showing, during the handover, leaves none shown", async () => {
+    await render(fading);
+    await enterModalMode();
+    await show("nav", "nav-content");
+    panel("nav").addEventListener("beforetoggle", () => {
+      panel("aside").collapsed = true;
+    });
+
+    panel("aside").collapsed = false;
+    await animationsDone();
+
+    expect(panel("aside").collapsed).toBe(true);
+    expect(block("aside-content").checkVisibility()).toBe(false);
+    expect(block("nav-content").checkVisibility()).toBe(false);
+  });
+
+  test("hiding it right as its fade-in finishes still fades it out", async () => {
+    await render(fading);
+    await enterModalMode();
+    panel("nav").collapsed = false;
+    await Promise.all(pageAnimations().map((animation) => animation.finished));
+
+    panel("nav").collapsed = true;
+    await frames(3);
+
+    expect(block("nav-content").checkVisibility()).toBe(true);
     await expect.poll(() => block("nav-content").checkVisibility()).toBe(false);
   });
 });

@@ -14,6 +14,17 @@ export interface SheetOwner {
   closedWithoutAsking(): void;
 }
 
+/**
+ * The dialog is open in `shown` and `hiding` and closed in `closed`; only a shown sheet takes
+ * close requests. A fading sheet holds its fade, so a newer fade can tell it replaced it.
+ */
+type SheetState =
+  | { readonly kind: "closed" }
+  | { readonly kind: "shown"; readonly fadeIn: Animation | null }
+  | { readonly kind: "hiding"; readonly fadeOut: Animation };
+
+const closed: SheetState = { kind: "closed" };
+
 const shownSheets = new Set<ModalSheet>();
 
 function isOutside(event: MouseEvent, element: Element): boolean {
@@ -26,8 +37,7 @@ function isOutside(event: MouseEvent, element: Element): boolean {
 export class ModalSheet {
   readonly #dialog = document.createElement("dialog");
   readonly #owner: SheetOwner;
-  #shown = false;
-  #fade: Animation | null = null;
+  #state: SheetState = closed;
   #pressedOutside = false;
 
   constructor(root: ShadowRoot, owner: SheetOwner) {
@@ -36,18 +46,14 @@ export class ModalSheet {
     root.append(dialog);
     dialog.addEventListener("cancel", (event) => {
       event.preventDefault();
-      owner.closeRequested();
+      this.#requestClose();
     });
-    dialog.addEventListener("close", () => {
-      if (!this.#shown) return;
-      this.#forget();
-      owner.closedWithoutAsking();
-    });
+    dialog.addEventListener("close", () => this.#closedByBrowser());
     dialog.addEventListener("pointerdown", (event) => {
       this.#pressedOutside = isOutside(event, dialog);
     });
     dialog.addEventListener("click", (event) => {
-      if (this.#pressedOutside && isOutside(event, dialog)) owner.closeRequested();
+      if (this.#pressedOutside && isOutside(event, dialog)) this.#requestClose();
     });
   }
 
@@ -62,51 +68,76 @@ export class ModalSheet {
     this.#dialog.append(clip);
   }
 
+  /** Shows the sheet, fading back from where a fade out got to, then closes any other one. */
   show(): void {
-    if (this.#shown || !this.#dialog.isConnected) return;
+    const state = this.#state;
+    if (state.kind === "shown" || !this.#dialog.isConnected) return;
+    if (!this.#dialog.open) this.#dialog.showModal();
+    this.#state = {
+      kind: "shown",
+      fadeIn: this.#fadeFrom(state.kind === "hiding" ? state.fadeOut : null, 1),
+    };
+    shownSheets.add(this);
     for (const other of shownSheets) {
-      if (other.#owner.host.contains(this.#owner.host)) continue;
+      if (other === this || other.#owner.host.contains(this.#owner.host)) continue;
       other.hide();
       other.#owner.closedWithoutAsking();
     }
-    this.#shown = true;
-    shownSheets.add(this);
-    if (!this.#dialog.open) this.#dialog.showModal();
-    this.#fadeTo(1);
   }
 
-  /** Fades the sheet out, then closes the dialog. */
+  /** Fades the sheet out, then closes the dialog; the page stays inert until then. */
   hide(): void {
-    if (!this.#shown) return;
-    this.#forget();
-    this.#fadeTo(0);
+    const state = this.#state;
+    if (state.kind !== "shown") return;
+    shownSheets.delete(this);
+    const fadeOut = this.#fadeFrom(state.fadeIn, 0);
+    if (!fadeOut) {
+      this.close();
+      return;
+    }
+    this.#state = { kind: "hiding", fadeOut };
+    fadeOut.onfinish = () => {
+      if (this.#state.kind === "hiding" && this.#state.fadeOut === fadeOut) this.close();
+    };
   }
 
   /** Closes at once, as when the panel leaves the page or modal mode. */
   close(): void {
-    this.#forget();
-    this.#fade?.cancel();
+    const state = this.#state;
+    this.#state = closed;
+    shownSheets.delete(this);
+    if (state.kind === "hiding") state.fadeOut.cancel();
     this.#dialog.close();
   }
 
-  #forget(): void {
-    this.#shown = false;
-    shownSheets.delete(this);
+  #requestClose(): void {
+    if (this.#state.kind === "shown") this.#owner.closeRequested();
   }
 
-  /** Fades towards `opacity`, reversing a fade the other way that is still running. */
-  #fadeTo(opacity: 0 | 1): void {
-    const closeWhenHidden = () => {
-      if (!this.#shown) this.#dialog.close();
-    };
-    const running = this.#fade?.playState === "running" ? this.#fade : null;
-    if (running) {
+  /**
+   * A `close` event while the sheet is shown and the dialog closed: the browser closed it
+   * without asking. One that arrives after the sheet opened again is stale.
+   */
+  #closedByBrowser(): void {
+    if (this.#state.kind === "closed" || this.#dialog.open) return;
+    const wasShown = this.#state.kind === "shown";
+    this.#state = closed;
+    shownSheets.delete(this);
+    if (wasShown) this.#owner.closedWithoutAsking();
+  }
+
+  /**
+   * Fades towards `opacity`: reverses `running` when it still runs the other way, else starts
+   * a new fade. Returns null when the panel's duration is 0.
+   */
+  #fadeFrom(running: Animation | null, opacity: 0 | 1): Animation | null {
+    if (running?.playState === "running") {
+      running.onfinish = null;
       running.reverse();
-    } else {
-      const { duration, easing } = toggleTiming(this.#owner.host);
-      if (duration <= 0) return closeWhenHidden();
-      this.#fade = this.#dialog.animate({ opacity: [1 - opacity, opacity] }, { duration, easing });
+      return running;
     }
-    if (this.#fade) this.#fade.onfinish = closeWhenHidden;
+    const { duration, easing } = toggleTiming(this.#owner.host);
+    if (duration <= 0) return null;
+    return this.#dialog.animate({ opacity: [1 - opacity, opacity] }, { duration, easing });
   }
 }

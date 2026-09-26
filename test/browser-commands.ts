@@ -28,6 +28,8 @@ declare module "vitest/browser" {
     /** Releases the pointer if it is pressed, so a failed test leaves no button down. */
     pointerUp: () => Promise<void>;
     emulateReducedMotion: (preference: ReducedMotion) => Promise<void>;
+    /** Chromium only: makes `(pointer: coarse)` match, as on a touch screen, or stops that. */
+    emulateCoarsePointer: (coarse: boolean) => Promise<void>;
     /** Chromium only: the nodes with a role in the accessibility tree of the test frame. */
     accessibleNodes: (role: string) => Promise<AccessibleNode[]>;
     /** A 1x1 PNG, base64, of what the test frame renders at a point in its viewport. */

@@ -10,28 +10,29 @@ import type { PanelRender } from "./render.ts";
 import { StartingState } from "./starting-state.ts";
 import { type BentoCustomProperties, panelRules, panelSheet } from "./styles.ts";
 
-/*
- * The group's access to its panels. These are module functions, not members, so they stay off
- * the element's public surface; the class assigns them in its static block.
- */
+/** The group's access to its panels, kept off the element's public surface. */
+export interface PanelAccess {
+  /** What the panel asks of the layout now, as lengths the group's space resolves. */
+  request(panel: BentoPanel): PanelRequest;
+  isModal(panel: BentoPanel): boolean;
+  /** Collapsed as the app or user asked, apart from a collapse by the group. */
+  askedCollapsed(panel: BentoPanel): boolean;
+  /** Whether the panel starts with a size, which makes it a separator's primary panel. */
+  hasStartingSize(panel: BentoPanel): boolean;
+  /** The internal wrapper of the slotted content; it is what freezes and fades. */
+  content(panel: BentoPanel): Element;
+  render(panel: BentoPanel, render: PanelRender): void;
+  /** A size the user dragged or keyed in. */
+  resizedByUser(panel: BentoPanel, size: number): void;
+  /** A collapse or expand the user asked for and nobody vetoed. */
+  toggledByUser(panel: BentoPanel, collapsed: boolean): void;
+  /** Double-click: the live value is back at the start and follows it again, like a form reset. */
+  resetSize(panel: BentoPanel): void;
+  resetCollapsed(panel: BentoPanel): void;
+}
 
-/** What the panel asks of the layout now, as lengths the group's space resolves. */
-export let panelRequest!: (panel: BentoPanel) => PanelRequest;
-export let isModal!: (panel: BentoPanel) => boolean;
-/** Collapsed as the app or user asked, apart from a collapse by the group. */
-export let askedCollapsed!: (panel: BentoPanel) => boolean;
-/** Whether the panel starts with a size, which makes it a separator's primary panel. */
-export let hasStartingSize!: (panel: BentoPanel) => boolean;
-/** The internal wrapper of the slotted content; it is what freezes and fades. */
-export let panelContent!: (panel: BentoPanel) => Element;
-export let renderPanel!: (panel: BentoPanel, render: PanelRender) => void;
-/** A size the user dragged or keyed in. */
-export let resizedByUser!: (panel: BentoPanel, size: number) => void;
-/** A collapse or expand the user asked for and nobody vetoed. */
-export let toggledByUser!: (panel: BentoPanel, collapsed: boolean) => void;
-/** Double-click: the live value is back at the start and follows it again, like a form reset. */
-export let resetSize!: (panel: BentoPanel) => void;
-export let resetCollapsed!: (panel: BentoPanel) => void;
+/** Created by the class's static block, which alone can reach the private members. */
+export let panelAccess!: PanelAccess;
 
 const properties = [
   "size",
@@ -45,8 +46,8 @@ const properties = [
   "modal",
 ];
 
-/** A length as CSS, or null when the text is none. */
-function valid(text: string | null): string | null {
+/** A valid length as CSS, or null for any other text. */
+function lengthAsCss(text: string | null): string | null {
   const length = parseLength(text);
   return length ? formatLength(length) : null;
 }
@@ -110,17 +111,26 @@ export class BentoPanel extends HTMLElement implements BentoPanelElement {
     this.#modalSheet.close();
   }
 
+  /** An attribute change is the app's write: it relayouts without animation or events. */
   attributeChangedCallback(name: string, _oldValue: string | null, value: string | null): void {
-    if (name === "size" && this.#start.attributeChanged("size", value ?? "")) {
-      this.#size = parseLength(value);
+    switch (name) {
+      case "aria-label":
+      case "aria-labelledby":
+        this.#nameSheet();
+        return;
+      case "modal":
+        if (this.isConnected) this.#watchModal();
+        break;
+      case "size":
+        if (this.#start.attributeChanged("size", value ?? "")) this.#size = parseLength(value);
+        break;
+      case "collapsed":
+        if (this.#start.attributeChanged("collapsed", value !== null)) {
+          this.#changeCollapsed({ type: "setDefaultCollapsed", collapsed: value !== null });
+        }
+        break;
     }
-    if (name === "collapsed" && this.#start.attributeChanged("collapsed", value !== null)) {
-      this.#changeCollapsed({ type: "setDefaultCollapsed", collapsed: value !== null });
-      groupOf(this)?.invalidate({ kind: "toggle", panel: this, animate: false });
-    }
-    if (name.startsWith("aria-")) this.#nameSheet();
-    if (name === "modal" && this.isConnected) this.#watchModal();
-    else groupOf(this)?.invalidate({ kind: "resettle" });
+    this.#written(false);
   }
 
   get size(): string {
@@ -134,19 +144,23 @@ export class BentoPanel extends HTMLElement implements BentoPanelElement {
     if ((!length && text !== "") || (length ? formatLength(length) : "") === this.size) return;
     this.#start.propertyWritten("size", text);
     this.#size = length;
-    groupOf(this)?.invalidate({ kind: "resettle" });
+    this.#written(false);
   }
 
   get collapsed(): boolean {
     return this.#shownCollapsed;
   }
 
+  /**
+   * Writing what shows changes nothing, unless the group collapsed the panel: `true` then makes
+   * the collapse the app's, so the panel stays collapsed when space returns.
+   */
   set collapsed(value: boolean | null | undefined) {
     const collapsed = Boolean(value);
-    if (collapsed === this.collapsed) return;
+    if (collapsed === this.collapsed && collapsed === isCollapsed(this.#mode)) return;
     this.#start.propertyWritten("collapsed", collapsed);
     this.#changeCollapsed({ type: "setCollapsed", collapsed });
-    groupOf(this)?.invalidate({ kind: "toggle", panel: this, animate: appToggleAnimates() });
+    this.#written(appToggleAnimates());
   }
 
   get defaultSize(): string {
@@ -206,25 +220,32 @@ export class BentoPanel extends HTMLElement implements BentoPanelElement {
   }
 
   static {
-    panelRequest = (panel) => panel.#request();
-    isModal = (panel) => panel.#mode.kind === "modal";
-    askedCollapsed = (panel) => isCollapsed(panel.#mode);
-    hasStartingSize = (panel) => panel.#start.size !== "";
-    panelContent = (panel) => panel.#content;
-    renderPanel = (panel, render) => panel.#render(render);
-    resizedByUser = (panel, size) => {
-      panel.#start.changedByUser("size");
-      panel.#size = pixelLength(size);
+    panelAccess = {
+      request: (panel) => panel.#request(),
+      isModal: (panel) => panel.#mode.kind === "modal",
+      askedCollapsed: (panel) => isCollapsed(panel.#mode),
+      hasStartingSize: (panel) => panel.#start.size !== "",
+      content: (panel) => panel.#content,
+      render: (panel, render) => panel.#render(render),
+      resizedByUser: (panel, size) => {
+        panel.#start.changedByUser("size");
+        panel.#size = pixelLength(size);
+      },
+      toggledByUser: (panel, collapsed) => {
+        panel.#start.changedByUser("collapsed");
+        panel.#changeCollapsed({ type: "setCollapsed", collapsed });
+      },
+      resetSize: (panel) => {
+        panel.#start.reset("size");
+        panel.#size = parseLength(panel.#start.size);
+      },
+      resetCollapsed: (panel) => panel.#start.reset("collapsed"),
     };
-    toggledByUser = (panel, collapsed) => {
-      panel.#start.changedByUser("collapsed");
-      panel.#changeCollapsed({ type: "setCollapsed", collapsed });
-    };
-    resetSize = (panel) => {
-      panel.#start.reset("size");
-      panel.#size = parseLength(panel.#start.size);
-    };
-    resetCollapsed = (panel) => panel.#start.reset("collapsed");
+  }
+
+  /** The app wrote this panel: its group relayouts, and announces none of this panel's changes. */
+  #written(animate: boolean): void {
+    groupOf(this)?.invalidate({ kind: "written", panel: this, animate });
   }
 
   #request(): PanelRequest {
@@ -285,10 +306,10 @@ export class BentoPanel extends HTMLElement implements BentoPanelElement {
 
   #customProperties(): BentoCustomProperties {
     return {
-      size: valid(this.#start.size),
-      min: valid(this.getAttribute("min")) ?? "0px",
-      max: valid(this.getAttribute("max")),
-      collapsedSize: valid(this.getAttribute("collapsed-size")) ?? "0px",
+      size: lengthAsCss(this.#start.size),
+      min: lengthAsCss(this.getAttribute("min")) ?? "0px",
+      max: lengthAsCss(this.getAttribute("max")),
+      collapsedSize: lengthAsCss(this.getAttribute("collapsed-size")) ?? "0px",
     };
   }
 
@@ -316,6 +337,6 @@ export class BentoPanel extends HTMLElement implements BentoPanelElement {
     if (byUser) this.#start.changedByUser("collapsed");
     this.#changeMode({ type: "setCollapsed", collapsed: true });
     dispatchToggle(this, true);
-    groupOf(this)?.invalidate({ kind: "toggle", panel: this, animate: false });
+    this.#written(false);
   }
 }

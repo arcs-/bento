@@ -1,4 +1,5 @@
 import type { SerializedLocator } from "vitest/browser";
+import type { CDPSession } from "playwright";
 import type { BrowserCommand, BrowserCommandContext } from "vitest/node";
 import type { AccessibleNode, ReducedMotion } from "./browser-commands.ts";
 
@@ -64,6 +65,25 @@ const pointerMove: BrowserCommand<[number, number, number?], void> = async (
 const pointerUp: BrowserCommand<[], void> = async (context) => {
   if (!pointerPositions.delete(context.sessionId)) return;
   await context.page.mouse.up();
+};
+
+const touchEmulations = new Map<string, CDPSession>();
+
+/**
+ * Chromium only: emulates a touch screen, so `(pointer: coarse)` matches, while the mouse still
+ * drives input. The emulation lasts as long as its session, so it is kept until turned off.
+ */
+const emulateCoarsePointer: BrowserCommand<[boolean], void> = async (context, coarse) => {
+  const running = touchEmulations.get(context.sessionId);
+  if (!coarse) {
+    touchEmulations.delete(context.sessionId);
+    await running?.send("Emulation.setTouchEmulationEnabled", { enabled: false });
+    await running?.detach();
+    return;
+  }
+  const session = running ?? (await context.page.context().newCDPSession(context.page));
+  touchEmulations.set(context.sessionId, session);
+  await session.send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 1 });
 };
 
 const emulateReducedMotion: BrowserCommand<[ReducedMotion], void> = async (context, preference) => {
@@ -145,6 +165,7 @@ export const browserCommands = {
   pointerUp,
   doubleClick,
   emulateReducedMotion,
+  emulateCoarsePointer,
   accessibleNodes,
   screenshotPixel,
 };

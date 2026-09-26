@@ -53,10 +53,6 @@ export class Motion<Panel extends Element> {
     this.#settled = settled;
   }
 
-  get running(): boolean {
-    return this.#run !== null;
-  }
-
   frozen(panel: Panel): ContentState | null {
     return this.#run?.frozen.get(panel) ?? null;
   }
@@ -91,10 +87,9 @@ export class Motion<Panel extends Element> {
       : changes.map(({ panel, from, to }) => panel.animate([flexAt(from), flexAt(to)], timing));
     const run: Run<Panel> = { animations, changes: reduced ? [] : changes, frozen };
     this.#run = run;
-    /** Animations are in order of their end, so the last one ends the run. */
-    const last = animations.at(-1);
-    if (last) {
-      last.onfinish = () => {
+    const lastToEnd = animations.at(-1);
+    if (lastToEnd) {
+      lastToEnd.onfinish = () => {
         if (this.#run !== run) return;
         this.#run = null;
         this.#settled();
@@ -132,7 +127,7 @@ export class Motion<Panel extends Element> {
   /**
    * Reduced motion: the size changes at once and every toggled panel's content fades in its
    * own direction. Collapsing content fades out first, while the sizes hold; expanding content
-   * fades in after the change.
+   * fades in after the change. Returns the animations in the order they end.
    */
   #crossFade(
     before: Snapshot<Panel>,

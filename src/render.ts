@@ -3,6 +3,7 @@
  * the requests, never from the DOM.
  */
 import type { PanelBox, ResolvedRequest, Snapshot } from "./layout.ts";
+import { formatPixels } from "./length.ts";
 import type { Axis, ContentState, PanelLook } from "./styles.ts";
 
 export interface PanelRender {
@@ -20,12 +21,11 @@ export interface SeparatorRender {
   readonly max: number;
 }
 
-const px = (size: number) => `${size}px`;
-
-const maxOf = (request: ResolvedRequest) => (Number.isFinite(request.max) ? px(request.max) : null);
+const maxOf = (request: ResolvedRequest) =>
+  Number.isFinite(request.max) ? formatPixels(request.max) : null;
 
 function contentOf(request: ResolvedRequest, box: PanelBox): ContentState {
-  if (!box.collapsed) return { kind: "shown", min: px(request.min) };
+  if (!box.collapsed) return { kind: "shown", min: formatPixels(request.min) };
   return { kind: box.size === 0 ? "hidden" : "rail" };
 }
 
@@ -41,8 +41,8 @@ export function measuredRender(
     look: {
       kind: "inline",
       axis,
-      basis: box.fills ? null : px(box.size),
-      fillMin: px(Math.min(request.min, box.size)),
+      basis: box.fills ? null : formatPixels(box.size),
+      fillMin: formatPixels(Math.min(request.min, box.size)),
       fillMax: maxOf(request),
       content: frozen ?? contentOf(request, box),
     },
@@ -56,7 +56,7 @@ export function unmeasuredRender(
   request: ResolvedRequest,
   box: PanelBox,
 ): PanelRender {
-  const basis = box.collapsed ? px(box.size) : size || null;
+  const basis = box.collapsed ? formatPixels(box.size) : size || null;
   return {
     collapsed: box.collapsed,
     look: {
