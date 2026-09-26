@@ -18,6 +18,7 @@ Before any task, read these files in full. They are the source of truth; code fo
   - @decisions/0011-aria-through-element-internals.md
   - @decisions/0012-no-document-stylesheet.md
   - @decisions/0013-modal-styled-through-the-panel.md
+  - @decisions/0014-animate-with-web-animations.md
 
 ## Working
 - Be minimal and precise, in answers and in code.

@@ -5,7 +5,7 @@ A modal panel shows while not collapsed, so there is no `open`. Entering modal m
 ## Why
 One state instead of two, and no invalid combination like an open collapsed panel. A modal panel is closed on arrival, like Material 3's modal navigation drawer, while the same panel beside the content was expanded. The internal `<dialog>` supplies Escape and the back gesture through its cancelable `cancel`. `popover` could not veto at all: its `beforetoggle` is not cancelable when closing.
 
-Tap outside is a click on the backdrop, which is the dialog itself ([0013](0013-modal-styled-through-the-panel.md)). `closedby="any"` would do the same but is not Baseline (Safari lacks it).
+Tap outside is a press and click both outside the sheet, which is the dialog itself ([0013](0013-modal-styled-through-the-panel.md)); a drag that starts inside does not close it. `closedby="any"` would do the same but is not Baseline (Safari lacks it).
 
 ## Sources
 - [MDN: dialog, cancel and close events](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/dialog)

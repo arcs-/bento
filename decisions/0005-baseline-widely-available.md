@@ -6,15 +6,15 @@ A feature counts once every engine has shipped it for 30 months. MDN and caniuse
 
 | Feature | Used for | Widely available |
 |---|---|---|
-| custom elements, shadow DOM, `::part()` | the elements, the modal backdrop | yes, for years |
-| transitions on `flex-basis` | collapse and expand | yes, for years |
+| custom elements, shadow DOM | the elements | yes, for years |
+| Web Animations, `Element.animate()` | collapse and expand ([0014](0014-animate-with-web-animations.md)) | yes, for years |
 | `ElementInternals` ARIA | separator role and values | yes, since October 2023 |
 | constructed stylesheets, `adoptedStyleSheets` | all styles, CSP-safe | yes, since September 2025 |
-| `<dialog>` modal | modal panels | yes, since September 2024 |
+| `<dialog>` modal, its inert background | modal panels | yes, since September 2024 |
+| `::backdrop` inheriting from its element | `--bento-backdrop` | yes, since September 2026 |
 | `overflow: clip` | the clipping wrapper | yes, since March 2025 |
 | `@container` size queries | content adapts to its panel | yes, since August 2025 |
-| `inert` | background behind a modal panel | yes, since October 2025 |
-| `:state()` custom states | live state for app CSS, never for our own | from November 2026 |
+| `:state()` custom states | live state for app CSS, never for our own; feature-detected | from November 2026 |
 
 ## What Bento does not use, and when that could change
 
