@@ -1,3 +1,9 @@
 {
-    "folder-color.pathColors": []
+    "folder-color.pathColors": [],
+    "editor.defaultFormatter": "oxc.oxc-vscode",
+    "editor.formatOnSave": true,
+    "oxc.fmt.configPath": ".oxfmtrc.json",
+    "[markdown]": {
+        "editor.formatOnSave": false
+    }
 }
