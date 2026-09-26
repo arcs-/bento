@@ -1,9 +1,11 @@
 import { describe, expect, test } from "vitest";
 import { commands, server, userEvent } from "vitest/browser";
 import {
+  block,
   doubleClick,
   drag,
   frames,
+  group,
   height,
   layout,
   moveBy,
@@ -13,6 +15,7 @@ import {
   pressKeys,
   release,
   render,
+  renderBuiltSidebarLayout,
   separator,
   settleAt,
   sidebarLayout,
@@ -69,6 +72,15 @@ describe("keyboard", () => {
     expect(sidebar.collapsed).toBe(false);
   });
 
+  test("Home stops at exactly min when a percentage resolves with float noise", async () => {
+    await render(sidebarLayout('size="26%" min="130px" collapsible collapsed-size="44px"'));
+
+    await pressKeys(separator("handle"), "{Home}");
+
+    expect(panel("sidebar").collapsed).toBe(false);
+    expect(width(panel("sidebar"))).toBeCloseTo(130, 0);
+  });
+
   test("arrow keys snap collapsed as soon as they go below min", async () => {
     await render(sidebarLayout('size="205px" min="200px" collapsible'));
     const sidebar = panel("sidebar");
@@ -118,6 +130,78 @@ describe("keyboard", () => {
 
     expect(panel("first").collapsed).toBe(true);
     expect(panel("second").collapsed).toBe(false);
+  });
+});
+
+describe("keyboard on a panel built from properties", () => {
+  test("its starting size makes it primary: arrow keys, Home, End and Enter act on it", async () => {
+    await renderBuiltSidebarLayout({
+      size: "300px",
+      min: "200px",
+      max: "500px",
+      collapsible: true,
+    });
+    const sidebar = panel("sidebar");
+    const handle = separator("handle");
+
+    await pressKeys(handle, "{ArrowRight}");
+    expect(width(sidebar)).toBeCloseTo(310, 0);
+    await pressKeys(handle, "{End}");
+    expect(width(sidebar)).toBeCloseTo(500, 0);
+    await pressKeys(handle, "{Home}");
+    expect(width(sidebar)).toBeCloseTo(200, 0);
+    await pressKeys(handle, "{Enter}");
+    expect(sidebar.collapsed).toBe(true);
+  });
+
+  test("double-click resets it to the size and collapsed state it started with", async () => {
+    await renderBuiltSidebarLayout({ size: "300px", collapsible: true, collapsed: true });
+    const sidebar = panel("sidebar");
+    await pressKeys(separator("handle"), "{Enter}");
+    await settleAt(() => width(sidebar), 300);
+    await drag(separator("handle"), 100);
+
+    await doubleClick(separator("handle"));
+
+    expect(sidebar.collapsed).toBe(true);
+    expect(sidebar.size).toBe("300px");
+    await settleAt(() => width(sidebar), 0);
+  });
+});
+
+describe("keys left to the browser", () => {
+  test("arrow keys with Alt, Ctrl or Meta and a repeated Enter do nothing", async () => {
+    await render(sidebarLayout('size="300px" collapsible'));
+    const sidebar = panel("sidebar");
+    const handle = separator("handle");
+
+    for (const modifier of ["Alt", "Control", "Meta"]) {
+      await pressKeys(handle, `{${modifier}>}{ArrowRight}{/${modifier}}`);
+    }
+    expect(width(sidebar)).toBeCloseTo(300, 0);
+
+    await pressKeys(handle, "{Enter>3}{/Enter}");
+    expect(sidebar.collapsed).toBe(true);
+  });
+});
+
+describe("focus", () => {
+  test("focus in content that collapses away moves to its separator", async () => {
+    await render(sidebarLayout('size="300px" min="200px" collapsible'));
+    const button = document.createElement("button");
+    block("sidebar-content").append(button);
+
+    button.focus();
+    panel("sidebar").collapsed = true;
+    await frames();
+    expect(document.activeElement).toBe(separator("handle"));
+
+    panel("sidebar").collapsed = false;
+    await frames();
+    button.focus();
+    group("layout").style.width = "150px";
+    await expect.poll(() => panel("sidebar").collapsed).toBe(true);
+    expect(document.activeElement).toBe(separator("handle"));
   });
 });
 
@@ -205,6 +289,20 @@ describe("accessibility", () => {
 });
 
 describe("hit area", () => {
+  test("is 24px wide, centered on the line", async () => {
+    await render(sidebarLayout('size="300px"'));
+
+    await press(separator("handle"), 11);
+    await moveBy(50);
+    await release();
+    expect(width(panel("sidebar"))).toBeCloseTo(350, 0);
+
+    await press(separator("handle"), -13);
+    await moveBy(50);
+    await release();
+    expect(width(panel("sidebar"))).toBeCloseTo(350, 0);
+  });
+
   test("a positioned element in the next panel does not cover it", async () => {
     await render(
       layout(`

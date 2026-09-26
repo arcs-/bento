@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { commands, page, server, userEvent } from "vitest/browser";
 import {
+  animationsDone,
   block,
   byId,
   clickThrough,
@@ -8,6 +9,7 @@ import {
   frames,
   group,
   isColor,
+  type Color,
   moveBy,
   panel,
   press,
@@ -62,10 +64,11 @@ async function leaveModalMode(): Promise<void> {
   await expect.poll(() => panel("nav").collapsed).toBe(false);
 }
 
+/** Shows a modal panel and waits for its fade in, and any other sheet's fade out, to finish. */
 async function show(panelId: string, contentId: string): Promise<void> {
   panel(panelId).collapsed = false;
   await expect.poll(() => block(contentId).checkVisibility()).toBe(true);
-  await frames(10);
+  await animationsDone();
 }
 
 const button = (id: string) => byId("button", id);
@@ -232,7 +235,59 @@ describe("a shown modal panel", () => {
   });
 });
 
+/** Between the green sheet and the grey backdrop, by more than rounding noise. */
+const isPartlyGreen = ({ red, green: greenness }: Color) => red > 20 && greenness - red > 10;
+const isBackdrop = ({ red, green: greenness }: Color) => Math.abs(greenness - red) < 5;
+
+/** Screenshots are slower than frames; a long transition-duration gives them time to catch the fade. */
+async function colorsUntil(done: (color: Color) => boolean): Promise<Color[]> {
+  const colors: Color[] = [];
+  const deadline = performance.now() + 3000;
+  while (performance.now() < deadline) {
+    const color = await colorAt(150, 250);
+    colors.push(color);
+    if (done(color)) return colors;
+  }
+  throw new Error("the fade never finished");
+}
+
+describe("the sheet's fade", () => {
+  test("fades in and out, timed by the panel, also under reduced motion; it closes after", async () => {
+    await commands.emulateReducedMotion("reduce");
+    await render(`
+      <style>.drawer { background-color: rgb(0, 128, 0); transition-duration: 1s }</style>
+      ${drawerLayout()}`);
+    await enterModalMode();
+
+    panel("nav").collapsed = false;
+    const showing = await colorsUntil((color) => isColor(color, green));
+    await animationsDone();
+    await clickThrough(button("nav-button"));
+    await userEvent.keyboard("{Escape}");
+    expect(panel("nav").collapsed).toBe(true);
+    expect(block("nav-content").checkVisibility()).toBe(true);
+    const hiding = await colorsUntil(isBackdrop);
+
+    expect(showing.some(isPartlyGreen)).toBe(true);
+    expect(hiding.some(isPartlyGreen)).toBe(true);
+    await expect.poll(() => block("nav-content").checkVisibility()).toBe(false);
+  });
+});
+
 describe("styling a modal panel", () => {
+  test("in right-to-left, the sheet of the first panel is on the right, its start side", async () => {
+    await render(`
+      <style>.drawer { background-color: rgb(0, 128, 0) }</style>
+      <div dir="rtl">${drawerLayout()}</div>`);
+    await enterModalMode();
+
+    await show("nav", "nav-content");
+
+    const bottom = narrowViewport.height - 5;
+    expect(isColor(await colorAt(narrowViewport.width - 150, bottom), green)).toBe(true);
+    expect(isColor(await colorAt(150, bottom), green)).toBe(false);
+  });
+
   test("by default the sheet is full height, on the panel's side, as wide as its size", async () => {
     await render(`
       <style>.drawer { background-color: rgb(0, 128, 0) }</style>

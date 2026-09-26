@@ -1,21 +1,34 @@
 import { describe, expect, test } from "vitest";
+import { commands } from "vitest/browser";
 import {
   drag,
   group,
   groupSize,
+  height,
+  isBetween,
   layout,
   moveBy,
   panel,
   pixels,
   press,
+  pressKeys,
   release,
   render,
   sampleFrames,
+  sampleUntilAt,
   separator,
   settleAt,
   sidebarLayout,
   width,
 } from "./fixtures.ts";
+
+/** Writes a panel's size back on every `resize`, as a controlled React component does. */
+function echo(target: HTMLElementTagNameMap["bento-panel"]): void {
+  target.addEventListener("resize", () => {
+    const { size } = target;
+    target.size = size;
+  });
+}
 
 describe("drag", () => {
   test("resizes the primary panel and writes px to its live size", async () => {
@@ -26,6 +39,14 @@ describe("drag", () => {
     expect(width(panel("sidebar"))).toBeCloseTo(350, 0);
     expect(pixels(panel("sidebar").size)).toBeCloseTo(350, 0);
     expect(panel("main").size).toBe("");
+  });
+
+  test("writes live sizes rounded to 0.01px, free of float noise", async () => {
+    await render(sidebarLayout('size="26.3%"'));
+
+    await drag(separator("handle"), 7);
+
+    expect(panel("sidebar").size).toMatch(/^\d+(\.\d{1,2})?px$/);
   });
 
   test("follows the pointer frame by frame, never animated", async () => {
@@ -59,16 +80,21 @@ describe("drag", () => {
   test("the later neighbour with a size is primary", async () => {
     await render(
       layout(`
-        <bento-panel id="main"></bento-panel>
+        <bento-panel id="main" min="100px" max="800px"></bento-panel>
         <bento-separator id="handle"></bento-separator>
-        <bento-panel id="aside" size="300px"></bento-panel>`),
+        <bento-panel id="aside" size="300px" min="200px" max="500px"></bento-panel>`),
     );
+    const aside = panel("aside");
 
     await drag(separator("handle"), -100);
-
-    expect(width(panel("aside"))).toBeCloseTo(400, 0);
-    expect(pixels(panel("aside").size)).toBeCloseTo(400, 0);
+    expect(width(aside)).toBeCloseTo(400, 0);
+    expect(pixels(aside.size)).toBeCloseTo(400, 0);
     expect(panel("main").size).toBe("");
+
+    await pressKeys(separator("handle"), "{Home}");
+    expect(width(aside)).toBeCloseTo(200, 0);
+    await pressKeys(separator("handle"), "{End}");
+    expect(width(aside)).toBeCloseTo(500, 0);
   });
 
   test("between two flexible panels it gives the earlier one a size", async () => {
@@ -175,6 +201,60 @@ describe("collapse by drag", () => {
 
     expect(sidebar.collapsed).toBe(true);
     await settleAt(() => width(sidebar), 48);
+  });
+});
+
+describe("an app echoing sizes back on resize, as a controlled React component does", () => {
+  test("keeps the hold at min and the snap past halfway", async () => {
+    await render(sidebarLayout('size="300px" min="200px" collapsible'));
+    const sidebar = panel("sidebar");
+    echo(sidebar);
+
+    await press(separator("handle"));
+    await moveBy(-150);
+    expect(width(sidebar)).toBeCloseTo(200, 0);
+    await moveBy(-60);
+    expect(sidebar.collapsed).toBe(true);
+    await moveBy(30);
+    expect(sidebar.collapsed).toBe(false);
+    await settleAt(() => width(sidebar), 200);
+    await release();
+  });
+
+  test("keeps the push-back: dragging back restores a pushed panel", async () => {
+    await render(
+      layout(`
+        <bento-panel id="first" size="300px"></bento-panel>
+        <bento-separator id="first-handle"></bento-separator>
+        <bento-panel id="middle" min="200px"></bento-panel>
+        <bento-separator id="second-handle"></bento-separator>
+        <bento-panel id="last" size="300px" min="100px"></bento-panel>`),
+    );
+    for (const id of ["first", "middle", "last"]) echo(panel(id));
+
+    await press(separator("first-handle"));
+    await moveBy(400);
+    expect(width(panel("last"))).toBeCloseTo(100, 0);
+    await moveBy(-400);
+    await release();
+
+    expect(width(panel("last"))).toBeCloseTo(300, 0);
+    expect(width(panel("first"))).toBeCloseTo(300, 0);
+  });
+});
+
+describe("a vertical group", () => {
+  test("snaps and animates on the block axis", async () => {
+    await render(sidebarLayout('size="100px" min="60px" collapsible', 'orientation="vertical"'));
+    const sidebar = panel("sidebar");
+
+    await press(separator("handle"));
+    await commands.pointerMove(0, -80, 5);
+    const snapping = await sampleUntilAt(() => height(sidebar), 0);
+    await release();
+
+    expect(sidebar.collapsed).toBe(true);
+    expect(snapping.some((sample) => isBetween(sample, 60, 0))).toBe(true);
   });
 });
 

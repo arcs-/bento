@@ -6,7 +6,7 @@ import { type Length, toPixels } from "./length.ts";
  */
 
 /** What a panel asks of the layout, as lengths; a missing or invalid one is null. */
-export interface PanelSettings {
+export interface PanelRequest {
   readonly size: Length | null;
   readonly min: Length | null;
   readonly max: Length | null;
@@ -15,8 +15,29 @@ export interface PanelSettings {
   readonly collapsed: boolean;
 }
 
-/** What the app and user asked of one panel. A collapse by the group is an output, never an input. */
-export interface PanelIntent {
+const sameLength = (first: Length | null, second: Length | null) =>
+  first === second ||
+  (first !== null &&
+    second !== null &&
+    first.amount === second.amount &&
+    first.unit === second.unit);
+
+export function sameRequest(first: PanelRequest, second: PanelRequest): boolean {
+  return (
+    sameLength(first.size, second.size) &&
+    sameLength(first.min, second.min) &&
+    sameLength(first.max, second.max) &&
+    sameLength(first.collapsedSize, second.collapsedSize) &&
+    first.collapsible === second.collapsible &&
+    first.collapsed === second.collapsed
+  );
+}
+
+/**
+ * A request resolved to px against the group's space. A collapse by the group is an output of
+ * the layout, never part of a request.
+ */
+export interface ResolvedRequest {
   /** The live size; null fills the remaining space. */
   readonly size: number | null;
   readonly min: number;
@@ -26,17 +47,17 @@ export interface PanelIntent {
   readonly collapsed: boolean;
 }
 
-/** Resolves the settings against the group's space. A rail's panel is never smaller than its rail. */
-export function resolveIntent(settings: PanelSettings, space: number): PanelIntent {
+/** Resolves a request against the group's space. A rail's panel is never smaller than its rail. */
+export function resolveRequest(request: PanelRequest, space: number): ResolvedRequest {
   const pixels = (length: Length | null) => (length ? toPixels(length, space) : null);
-  const collapsedSize = pixels(settings.collapsedSize) ?? 0;
+  const collapsedSize = pixels(request.collapsedSize) ?? 0;
   return {
-    size: pixels(settings.size),
-    min: Math.max(pixels(settings.min) ?? 0, collapsedSize),
-    max: pixels(settings.max) ?? Infinity,
+    size: pixels(request.size),
+    min: Math.max(pixels(request.min) ?? 0, collapsedSize),
+    max: pixels(request.max) ?? Infinity,
     collapsedSize,
-    collapsible: settings.collapsible,
-    collapsed: settings.collapsed,
+    collapsible: request.collapsible,
+    collapsed: request.collapsed,
   };
 }
 
@@ -50,46 +71,65 @@ export interface PanelBox {
 
 export type Layout = readonly PanelBox[];
 
+/** A group's layout at one moment: its panels in DOM order, what they asked, what they got. */
+export interface Snapshot<Panel> {
+  readonly panels: readonly Panel[];
+  readonly requests: readonly PanelRequest[];
+  readonly resolved: readonly ResolvedRequest[];
+  readonly layout: Layout;
+  /** Null before the first measurement; the layout then comes from the attributes alone. */
+  readonly space: number | null;
+}
+
+/** The same panels in the same space: a change from one to the other can move or animate. */
+export function sameShape<Panel>(first: Snapshot<Panel>, second: Snapshot<Panel>): boolean {
+  return (
+    first.space === second.space &&
+    first.panels.length === second.panels.length &&
+    first.panels.every((panel, index) => panel === second.panels[index])
+  );
+}
+
 const clamp = (value: number, min: number, max: number) => Math.max(min, Math.min(value, max));
 
 const sum = (values: readonly number[]) => values.reduce((total, value) => total + value, 0);
 
-/** Expanded panels without a size fill; with none of them, the last expanded panel does. */
-function fillingPanels(intents: readonly PanelIntent[], collapsed: readonly boolean[]): boolean[] {
-  const fills = intents.map((intent, index) => !collapsed[index] && intent.size === null);
-  const lastExpanded = collapsed.lastIndexOf(false);
-  if (!fills.includes(true) && lastExpanded >= 0) fills[lastExpanded] = true;
-  return fills;
+/** One panel while the group fits it: what it needs, then the size it gets. */
+interface Fit {
+  readonly request: ResolvedRequest;
+  need: number;
+  size: number;
+  collapsed: boolean;
+  collapsedByGroup: boolean;
+  fills: boolean;
 }
 
-/** Shares `space` equally among the filling panels, each held within its floor and ceiling, as flex does. */
-function shareAmong(
-  fillers: readonly number[],
-  space: number,
-  floors: readonly number[],
-  ceilings: readonly number[],
-): Map<number, number> {
-  const shares = new Map<number, number>();
+/** Expanded panels without a size fill; with none of them, the last expanded panel does. */
+function markFillers(fits: readonly Fit[]): void {
+  for (const fit of fits) fit.fills = !fit.collapsed && fit.request.size === null;
+  const lastExpanded = fits.findLast((fit) => !fit.collapsed);
+  if (lastExpanded && !fits.some((fit) => fit.fills)) lastExpanded.fills = true;
+}
+
+/** Shares `space` equally among the filling panels, each held within its need and `max`, as flex does. */
+function shareAmong(fillers: readonly Fit[], space: number): void {
   let open = fillers;
   let remaining = space;
   while (open.length > 0) {
     const share = remaining / open.length;
-    const belowFloor = open.filter((index) => (floors[index] ?? 0) > share);
-    const aboveCeiling = open.filter((index) => (ceilings[index] ?? Infinity) < share);
-    const held = belowFloor.length > 0 ? belowFloor : aboveCeiling;
+    const belowNeed = open.filter((fit) => fit.need > share);
+    const aboveMax = open.filter((fit) => fit.request.max < share);
+    const held = belowNeed.length > 0 ? belowNeed : aboveMax;
     if (held.length === 0) {
-      for (const index of open) shares.set(index, share);
-      break;
+      for (const fit of open) fit.size = share;
+      return;
     }
-    const bounds = belowFloor.length > 0 ? floors : ceilings;
-    for (const index of held) {
-      const size = bounds[index] ?? 0;
-      shares.set(index, size);
-      remaining -= size;
+    for (const fit of held) {
+      fit.size = belowNeed.length > 0 ? fit.need : fit.request.max;
+      remaining -= fit.size;
     }
-    open = open.filter((index) => !held.includes(index));
+    open = open.filter((fit) => !held.includes(fit));
   }
-  return shares;
 }
 
 /**
@@ -100,55 +140,60 @@ function shareAmong(
  */
 export function layoutGroup(
   space: number,
-  intents: readonly PanelIntent[],
+  requests: readonly ResolvedRequest[],
   priority: readonly number[],
 ): Layout {
-  const collapsed = intents.map((intent) => intent.collapsed);
-  const collapsedByGroup = intents.map(() => false);
-  let fills = fillingPanels(intents, collapsed);
-  const needs = intents.map((intent, index) => {
-    if (intent.collapsed) return intent.collapsedSize;
-    return fills[index] ? intent.min : clamp(intent.size ?? 0, intent.min, intent.max);
-  });
+  const fits: Fit[] = requests.map((request) => ({
+    request,
+    need: 0,
+    size: 0,
+    collapsed: request.collapsed,
+    collapsedByGroup: false,
+    fills: false,
+  }));
+  markFillers(fits);
+  for (const fit of fits) {
+    const { request } = fit;
+    if (request.collapsed) fit.need = request.collapsedSize;
+    else fit.need = fit.fills ? request.min : clamp(request.size ?? 0, request.min, request.max);
+  }
 
-  let overflow = sum(needs) - space;
-  const lowestPriorityFirst = priority.toReversed();
-  for (const index of lowestPriorityFirst) {
-    const intent = intents[index];
+  let overflow = sum(fits.map((fit) => fit.need)) - space;
+  const lowestPriorityFirst = priority.toReversed().flatMap((index) => fits[index] ?? []);
+  for (const fit of lowestPriorityFirst) {
     if (overflow <= 0) break;
-    if (!intent || collapsed[index]) continue;
-    const shrink = Math.min(overflow, (needs[index] ?? 0) - intent.min);
-    needs[index] = (needs[index] ?? 0) - shrink;
+    if (fit.collapsed) continue;
+    const { min, collapsible, collapsedSize } = fit.request;
+    const shrink = Math.min(overflow, fit.need - min);
+    fit.need -= shrink;
     overflow -= shrink;
-    if (overflow > 0 && intent.collapsible) {
-      overflow -= (needs[index] ?? 0) - intent.collapsedSize;
-      needs[index] = intent.collapsedSize;
-      collapsed[index] = true;
-      collapsedByGroup[index] = true;
+    if (overflow > 0 && collapsible) {
+      overflow -= fit.need - collapsedSize;
+      fit.need = collapsedSize;
+      fit.collapsed = true;
+      fit.collapsedByGroup = true;
     }
   }
-  for (const index of lowestPriorityFirst) {
+  for (const fit of lowestPriorityFirst) {
     if (overflow <= 0) break;
-    const squeeze = Math.min(overflow, needs[index] ?? 0);
-    needs[index] = (needs[index] ?? 0) - squeeze;
+    const squeeze = Math.min(overflow, fit.need);
+    fit.need -= squeeze;
     overflow -= squeeze;
   }
 
-  fills = fillingPanels(intents, collapsed);
-  const fillers = fills.flatMap((filling, index) => (filling ? [index] : []));
-  const fixedSpace = sum(needs.filter((_need, index) => !fills[index]));
-  const shares = shareAmong(
-    fillers,
+  markFillers(fits);
+  for (const fit of fits) fit.size = fit.need;
+  const fixedSpace = sum(fits.filter((fit) => !fit.fills).map((fit) => fit.need));
+  shareAmong(
+    fits.filter((fit) => fit.fills),
     space - fixedSpace,
-    needs,
-    intents.map((intent) => intent.max),
   );
 
-  return intents.map((_intent, index) => ({
-    size: shares.get(index) ?? needs[index] ?? 0,
-    collapsed: collapsed[index] ?? false,
-    collapsedByGroup: collapsedByGroup[index] ?? false,
-    fills: fills[index] ?? false,
+  return fits.map(({ size, collapsed, collapsedByGroup, fills }) => ({
+    size,
+    collapsed,
+    collapsedByGroup,
+    fills,
   }));
 }
 
@@ -165,28 +210,31 @@ export interface SeparatorMove {
   readonly vetoed: ReadonlySet<number>;
 }
 
-const halfway = (intent: PanelIntent) => (intent.min + intent.collapsedSize) / 2;
+const halfway = (request: ResolvedRequest) => (request.min + request.collapsedSize) / 2;
 
-function snapsCollapsed(intent: PanelIntent, target: number, snap: SnapRule): boolean {
-  return target < (snap === "halfway" ? halfway(intent) : intent.min);
+/** Float noise below this, as from resolving `%`, never makes a target cross a threshold. */
+const tolerance = 0.01;
+
+function snapsCollapsed(request: ResolvedRequest, target: number, snap: SnapRule): boolean {
+  return target < (snap === "halfway" ? halfway(request) : request.min) - tolerance;
 }
 
 /**
  * Moves one separator from the `start` layout, like react-resizable-panels: the nearest panel
  * on one side grows, the nearest on the other gives down to its `min` or snaps collapsed, and
- * further panels are pushed down to their `min`. Returns the new intents; a panel that fills
+ * further panels are pushed down to their `min`. Returns the new requests; a panel that fills
  * keeps filling, except that between two filling panels the earlier one gets a size.
  */
 export function moveSeparator(
-  intents: readonly PanelIntent[],
+  requests: readonly ResolvedRequest[],
   start: Layout,
   { before, delta, snap, vetoed }: SeparatorMove,
-): PanelIntent[] {
-  const next = [...intents];
+): ResolvedRequest[] {
+  const next = [...requests];
   const growing = delta > 0 ? before : before + 1;
   const nearestShrinking = delta > 0 ? before + 1 : before;
   const step = delta > 0 ? 1 : -1;
-  const grower = intents[growing];
+  const grower = requests[growing];
   const growerBox = start[growing];
   if (!grower || !growerBox || !start[nearestShrinking] || delta === 0) return next;
 
@@ -203,28 +251,28 @@ export function moveSeparator(
 
   const sizes = start.map((box) => box.size);
   let given = 0;
-  for (let index = nearestShrinking; index >= 0 && index < intents.length; index += step) {
-    const intent = intents[index];
+  for (let index = nearestShrinking; index >= 0 && index < requests.length; index += step) {
+    const request = requests[index];
     const box = start[index];
-    if (!intent || !box || box.collapsed) continue;
+    if (!request || !box || box.collapsed) continue;
     const target = box.size - (wanted - given);
     if (
       index === nearestShrinking &&
-      intent.collapsible &&
+      request.collapsible &&
       !vetoed.has(index) &&
-      snapsCollapsed(intent, target, snap)
+      snapsCollapsed(request, target, snap)
     ) {
-      next[index] = { ...intent, collapsed: true };
-      sizes[index] = intent.collapsedSize;
-      given += box.size - intent.collapsedSize;
+      next[index] = { ...request, collapsed: true };
+      sizes[index] = request.collapsedSize;
+      given += box.size - request.collapsedSize;
       break;
     }
-    const gives = clamp(wanted - given, 0, Math.max(0, box.size - intent.min));
+    const gives = clamp(wanted - given, 0, Math.max(0, box.size - request.min));
     sizes[index] = box.size - gives;
     given += gives;
     if (given >= wanted) break;
   }
-  if (opens && given < grower.min - grower.collapsedSize) return [...intents];
+  if (opens && given < grower.min - grower.collapsedSize) return [...requests];
 
   sizes[growing] = Math.min(growerBox.size + given, grower.max);
   if (opens) next[growing] = { ...grower, collapsed: false };
@@ -232,11 +280,11 @@ export function moveSeparator(
   const earlierFills = start[Math.min(growing, nearestShrinking)]?.fills ?? false;
   const laterFills = start[Math.max(growing, nearestShrinking)]?.fills ?? false;
   const sized = earlierFills && laterFills ? Math.min(growing, nearestShrinking) : -1;
-  return next.map((intent, index) => {
+  return next.map((request, index) => {
     const box = start[index];
     const size = sizes[index] ?? 0;
-    const keepsSize = !box || intent.collapsed || (box.fills && index !== sized);
-    return keepsSize || size === box.size ? intent : { ...intent, size };
+    const keepsSize = !box || request.collapsed || (box.fills && index !== sized);
+    return keepsSize || size === box.size ? request : { ...request, size };
   });
 }
 

@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest";
 import { commands } from "vitest/browser";
 import {
+  activateUser,
   block,
   colorAtCenterOf,
   drag,
@@ -30,6 +31,7 @@ import {
 } from "./fixtures.ts";
 
 const measureSidebar = () => width(panel("sidebar"));
+const endWidth = () => width(panel("end"));
 
 const isPartlyFaded = ({ red, blue }: Color) => blue > 200 && red > 20 && red < 235;
 const isFullBlue = ({ red, blue }: Color) => blue > 250 && red < 5;
@@ -258,17 +260,20 @@ describe("shrinking group", () => {
     <bento-separator id="end-handle"></bento-separator>
     <bento-panel id="end" size="300px" min="200px" collapsible></bento-panel>`);
 
-  test("collapses panels from the end and re-expands them when space returns", async () => {
+  test("collapses panels from the end and re-expands them when space returns, unanimated", async () => {
     await render(threeSidebars);
 
     group("layout").style.width = "600px";
     await expect.poll(() => panel("end").collapsed).toBe(true);
     expect(panel("start").collapsed).toBe(false);
-    await settleAt(() => width(panel("end")), 0);
+    const collapsing = [endWidth(), ...(await sampleFrames(endWidth))];
 
     group("layout").style.width = "1000px";
     await expect.poll(() => panel("end").collapsed).toBe(false);
-    await settleAt(() => width(panel("end")), 300);
+    const expanding = [endWidth(), ...(await sampleFrames(endWidth))];
+
+    for (const sample of collapsing) expect(sample).toBeCloseTo(0, 0);
+    for (const sample of expanding) expect(sample).toBeCloseTo(300, 0);
   });
 
   test("an expanded panel moves to the front; earlier panels group-collapse for it", async () => {
@@ -285,6 +290,20 @@ describe("shrinking group", () => {
     await settleAt(() => width(panel("end")), 300);
     expect(toggleStates(startEvents)).toEqual(["beforetoggle open→closed", "toggle open→closed"]);
     expect(endEvents).toEqual([]);
+  });
+
+  test("the panel whose toggle caused a change times it, not the first that changes", async () => {
+    await render(`
+      <style>#start { transition-duration: 0s } #end { transition-duration: 600ms }</style>
+      ${threeSidebars}`);
+    group("layout").style.width = "700px";
+    await expect.poll(() => panel("end").collapsed).toBe(true);
+    await activateUser();
+
+    panel("end").collapsed = false;
+    const startWidths = await sampleUntilAt(() => width(panel("start")), 0);
+
+    expect(startWidths.some((sample) => isBetween(sample, 300, 0))).toBe(true);
   });
 
   test("a collapse by the user stays when space returns", async () => {

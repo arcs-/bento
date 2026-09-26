@@ -7,28 +7,28 @@ export type ToggleCause = "user" | "other";
 
 const toggleState = (collapsed: boolean) => (collapsed ? "closed" : "open");
 
+function dispatchToggleEvent(
+  panel: HTMLElement,
+  type: "beforetoggle" | "toggle",
+  collapsed: boolean,
+  cancelable: boolean,
+): boolean {
+  const oldState = toggleState(!collapsed);
+  const newState = toggleState(collapsed);
+  return panel.dispatchEvent(new ToggleEvent(type, { oldState, newState, cancelable }));
+}
+
 /** Fires `beforetoggle`; returns false when a listener canceled a change the user asked for. */
 export function dispatchBeforeToggle(
   panel: HTMLElement,
   collapsed: boolean,
   cause: ToggleCause,
 ): boolean {
-  return panel.dispatchEvent(
-    new ToggleEvent("beforetoggle", {
-      oldState: toggleState(!collapsed),
-      newState: toggleState(collapsed),
-      cancelable: cause === "user",
-    }),
-  );
+  return dispatchToggleEvent(panel, "beforetoggle", collapsed, cause === "user");
 }
 
 export function dispatchToggle(panel: HTMLElement, collapsed: boolean): void {
-  panel.dispatchEvent(
-    new ToggleEvent("toggle", {
-      oldState: toggleState(!collapsed),
-      newState: toggleState(collapsed),
-    }),
-  );
+  dispatchToggleEvent(panel, "toggle", collapsed, false);
 }
 
 export function dispatchResize(panels: Iterable<HTMLElement>, type: "resize" | "resizeend"): void {

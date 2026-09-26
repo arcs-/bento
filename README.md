@@ -72,7 +72,7 @@ A modal panel is a full-height sheet on the side it sits on, over a backdrop. St
 
 ## Accessibility
 
-Separators follow the WAI-ARIA window splitter pattern. Give each an `aria-label`, or `aria-labelledby` pointing at its panel's title. In browsers without ARIA element reflection, also add `aria-controls` with the panel's `id`. When a panel collapses or becomes modal while focus is inside it, focus moves to its separator. A panel collapsed to 0 hides its content from focus and assistive tech. With `prefers-reduced-motion`, the size change is instant and content cross-fades. Dragging is never animated.
+Separators follow the WAI-ARIA window splitter pattern. Give each an `aria-label`, or `aria-labelledby` pointing at its panel's title. In browsers without ARIA element reflection, also add `aria-controls` with the panel's `id`. When a panel collapses while focus is inside it, focus moves to its separator. A panel collapsed to 0 hides its content from focus and assistive tech. With `prefers-reduced-motion`, the size change is instant and content cross-fades. Dragging is never animated.
 
 ## Browser support
 
