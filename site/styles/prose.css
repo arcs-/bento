@@ -207,36 +207,22 @@
   font-size: 0.9375rem;
 }
 
-/* The promises: a calm two-column list, set apart by space alone. */
-.spec-plate {
+/* The promises: one line each, the claim first. */
+.promises {
   display: grid;
-  grid-template-columns: minmax(9rem, 12rem) 1fr;
-  gap: 18px 24px;
-  margin: 1.6em 0 2em;
+  gap: 10px;
+  margin: 1.4em 0 2em;
+  padding: 0;
+  list-style: none;
 }
 
-.spec-plate dt,
-.spec-plate dd {
+.promises li + li {
   margin: 0;
 }
 
-.spec-plate dt {
+.promises strong {
+  margin-inline-end: 0.3em;
   font: 700 1rem/1.5 var(--font-plate);
-}
-
-.spec-plate dd {
-  color: var(--ink-soft);
-}
-
-@container (max-width: 560px) {
-  .spec-plate {
-    grid-template-columns: 1fr;
-    row-gap: 4px;
-  }
-
-  .spec-plate dd + dt {
-    margin-block-start: 14px;
-  }
 }
 
 /* Design decision records. */
@@ -248,9 +234,4 @@
   margin-inline-end: 0.4em;
   color: var(--ink-faint);
   font-variant-numeric: tabular-nums;
-}
-
-.see-also {
-  color: var(--ink-faint);
-  font-size: 0.9375rem;
 }

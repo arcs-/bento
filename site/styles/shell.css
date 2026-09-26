@@ -46,6 +46,7 @@ body {
 }
 
 .titlebar-plate {
+  box-shadow: var(--chrome-edge);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -91,7 +92,7 @@ body {
   background: var(--satin);
   border: 0;
   border-radius: var(--radius-small);
-  box-shadow: var(--raised);
+  box-shadow: var(--bevel), var(--raised);
 }
 
 .satin-button:active {
@@ -135,24 +136,28 @@ body {
   outline: none;
 }
 
-/* Dividers: a fine milled bar with a faint grip. */
+/* Dividers: a milled bar, bevelled along its length, with a faint grip. */
 bento-separator {
-  inline-size: 6px;
+  inline-size: 8px;
   background:
     repeating-linear-gradient(180deg, var(--grip) 0 1px, transparent 1px 4px) center / 2px 13px
       no-repeat,
     var(--divider);
-  border-radius: 3px;
-  box-shadow: var(--raised);
+  border-radius: 4px;
+  box-shadow:
+    inset 1px 0 0 var(--bevel-high),
+    inset -1px 0 0 var(--bevel-low),
+    var(--raised);
 }
 
 bento-group[orientation="vertical"] > bento-separator {
   inline-size: auto;
-  block-size: 6px;
+  block-size: 8px;
   background:
     repeating-linear-gradient(90deg, var(--grip) 0 1px, transparent 1px 4px) center / 13px 2px
       no-repeat,
     var(--divider-vertical);
+  box-shadow: var(--bevel), var(--raised);
 }
 
 bento-separator:hover,

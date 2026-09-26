@@ -1,19 +1,32 @@
 /// <reference types="bento/react" />
-import type { ReactNode } from "react";
+import type { BentoPanelElement } from "bento";
+import { type ReactNode, useEffect, useRef } from "react";
 
-export function Layout({ children }: { children: ReactNode }) {
+export function Layout({ sidebarOpen, children }: { sidebarOpen: boolean; children: ReactNode }) {
+  const sidebar = useRef<BentoPanelElement>(null);
+
+  useEffect(() => {
+    const panel = sidebar.current;
+    const keepUnsaved = (event: ToggleEvent) => {
+      if (event.newState === "closed" && event.cancelable && hasUnsavedChanges()) {
+        event.preventDefault();
+      }
+    };
+    panel?.addEventListener("beforetoggle", keepUnsaved);
+    return () => panel?.removeEventListener("beforetoggle", keepUnsaved);
+  }, []);
+
   return (
     <bento-group>
       <bento-panel
+        ref={sidebar}
         id="sidebar"
         size="320px"
         min="240px"
         collapsible
+        collapsed={!sidebarOpen}
         modal="(max-width: 768px)"
         aria-label="Sidebar"
-        onbeforetoggle={(event) => {
-          if (event.newState === "closed" && hasUnsavedChanges()) event.preventDefault();
-        }}
       >
         <nav className="h-full overflow-auto">…</nav>
       </bento-panel>

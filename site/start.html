@@ -1,35 +1,25 @@
 <title>Getting started</title>
 <meta
   name="description"
-  content="Install bento, load its one script blocking in the head, and write your first resizable layout."
+  content="Install bento, load its script blocking in the head, and write a first layout."
 />
 
 <h1>Getting started</h1>
 
-<p class="lead">
-  One script registers the elements. After that, a layout is markup: a group, its panels, and a
-  separator between each pair you want to drag.
-</p>
-
 <h2 id="install">Install</h2>
 
-<p>bento will be published on npm as <code>bento</code>. It has no dependencies.</p>
+<p>The package will be <code>bento</code> on npm. A CDN URL is not settled yet.</p>
 
 <!-- snippet sh -->
 npm install bento
 <!-- /snippet -->
 
-<p>
-  The package holds one file that matters, <code>dist/bento.js</code>. A public script URL, for
-  loading it from a CDN, is not settled yet.
-</p>
-
-<h2 id="load-the-script">Load the script blocking in the head</h2>
+<h2 id="load-the-script">Load it blocking in the head</h2>
 
 <p>
-  Load the definitions as a plain, blocking <code>&lt;script&gt;</code> in the document head, before
-  your app. The elements are then defined before the parser reaches them, so server-rendered panels
-  lay out as they are parsed, and the first paint is already right in every browser.
+  A plain script, not a module, <code>async</code> or <code>defer</code>, so panels lay out while
+  the page is parsed. It brings its own styles and needs no CSP exception.
+  <a href="decisions.html#0006-define-early">Why</a>
 </p>
 
 <!-- snippet html -->
@@ -39,50 +29,22 @@ npm install bento
 <!-- /snippet -->
 
 <p>
-  Not <code>type="module"</code>, not <code>async</code>, not <code>defer</code>: those run after
-  parsing, when the page may have painted already. The script is small and cached after the first
-  visit; inline it if you want no network wait at all. It carries its own styles, so there is no
-  stylesheet to link, and it needs no Content Security Policy exception.
+  In Next.js, put it in the root layout's <code>&lt;head&gt;</code>;
+  <code>beforeInteractive</code> does not block. <code>import "bento"</code> works for apps that
+  render only on the client.
 </p>
 
-<p>
-  In a bundler, <code>import "bento"</code> registers the elements too. A module runs only after the
-  document is parsed, which can be after the first paint, so keep it for apps that render on the
-  client alone.
-</p>
+<h2 id="late-loading">Loading it later</h2>
 
-<h3 id="frameworks">In Next.js and Nuxt</h3>
-
-<p>
-  Next's <code>&lt;Script strategy="beforeInteractive"&gt;</code> runs before hydration but does not
-  block. Put a plain <code>&lt;script&gt;</code> in the root layout's
-  <code>&lt;head&gt;</code> instead, the way next-themes avoids its theme flash. In Nuxt, add the
-  script to the head config; it renders as a blocking tag.
-  <a href="decisions.html#0006-define-early">Why the script must block</a>
-</p>
-
-<h2 id="late-loading">If you load it later</h2>
-
-<p>
-  A page that loads the script late, for example with <code>defer</code>, would paint the panels
-  unstyled first. Hide them until they are defined:
-</p>
+<p>Then hide the elements until they are defined:</p>
 
 <!-- snippet css -->
 :is(bento-group, bento-panel, bento-separator):not(:defined) { visibility: hidden }
 <!-- /snippet -->
 
-<p>
-  bento ships no document stylesheet, so this one rule is yours to write.
-  <a href="decisions.html#0012-no-document-stylesheet">Why there is no stylesheet</a>
-</p>
+<h2 id="first-layout">A first layout</h2>
 
-<h2 id="first-layout">Your first layout</h2>
-
-<p>
-  A sidebar that starts at 240 pixels, can be dragged between 160 and 400, and collapses away when
-  dragged past half its minimum. The main panel has no size, so it fills the rest.
-</p>
+<p>A sidebar from 160 to 400px that collapses, next to a panel that fills the rest:</p>
 
 <!-- demo -->
 <bento-group class="demo-box">
@@ -96,33 +58,7 @@ npm install bento
 </bento-group>
 <!-- /demo -->
 
-<p>Three things to know from the start:</p>
-
-<ul>
-  <li>
-    <strong>Every attribute is optional.</strong> A group of two panels and a separator, with no
-    attributes at all, already splits the space equally and resizes.
-  </li>
-  <li>
-    <strong>Attributes are the starting state.</strong> Once the user drags or collapses, the live
-    state is in the <code>size</code> and <code>collapsed</code> properties; the attributes stay as
-    written. <a href="decisions.html#0007-defaults-and-live-state">Why</a>
-  </li>
-  <li>
-    <strong>Put one element inside each panel.</strong> It carries your padding and scrolling, like
-    the <code>.tray</code> above. The panel itself is a layout box, and padding on it would stop it
-    from collapsing.
-  </li>
-</ul>
-
 <p>
-  Give the group a height, or put it in something that has one: a group fills its container's block
-  size.
-</p>
-
-<h2 id="next">Next</h2>
-
-<p>
-  The <a href="guide.html">guide</a> walks through every feature with a live demo. The
-  <a href="api.html">API reference</a> lists every attribute, property, event and CSS hook.
+  Every attribute is optional. Put one element in each panel for padding and scrolling, and give the
+  group a height.
 </p>

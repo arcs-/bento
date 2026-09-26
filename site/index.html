@@ -1,22 +1,19 @@
 <title>bento – resizable panels as web components</title>
 <meta
   name="description"
-  content="bento is three custom elements for resizable panel layouts: drag, collapse, rails and drawers on small screens, in any framework or none."
+  content="Resizable panel layouts as three custom elements: drag, collapse, rails and drawers, in any framework or none."
 />
 <meta name="inspector" content="open" />
 
 <h1>Resizable panel layouts, written as HTML</h1>
 
 <p class="lead">
-  bento is three custom elements, <code>&lt;bento-group&gt;</code>,
-  <code>&lt;bento-panel&gt;</code> and <code>&lt;bento-separator&gt;</code>. Panels can be dragged,
-  collapsed to nothing or to a rail, and become drawers on small screens. They work in any framework
-  or none, lay out before the first paint, and animate only when a panel collapses.
+  Three custom elements for layouts you can drag, collapse to a rail, and turn into drawers on small
+  screens. In any framework or none, under 10 kB.
 </p>
 
 <p class="hint">
-  Drag a divider in the lunch below. Tab to one and press Enter to collapse its compartment, or use
-  the arrow keys. Double-click a divider to put its compartment back.
+  Drag a divider, or tab to one and press Enter. Double-click puts a compartment back.
 </p>
 
 <!-- demo -->
@@ -57,71 +54,31 @@
 </bento-group>
 <!-- /demo -->
 
-<p>
-  No wrapper component and no layout code: the markup above is the whole demo. Every event it fires
-  shows up in the inspector on the right, or behind the Inspector button on a narrow screen.
-</p>
-
 <h2 id="promises">What it promises</h2>
 
-<dl class="spec-plate">
-  <dt>Framework independent</dt>
-  <dd>
-    Custom elements work in plain HTML, React 19, Vue and anything else that renders the DOM. There
-    is no adapter to install, only <a href="guide.html#react-and-vue">JSX typings</a>.
-  </dd>
-  <dt>First paint is right</dt>
-  <dd>
-    Load one small script blocking in the head, and server-rendered panels lay out as they are
-    parsed. Nothing jumps when your app hydrates.
-    <a href="decisions.html#0006-define-early">Why it blocks</a>
-  </dd>
-  <dt>Collapsing animates</dt>
-  <dd>
-    Collapsing and snapping animate; dragging, mounting and window resizes never do. Content keeps
-    its size while a panel collapses, so nothing reflows per frame.
-    <a href="decisions.html#0014-animate-with-web-animations">How</a>
-  </dd>
-  <dt>Reduced motion</dt>
-  <dd>
-    With <code>prefers-reduced-motion</code>, the size changes at once and the content cross-fades,
-    so you still see what happened. <a href="decisions.html#0001-reduced-motion">Why a fade</a>
-  </dd>
-  <dt>Small screens</dt>
-  <dd>
-    A panel with a <code>modal</code> media query becomes a drawer over the page when it matches,
-    with Escape, back gesture and tap outside built in.
-    <a href="guide.html#modal-panels">Modal panels</a>
-  </dd>
-  <dt>Accessible</dt>
-  <dd>
-    Separators follow the WAI-ARIA window splitter pattern: focusable, labelled by you, operated by
-    arrow keys, Enter, Home and End. <a href="accessibility.html">Accessibility</a>
-  </dd>
-</dl>
-
-<h2 id="this-page">This page is a bento box too</h2>
-
-<p>
-  The navigation, this text and the inspector are panels in one <code>&lt;bento-group&gt;</code>.
-  Drag the dividers between them, collapse the navigation to its rail with Enter, or make the window
-  narrow: below 1100 pixels the inspector becomes a drawer, below 720 the navigation does too, and
-  the buttons in the title bar open them.
-</p>
-
-<p>
-  The page has a strict Content Security Policy, <code>style-src 'self'</code> without
-  <code>'unsafe-inline'</code>, and bento runs under it without an exception.
-  <a href="compatibility.html#csp">How that works</a>
-</p>
-
-<h2 id="next">Where to go next</h2>
-
-<ul>
-  <li><a href="start.html">Getting started</a>: load the script, write the markup.</li>
-  <li><a href="guide.html">Guide</a>: every feature as a live demo, next to its code.</li>
+<ul class="promises">
+  <li><strong>Any framework.</strong> Plain HTML, React, Vue: no adapters.</li>
   <li>
-    <a href="api.html">API reference</a>: attributes, properties, events, states and CSS properties.
+    <strong>Right first paint.</strong> One blocking script; server-rendered panels never jump.
+    <a href="decisions.html#0006-define-early">Why</a>
   </li>
-  <li><a href="decisions.html">Design decisions</a>: what was chosen, and why.</li>
+  <li><strong>Animated collapse.</strong> Toggles animate; drags and window resizes don't.</li>
+  <li>
+    <strong>Reduced motion.</strong> The size jumps and the content cross-fades.
+    <a href="decisions.html#0001-reduced-motion">Why</a>
+  </li>
+  <li>
+    <strong>Small screens.</strong> A <code>modal</code> media query turns a panel into a drawer.
+    <a href="guide.html#modal-panels">See it</a>
+  </li>
+  <li>
+    <strong>Accessible.</strong> The WAI-ARIA window splitter pattern, keys included.
+    <a href="accessibility.html">Details</a>
+  </li>
+  <li>
+    <strong>Strict CSP.</strong> No inline styles, no exceptions.
+    <a href="compatibility.html#csp">How</a>
+  </li>
 </ul>
+
+<p>This page is a bento box too: drag its dividers, or narrow the window to get drawers.</p>

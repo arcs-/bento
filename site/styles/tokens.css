@@ -27,21 +27,28 @@
   --grip: rgb(26 34 44 / 0.3);
 
   --brushing:
-    repeating-linear-gradient(180deg, rgb(255 255 255 / 0.1) 0 1px, transparent 1px 2px),
-    repeating-linear-gradient(180deg, rgb(20 28 38 / 0.025) 0 1px, transparent 1px 3px);
+    repeating-linear-gradient(180deg, rgb(255 255 255 / 0.16) 0 1px, transparent 1px 2px),
+    repeating-linear-gradient(180deg, rgb(20 28 38 / 0.04) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(180deg, rgb(255 255 255 / 0.08) 0 2px, transparent 2px 7px);
   --sheen: linear-gradient(
     105deg,
     rgb(255 255 255 / 0) 20%,
-    rgb(255 255 255 / 0.24) 45%,
+    rgb(255 255 255 / 0.34) 45%,
     rgb(255 255 255 / 0) 70%
   );
   --metal: var(--brushing), var(--sheen), linear-gradient(180deg, var(--frame), var(--frame-deep));
   --satin: linear-gradient(180deg, var(--surface-raised), #eef0f2);
-  --divider: linear-gradient(90deg, #f3f5f7, #bcc3cb 50%, #e1e5e9);
-  --divider-vertical: linear-gradient(180deg, #f3f5f7, #bcc3cb 50%, #e1e5e9);
+  --divider: linear-gradient(90deg, #f6f7f9, #b4bcc5 55%, #dde2e7);
+  --divider-vertical: linear-gradient(180deg, #f6f7f9, #b4bcc5 55%, #dde2e7);
+  --bevel-high: rgb(255 255 255 / 0.85);
+  --bevel-low: rgb(20 28 38 / 0.12);
+  --bevel: inset 0 1px 0 var(--bevel-high), inset 0 -1px 0 var(--bevel-low);
+  --chrome-edge: 0 1px 0 rgb(255 255 255 / 0.7), inset 0 -1px 0 rgb(20 28 38 / 0.14);
 
   /* Elevation, used the same way everywhere: set in, raised, floating. */
-  --inset: inset 0 1px 2px rgb(20 28 38 / 0.1), inset 0 0 0 1px rgb(20 28 38 / 0.04);
+  --inset:
+    inset 0 2px 4px rgb(20 28 38 / 0.16), inset 0 0 0 1px rgb(20 28 38 / 0.12),
+    0 1px 0 rgb(255 255 255 / 0.8);
   --raised: 0 1px 2px rgb(20 28 38 / 0.12), 0 0 0 1px rgb(20 28 38 / 0.06);
   --floating: 0 16px 48px rgb(20 28 38 / 0.28), 0 0 0 1px rgb(20 28 38 / 0.06);
 
@@ -81,19 +88,25 @@
     --grip: rgb(229 233 237 / 0.3);
 
     --brushing:
-      repeating-linear-gradient(180deg, rgb(255 255 255 / 0.025) 0 1px, transparent 1px 2px),
-      repeating-linear-gradient(180deg, rgb(0 0 0 / 0.06) 0 1px, transparent 1px 3px);
+      repeating-linear-gradient(180deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 2px),
+      repeating-linear-gradient(180deg, rgb(0 0 0 / 0.1) 0 1px, transparent 1px 3px),
+      repeating-linear-gradient(180deg, rgb(255 255 255 / 0.02) 0 2px, transparent 2px 7px);
     --sheen: linear-gradient(
       105deg,
       rgb(255 255 255 / 0) 20%,
-      rgb(255 255 255 / 0.035) 45%,
+      rgb(255 255 255 / 0.06) 45%,
       rgb(255 255 255 / 0) 70%
     );
     --satin: linear-gradient(180deg, #3d444c, #343a41);
-    --divider: linear-gradient(90deg, #4a525b, #5d6670 50%, #444c55);
-    --divider-vertical: linear-gradient(180deg, #4a525b, #5d6670 50%, #444c55);
+    --divider: linear-gradient(90deg, #5a636d, #3d444c 55%, #4f5760);
+    --divider-vertical: linear-gradient(180deg, #5a636d, #3d444c 55%, #4f5760);
+    --bevel-high: rgb(255 255 255 / 0.12);
+    --bevel-low: rgb(0 0 0 / 0.3);
+    --chrome-edge: 0 1px 0 rgb(255 255 255 / 0.06), inset 0 -1px 0 rgb(0 0 0 / 0.45);
 
-    --inset: inset 0 1px 2px rgb(0 0 0 / 0.35), inset 0 0 0 1px rgb(0 0 0 / 0.2);
+    --inset:
+      inset 0 2px 4px rgb(0 0 0 / 0.45), inset 0 0 0 1px rgb(0 0 0 / 0.4),
+      0 1px 0 rgb(255 255 255 / 0.05);
     --raised: 0 1px 2px rgb(0 0 0 / 0.4), 0 0 0 1px rgb(255 255 255 / 0.05);
     --floating: 0 16px 48px rgb(0 0 0 / 0.55), 0 0 0 1px rgb(255 255 255 / 0.06);
 

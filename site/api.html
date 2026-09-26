@@ -1,26 +1,22 @@
 <title>API reference</title>
 <meta
   name="description"
-  content="Every bento element, attribute, property, event, custom state and CSS custom property."
+  content="Every bento element, attribute, property, event, custom state and CSS hook."
 />
 
 <h1>API reference</h1>
 
 <p class="lead">
-  Three elements. Every attribute is optional and has a property. A bad value falls back to the
-  default, and never breaks the layout.
+  Every attribute is optional and has a property. A bad value falls back to the default.
 </p>
 
 <h2 id="group">&lt;bento-group&gt;</h2>
-
-<p>Lays out panels and separators. Groups nest. It fills its container's block size.</p>
 
 <div class="table-well" tabindex="0">
   <table>
     <thead>
       <tr>
         <th scope="col">Attribute</th>
-        <th scope="col">Property</th>
         <th scope="col">Default</th>
         <th scope="col">Meaning</th>
       </tr>
@@ -28,11 +24,10 @@
     <tbody>
       <tr>
         <td><code>orientation</code></td>
-        <td><code>orientation</code>, reflects</td>
         <td><code>horizontal</code></td>
         <td>
-          <code>horizontal</code> lays panels out along the writing direction,
-          <code>vertical</code> top to bottom. Any other value reads as <code>horizontal</code>.
+          <code>horizontal</code> follows the writing direction, <code>vertical</code> stacks.
+          Reflected.
         </td>
       </tr>
     </tbody>
@@ -40,13 +35,6 @@
 </div>
 
 <h2 id="panel">&lt;bento-panel&gt;</h2>
-
-<p>
-  The element you write. The group sets its size, which may become 0. It clips its content, which
-  keeps at least <code>min</code>. Its content is a size container.
-</p>
-
-<h3 id="panel-attributes">Attributes</h3>
 
 <div class="table-well" tabindex="0">
   <table>
@@ -61,76 +49,52 @@
       <tr>
         <td><code>size</code></td>
         <td>fill</td>
-        <td>
-          Starting size, in <code>px</code> or <code>%</code> of the group's space. Without it, the
-          panel shares the remaining space equally with the other panels without one.
-        </td>
+        <td>Starting size, <code>px</code> or <code>%</code></td>
       </tr>
       <tr>
         <td><code>min</code></td>
         <td><code>0</code></td>
-        <td>
-          Smallest size while dragging. Content never gets smaller than this; the panel clips it
-          instead.
-        </td>
+        <td>Smallest size; content never gets smaller</td>
       </tr>
       <tr>
         <td><code>max</code></td>
         <td>none</td>
-        <td>Largest size while dragging.</td>
+        <td>Largest size</td>
       </tr>
       <tr>
         <td><code>collapsible</code></td>
         <td>off</td>
-        <td>
-          Dragging below <code>min</code> holds the panel; past halfway to
-          <code>collapsed-size</code> it snaps collapsed. Enter on the separator toggles it.
-        </td>
+        <td>Snaps collapsed past halfway below <code>min</code></td>
       </tr>
       <tr>
         <td><code>collapsed</code></td>
         <td>off</td>
-        <td>Starts at <code>collapsed-size</code>.</td>
+        <td>Starts collapsed</td>
       </tr>
       <tr>
         <td><code>collapsed-size</code></td>
         <td><code>0</code></td>
-        <td>
-          Size when collapsed, for example a rail. At 0 the content is hidden with
-          <code>display: none</code>.
-        </td>
+        <td>Size when collapsed, for a rail</td>
       </tr>
       <tr>
         <td><code>modal</code></td>
         <td>never</td>
-        <td>
-          A media query. While it matches, the panel leaves the group and shows as a modal dialog
-          while not collapsed.
-        </td>
+        <td>Media query; while it matches, the panel is a drawer</td>
       </tr>
       <tr>
         <td><code>aria-label</code></td>
         <td>none</td>
-        <td>Also names the dialog in modal mode.</td>
+        <td>Also names the drawer</td>
       </tr>
     </tbody>
   </table>
 </div>
-
-<h3 id="panel-properties">Properties</h3>
-
-<p>
-  Two properties are live state, like <code>value</code> and <code>checked</code> on an
-  <code>&lt;input&gt;</code>. The rest reflect their attributes; strings read <code>""</code> when
-  the attribute is absent, as in HTML.
-</p>
 
 <div class="table-well" tabindex="0">
   <table>
     <thead>
       <tr>
         <th scope="col">Property</th>
-        <th scope="col">Type</th>
         <th scope="col">Kind</th>
         <th scope="col">Meaning</th>
       </tr>
@@ -138,87 +102,40 @@
     <tbody>
       <tr>
         <td><code>size</code></td>
-        <td><code>string</code></td>
-        <td>live, writable</td>
+        <td>live</td>
         <td>
-          The live size in <code>px</code> or <code>%</code>; dragging writes <code>px</code>.
-          <code>""</code> while the panel fills. Writing it fires no event.
+          Size now; <code>""</code> while filling. Writes before the first layout are the start.
         </td>
       </tr>
       <tr>
         <td><code>collapsed</code></td>
-        <td><code>boolean</code></td>
-        <td>live, writable</td>
+        <td>live</td>
         <td>
-          The live collapsed state. Writing it animates like a toggle and fires no event. On a modal
-          panel, <code>false</code> opens the sheet and <code>true</code> closes it.
+          Collapsed now. Writes animate after user activation; on a drawer, opens or closes it.
         </td>
       </tr>
       <tr>
-        <td><code>defaultSize</code></td>
-        <td><code>string</code></td>
-        <td>reflects <code>size</code></td>
-        <td>The starting size.</td>
+        <td><code>defaultSize</code>, <code>defaultCollapsed</code></td>
+        <td>starting state</td>
+        <td>What double-click restores; writing sets the attribute</td>
       </tr>
       <tr>
-        <td><code>defaultCollapsed</code></td>
-        <td><code>boolean</code></td>
-        <td>reflects <code>collapsed</code></td>
-        <td>The starting state.</td>
-      </tr>
-      <tr>
-        <td><code>min</code></td>
-        <td><code>string</code></td>
-        <td>reflects</td>
-        <td></td>
-      </tr>
-      <tr>
-        <td><code>max</code></td>
-        <td><code>string</code></td>
-        <td>reflects</td>
-        <td></td>
-      </tr>
-      <tr>
-        <td><code>collapsible</code></td>
-        <td><code>boolean</code></td>
-        <td>reflects</td>
-        <td></td>
-      </tr>
-      <tr>
-        <td><code>collapsedSize</code></td>
-        <td><code>string</code></td>
-        <td>reflects <code>collapsed-size</code></td>
-        <td></td>
-      </tr>
-      <tr>
-        <td><code>modal</code></td>
-        <td><code>string</code></td>
-        <td>reflects</td>
-        <td></td>
+        <td>
+          <code>min</code>, <code>max</code>, <code>collapsible</code>, <code>collapsedSize</code>,
+          <code>modal</code>
+        </td>
+        <td>reflected</td>
+        <td><code>""</code> or <code>false</code> when absent</td>
       </tr>
     </tbody>
   </table>
 </div>
-
-<p>
-  A live property is clean until the user or a property write changes it. While it is clean, a
-  changed <code>size</code> or <code>collapsed</code> attribute applies to it, without animating.
-  Double-click on a separator makes both clean again.
-</p>
-
-<h3 id="panel-events">Events</h3>
-
-<p>
-  All fire on the panel and none bubbles; listen on a parent in the capture phase. None fires when
-  your code writes a property, and none for the first layout.
-</p>
 
 <div class="table-well" tabindex="0">
   <table>
     <thead>
       <tr>
         <th scope="col">Event</th>
-        <th scope="col">Interface</th>
         <th scope="col">Fires</th>
         <th scope="col">Cancelable</th>
       </tr>
@@ -226,32 +143,22 @@
     <tbody>
       <tr>
         <td><code>resize</code></td>
-        <td><code>Event</code></td>
-        <td>
-          When the user changes the panel's <code>size</code>, directly or by pushing it, at most
-          once per frame.
-        </td>
+        <td>The user changed the size, at most once per frame</td>
         <td>no</td>
       </tr>
       <tr>
         <td><code>resizeend</code></td>
-        <td><code>Event</code></td>
-        <td>When a drag or key press is done: pointer up or key up.</td>
+        <td>A drag, key press or double-click is done</td>
         <td>no</td>
       </tr>
       <tr>
         <td><code>beforetoggle</code></td>
-        <td><code>ToggleEvent</code></td>
-        <td>
-          Before a collapse or expand your code did not write, including a group collapsing panels
-          as it shrinks, entering modal mode and a modal panel closing.
-        </td>
+        <td>Before a collapse or expand you did not write</td>
         <td>when the user caused it</td>
       </tr>
       <tr>
         <td><code>toggle</code></td>
-        <td><code>ToggleEvent</code></td>
-        <td>After that collapse or expand.</td>
+        <td>After it</td>
         <td>no</td>
       </tr>
     </tbody>
@@ -259,79 +166,43 @@
 </div>
 
 <p>
-  <code>oldState</code> and <code>newState</code> are <code>"open"</code> for expanded and
-  <code>"closed"</code> for collapsed. Canceling a snap holds the panel at <code>min</code>.
+  None bubbles. Toggle events are <code>ToggleEvent</code>s with <code>"open"</code> and
+  <code>"closed"</code>. Nothing fires for your own writes or the first layout.
 </p>
 
-<h3 id="panel-states">Custom states</h3>
-
 <div class="table-well" tabindex="0">
   <table>
     <thead>
       <tr>
-        <th scope="col">Selector</th>
-        <th scope="col">Matches</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><code>bento-panel:state(collapsed)</code></td>
-        <td>The panel is collapsed, by anyone, including its group.</td>
-      </tr>
-      <tr>
-        <td><code>bento-panel:state(modal)</code></td>
-        <td>The panel's <code>modal</code> query matches, open or not.</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
-<h3 id="panel-css">CSS</h3>
-
-<div class="table-well" tabindex="0">
-  <table>
-    <thead>
-      <tr>
-        <th scope="col">Property</th>
+        <th scope="col">CSS</th>
         <th scope="col">Use</th>
       </tr>
     </thead>
     <tbody>
       <tr>
+        <td><code>:state(collapsed)</code>, <code>:state(modal)</code></td>
+        <td>Live state</td>
+      </tr>
+      <tr>
         <td>
           <code>--bento-size</code>, <code>--bento-min</code>, <code>--bento-max</code>,
           <code>--bento-collapsed-size</code>
         </td>
-        <td>
-          Read only. The panel's attributes as lengths, declared on every panel, so a nested one
-          never inherits its parent's. An absent <code>size</code> or <code>max</code> is unset, so
-          <code>var()</code> takes its fallback.
-        </td>
+        <td>Read the starting attributes</td>
       </tr>
       <tr>
         <td><code>--bento-backdrop</code></td>
-        <td>
-          Set on the panel: the color behind it in modal mode. Default
-          <code>rgb(0 0 0 / 0.1)</code>.
-        </td>
+        <td>Drawer backdrop color</td>
       </tr>
       <tr>
         <td><code>transition-duration</code>, <code>transition-timing-function</code></td>
-        <td>
-          Set on the panel: how long and how its toggles animate. Default <code>0.2s ease</code>. A
-          duration of 0 turns the animation off.
-        </td>
+        <td>Toggle timing, default <code>0.2s ease</code></td>
       </tr>
     </tbody>
   </table>
 </div>
 
 <h2 id="separator">&lt;bento-separator&gt;</h2>
-
-<p>
-  The draggable line between two panels, with the ARIA role <code>separator</code>. It has no
-  attributes of its own and reads these of yours:
-</p>
 
 <div class="table-well" tabindex="0">
   <table>
@@ -343,98 +214,34 @@
     </thead>
     <tbody>
       <tr>
-        <td><code>aria-label</code> or <code>aria-labelledby</code></td>
-        <td>Its name. Required: bento cannot know a good label.</td>
+        <td><code>aria-label</code>, <code>aria-labelledby</code></td>
+        <td>Its name; required</td>
       </tr>
       <tr>
         <td><code>aria-controls</code></td>
-        <td>
-          The <code>id</code> of the neighbour it resizes, its primary panel. Without it, the
-          primary panel is the neighbour with a <code>size</code> or <code>collapsible</code>, the
-          later one on a tie. Write it for browsers without ARIA element reflection.
-        </td>
+        <td>Picks the primary panel; write it for browsers without element reflection</td>
       </tr>
       <tr>
         <td><code>tabindex</code></td>
-        <td>
-          Added as <code>"0"</code> when absent; yours is never overridden. It is the only attribute
-          bento writes.
-        </td>
+        <td>Added as <code>"0"</code> when absent</td>
       </tr>
     </tbody>
   </table>
 </div>
 
 <p>
-  Its orientation and values go through <code>ElementInternals</code>: <code>aria-valuenow</code> is
-  the primary panel's share of the group, 0 to 100, between <code>aria-valuemin</code> and
-  <code>aria-valuemax</code>. It stays next to a collapsed panel and hides next to a modal one.
+  Role, orientation and values go through <code>ElementInternals</code>.
+  <code>:state(dragging)</code> matches while dragged. Keys are in the
+  <a href="guide.html#keyboard">guide</a>.
 </p>
-
-<div class="table-well" tabindex="0">
-  <table>
-    <thead>
-      <tr>
-        <th scope="col">Selector</th>
-        <th scope="col">Matches</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><code>bento-separator:state(dragging)</code></td>
-        <td>While the user drags it.</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
-<h3 id="separator-input">Input</h3>
-
-<div class="table-well" tabindex="0">
-  <table>
-    <thead>
-      <tr>
-        <th scope="col">Input</th>
-        <th scope="col">Does</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Drag</td>
-        <td>
-          Resizes the primary panel and pushes further panels down to their <code>min</code>. Snaps
-          collapsible panels at halfway.
-        </td>
-      </tr>
-      <tr>
-        <td>Arrow keys along the group</td>
-        <td>10 pixels, 100 with Shift. Snap as soon as they go below <code>min</code>.</td>
-      </tr>
-      <tr>
-        <td>Enter</td>
-        <td>Toggles a collapsible primary panel.</td>
-      </tr>
-      <tr>
-        <td>Home, End</td>
-        <td>Primary panel to its <code>min</code>, to its <code>max</code>.</td>
-      </tr>
-      <tr>
-        <td>Double-click</td>
-        <td>Primary panel back to its default size and collapsed state.</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
 
 <h2 id="types">TypeScript</h2>
 
 <p>
-  The package's types register the elements in <code>HTMLElementTagNameMap</code>, so
-  <code>document.querySelector("bento-panel")</code> is typed. It exports
+  The types register the elements in <code>HTMLElementTagNameMap</code> and export
   <code>BentoGroupElement</code>, <code>BentoPanelElement</code>,
-  <code>BentoSeparatorElement</code>, <code>BentoPanelEventMap</code>,
-  <code>BentoToggleEvent</code>, <code>ToggleState</code> and <code>Orientation</code>.
-  <code>bento/react</code> adds JSX typings for React 19.
+  <code>BentoSeparatorElement</code>, <code>BentoToggleEvent</code> and friends.
+  <code>bento/react</code> adds JSX typings.
 </p>
 
 <!-- code: snippets/typed-listener.ts | keep-open.ts -->
