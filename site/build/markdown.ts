@@ -10,8 +10,8 @@ export interface MarkdownOptions {
   readonly headingOffset: number;
   /** Keeps heading ids unique when several documents share a page. */
   readonly idPrefix: string;
-  /** Maps a link target, for example a sibling record's file name to its anchor. */
-  readonly linkTarget: (href: string) => string;
+  /** Maps a link target; null keeps only the link's text. */
+  readonly linkTarget: (href: string) => string | null;
 }
 
 /** Inline code first, so nothing inside it is read as Markdown. */
@@ -26,6 +26,7 @@ function inline(text: string, options: MarkdownOptions): string {
         .replaceAll(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
         .replaceAll(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_link, label: string, href: string) => {
           const target = options.linkTarget(href);
+          if (target === null) return label;
           const external = /^https?:/.test(target) ? ' rel="external"' : "";
           return `<a href="${escapeAttribute(target)}"${external}>${label}</a>`;
         });

@@ -1,10 +1,11 @@
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { basename, extname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Plugin } from "vite";
 import { bentoScriptName } from "./bento-script.ts";
 import { codeBlock, escapeAttribute, escapeHtml, type Language, toLanguage } from "./highlight.ts";
 import { markdownSection, markdownToHtml, type MarkdownOptions } from "./markdown.ts";
+import { robots, seoHead, sitemap } from "./seo.ts";
 
 export const siteRoot = fileURLToPath(new URL("..", import.meta.url));
 const decisionsRoot = fileURLToPath(new URL("../../decisions", import.meta.url));
@@ -48,42 +49,17 @@ export const navigation: readonly NavigationEntry[] = [
     label: "Browsers and CSP",
     icon: '<path d="M10 2.5 4 5v5c0 3.8 2.6 6.2 6 7.5 3.4-1.3 6-3.7 6-7.5V5z"/>',
   },
-  {
-    file: "decisions.html",
-    label: "Design decisions",
-    icon: '<path d="M5 2.5h7l3 3v12H5z"/><path d="M8 9h4M8 12h4"/>',
-  },
 ];
 
 export const pageFiles = navigation.map(({ file }) => file);
 
-const decisionFiles = () =>
-  readdirSync(decisionsRoot)
-    .filter((file) => file.endsWith(".md"))
-    .toSorted();
+/** Records are not on the site, so a link to one keeps only its text. */
+const linkTarget = (href: string) => (/^\d{4}-[\w-]+\.md$/.test(href) ? null : href);
 
-const decisionAnchor = (file: string) => basename(file, ".md");
-
-/** A sibling record's file name becomes its anchor on the decisions page. */
-function linkTarget(href: string): string {
-  return /^\d{4}-[\w-]+\.md$/.test(href) ? `decisions.html#${decisionAnchor(href)}` : href;
-}
-
-function renderDecision(file: string): string {
-  const source = readFileSync(join(decisionsRoot, file), "utf8");
-  const [titleLine = "", ...body] = source.split("\n");
-  const anchor = decisionAnchor(file);
-  const number = anchor.slice(0, 4);
-  const title = titleLine.replace(/^# /, "");
-  const options: MarkdownOptions = { headingOffset: 1, idPrefix: `${anchor}-`, linkTarget };
-  return `<article class="record" aria-labelledby="${anchor}">
-  <h2 id="${anchor}"><span class="record-number">${number}</span> ${escapeHtml(title)}</h2>
-  ${markdownToHtml(body.join("\n"), options)}
-</article>`;
-}
-
+/** A section of a record, rendered without its references to other records, which are not on the site. */
 function renderDecisionSection(file: string, heading: string): string {
-  const source = readFileSync(join(decisionsRoot, file), "utf8");
+  const withReferences = readFileSync(join(decisionsRoot, file), "utf8");
+  const source = withReferences.replaceAll(/ \(\[\d{4}\]\(\d{4}-[\w-]+\.md\)\)/g, "");
   const options: MarkdownOptions = { headingOffset: 2, idPrefix: "", linkTarget };
   return markdownToHtml(markdownSection(source, heading), options);
 }
@@ -149,29 +125,29 @@ function expandMarkers(content: string): string {
     .replaceAll(
       /<!-- decision-section: (\S+) \| (.+?) -->/g,
       (_marker, file: string, heading: string) => renderDecisionSection(file, heading),
-    )
-    .replaceAll("<!-- decisions -->", () => decisionFiles().map(renderDecision).join("\n"));
+    );
 }
 
-/** Every page's ids and the page#anchor links it makes, checked once all pages are rendered. */
+/** Every page's ids and its links to pages of the site, checked once all pages are rendered. */
 const idsByPage = new Map<string, ReadonlySet<string>>();
-const anchorLinksByPage = new Map<string, readonly string[]>();
+const siteLinksByPage = new Map<string, readonly string[]>();
 
-function recordAnchors(html: string, page: string): void {
+function recordLinks(html: string, page: string): void {
   idsByPage.set(page, new Set([...html.matchAll(/\sid="([^"]+)"/g)].map(([, id = ""]) => id)));
-  const links = [...html.matchAll(/\shref="([\w-]+\.html)?#([^"]+)"/g)].map(
-    ([, target = page, anchor = ""]) => `${target}#${anchor}`,
-  );
-  anchorLinksByPage.set(page, links);
+  const links = [...html.matchAll(/\shref="([\w-]+\.html)?(#[^"]+)?"/g)]
+    .filter(([, target, anchor]) => target !== undefined || anchor !== undefined)
+    .map(([, target = page, anchor = ""]) => `${target}${anchor}`);
+  siteLinksByPage.set(page, links);
 }
 
-/** Fails the build on a link to an anchor that no rendered page has. */
-function checkAnchorLinks(): void {
-  for (const [page, links] of anchorLinksByPage) {
+/** Fails the build on a link to a page that is not built, or to an anchor its page lacks. */
+function checkSiteLinks(): void {
+  for (const [page, links] of siteLinksByPage) {
     for (const link of links) {
-      const [target = "", anchor = ""] = link.split("#");
+      const [target = "", anchor] = link.split("#");
       const ids = idsByPage.get(target);
-      if (ids && !ids.has(anchor)) throw new Error(`${page} links to a missing anchor: ${link}`);
+      if (!ids) throw new Error(`${page} links to a page that is not built: ${link}`);
+      if (anchor && !ids.has(anchor)) throw new Error(`${page} links to a missing anchor: ${link}`);
     }
   }
 }
@@ -188,32 +164,30 @@ function checkUniqueIds(html: string, page: string): void {
 const stripTags = (html: string) => html.replaceAll(/<[^>]+>/g, "").trim();
 
 /**
- * The site navigation, then the current page's sections as their own list, so hiding that list
- * in the rail moves nothing above it.
+ * The site navigation, with the current page's sections nested under its link as dots. The rail
+ * keeps the dots and hides only the words, so nothing changes height when the nav collapses.
  */
 function navigationHtml(currentFile: string, content: string): string {
+  const sections = [...content.matchAll(/<h2 id="([^"]+)"[^>]*>([\s\S]*?)<\/h2>/g)];
   const items = navigation.map(({ file, label, icon }) => {
-    const current = file === currentFile ? ' aria-current="page"' : "";
+    const current = file === currentFile;
+    const toc =
+      current && sections.length > 0
+        ? `<ol class="toc" aria-label="On this page">${sections
+            .map(
+              ([, id = "", heading = ""]) =>
+                `<li><a class="toc-link" href="#${id}"><span class="toc-label">${stripTags(heading)}</span></a></li>`,
+            )
+            .join("")}</ol>`
+        : "";
     return `<li>
-      <a class="nav-link" href="${file}"${current}>
+      <a class="nav-link" href="${file}"${current ? ' aria-current="page"' : ""}>
         <svg class="nav-icon" viewBox="0 0 20 20" aria-hidden="true">${icon}</svg>
         <span class="nav-label">${label}</span>
-      </a>
+      </a>${toc}
     </li>`;
   });
-  const sections = [...content.matchAll(/<h2 id="([^"]+)"[^>]*>([\s\S]*?)<\/h2>/g)];
-  const sectionItems = sections.map(
-    ([, id = "", heading = ""]) =>
-      `<li><a class="toc-link" href="#${id}">${stripTags(heading)}</a></li>`,
-  );
-  const toc =
-    sectionItems.length > 0
-      ? `<nav class="toc-section" aria-labelledby="toc-title">
-      <p id="toc-title" class="toc-title">On this page</p>
-      <ol class="toc">${sectionItems.join("")}</ol>
-    </nav>`
-      : "";
-  return `<nav aria-label="Site"><ul class="nav-list">${items.join("")}</ul></nav>${toc}`;
+  return `<nav aria-label="Site"><ul class="nav-list">${items.join("")}</ul></nav>`;
 }
 
 interface PageMeta {
@@ -223,12 +197,12 @@ interface PageMeta {
 }
 
 function takeMeta(fragment: string): { meta: PageMeta; content: string } {
-  const title = /<title>([\s\S]*?)<\/title>/.exec(fragment)?.[1] ?? "bento";
-  const description =
-    /<meta\s+name="description"\s+content="([^"]*)"\s*\/?>/.exec(fragment)?.[1] ?? "";
+  const head = /^(?:\s*(?:<title>[\s\S]*?<\/title>|<meta\s[^>]*>))+/.exec(fragment)?.[0] ?? "";
+  const title = /<title>([\s\S]*?)<\/title>/.exec(head)?.[1] ?? "bento";
+  const description = /<meta\s+name="description"\s+content="([^"]*)"\s*\/?>/.exec(head)?.[1] ?? "";
   const inspector =
-    /<meta\s+name="inspector"\s+content="([^"]*)"\s*\/?>/.exec(fragment)?.[1] ?? "collapsed";
-  const content = fragment.replaceAll(/<title>[\s\S]*?<\/title>|<meta\s[^>]*>/g, "").trim();
+    /<meta\s+name="inspector"\s+content="([^"]*)"\s*\/?>/.exec(head)?.[1] ?? "collapsed";
+  const content = fragment.slice(head.length).trim();
   return { meta: { title, description, inspectorCollapsed: inspector !== "open" }, content };
 }
 
@@ -242,7 +216,7 @@ function fill(template: string, values: Record<string, string>): string {
 
 /**
  * A page file is a fragment: a `<title>`, a description and its content. The plugin puts it in
- * the shared layout, builds the navigation, and expands demos, code and decision records. A
+ * the shared layout, builds the navigation and the head's search tags, and expands demos and code. A
  * file that starts with a doctype is a whole document and only has its markers expanded.
  */
 export function renderPage(file: string, source: string): string {
@@ -251,16 +225,18 @@ export function renderPage(file: string, source: string): string {
   }
   const { meta, content } = takeMeta(source);
   const expanded = expandMarkers(content);
+  const title = file === "index.html" ? meta.title : `${meta.title} = bento`;
   const page = fill(readFileSync(layoutPath, "utf8"), {
-    title: escapeHtml(file === "index.html" ? meta.title : `${meta.title} – bento`),
+    title: escapeHtml(title),
     description: escapeAttribute(meta.description),
+    seoHead: seoHead({ file, title, description: meta.description }),
     bentoScript: bentoScriptName,
     inspectorCollapsed: meta.inspectorCollapsed ? " collapsed" : "",
     navigation: navigationHtml(file, expanded),
     content: expanded,
   });
   checkUniqueIds(page, file);
-  recordAnchors(page, file);
+  recordLinks(page, file);
   return page;
 }
 
@@ -271,7 +247,12 @@ export function sitePages(): Plugin {
       order: "pre",
       handler: (html, context) => renderPage(basename(context.filename), html),
     },
-    generateBundle: checkAnchorLinks,
+    generateBundle() {
+      checkSiteLinks();
+      const map = sitemap(pageFiles);
+      if (map) this.emitFile({ type: "asset", fileName: "sitemap.xml", source: map });
+      this.emitFile({ type: "asset", fileName: "robots.txt", source: robots() });
+    },
     configureServer(server) {
       const reloadOn = [layoutPath, decisionsRoot];
       server.watcher.add(reloadOn);

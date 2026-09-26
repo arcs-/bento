@@ -62,7 +62,6 @@
   --bevel-high: rgb(255 255 255 / 0.85);
   --bevel-low: rgb(20 28 38 / 0.12);
   --bevel: inset 0 1px 0 var(--bevel-high), inset 0 -1px 0 var(--bevel-low);
-  --chrome-edge: 0 1px 0 rgb(255 255 255 / 0.7), inset 0 -1px 0 rgb(20 28 38 / 0.14);
 
   /* Elevation, used the same way everywhere: set in, raised, floating. */
   --inset: inset 0 2px 4px rgb(20 28 38 / 0.16), inset 0 0 0 1px rgb(20 28 38 / 0.12);
@@ -82,6 +81,14 @@
   --tok-comment: #929dab;
   --tok-keyword: #e3aacb;
   --tok-number: #e6c88f;
+
+  --space-1: 8px;
+  --space-2: 12px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 48px;
+  --space-7: 64px;
 
   --radius: 8px;
   --radius-small: 5px;
@@ -134,7 +141,6 @@
     --divider-vertical: linear-gradient(180deg, #5a636d, #3d444c 55%, #4f5760);
     --bevel-high: rgb(255 255 255 / 0.12);
     --bevel-low: rgb(0 0 0 / 0.3);
-    --chrome-edge: 0 1px 0 rgb(255 255 255 / 0.06), inset 0 -1px 0 rgb(0 0 0 / 0.45);
 
     --inset: inset 0 2px 4px rgb(0 0 0 / 0.45), inset 0 0 0 1px rgb(0 0 0 / 0.4);
     --raised: 0 1px 2px rgb(0 0 0 / 0.4), 0 0 0 1px rgb(255 255 255 / 0.05);
