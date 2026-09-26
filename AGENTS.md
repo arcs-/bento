@@ -2,7 +2,7 @@
 
 Before any task, read these files in full. They are the source of truth; code follows them, never the other way round.
 
-- @PLAN.md
+- @CONTRIBUTING.md
 - @README.md
 - every record in `decisions/`:
   - @decisions/0001-reduced-motion.md

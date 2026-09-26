@@ -42,11 +42,22 @@ Every attribute is optional. Attributes set the starting state; after that, drag
 | `collapsed-size` | `0` | size when collapsed, for example a rail |
 | `modal` | never | media query; when it matches, the panel leaves the group and shows as a modal dialog while not collapsed |
 
-**`<bento-separator>`** is the draggable line between two panels. It resizes its primary panel: the neighbour with a `size` or `collapsible`, the later one on a tie, or the one its `aria-controls` names. Keyboard: arrow keys resize by 10px, 100px with Shift, Enter toggles collapse, Home and End go to min and max, and Enter is what collapses; double-click resets to the starting size and collapsed state. It is focusable and adds `tabindex="0"` if you didn't; when React hydrates it, render `tabindex="0"` yourself. It stays next to a collapsed panel, so it can reopen it, and hides next to a modal one. Adding and removing separators is up to you.
+**`<bento-separator>`** is the draggable line between two panels. It resizes its primary panel: the neighbour with a `size` or `collapsible`, the later one on a tie, or the one its `aria-controls` names. Keyboard: arrow keys resize by 10px, 100px with Shift, Home and End go to min and max, Enter toggles collapse; double-click resets to the starting size and collapsed state. It is focusable and adds `tabindex="0"` if you didn't; when React hydrates it, render `tabindex="0"` yourself. It stays next to a collapsed panel, so it can reopen it, and hides next to a modal one. Adding and removing separators is up to you.
 
-Every attribute has a property. `size` and `collapsed` are live and writable. Their attributes, or property writes before the panel is laid out, are the starting state, read by `defaultSize` and `defaultCollapsed`, like `value` and `defaultValue` on `<input>`. Writing `collapsed` animates once the user has interacted with the page; corrections on load, such as after hydration, apply instantly.
+Every attribute has a property. `size` and `collapsed` are live and writable. Their attributes, or property writes before the panel is laid out, are the starting state, read by `defaultSize` and `defaultCollapsed`, like `value` and `defaultValue` on `<input>`. A changed attribute applies to the live state only until the user or a property write has changed it, and never animates. Writing `collapsed` animates once the user has interacted with the page; corrections on load, such as after hydration, apply instantly.
 
 Events fire on the panel and never bubble; to hear them on a parent, listen in the capture phase. `resize` whenever the user changes its `size`, directly or by pushing it, at most once per frame; `resizeend` when a drag, key press or double-click reset is done, like `scroll` and `scrollend`. No event fires when you write a property or change an attribute, nor for the first layout. `beforetoggle` before a panel collapses or expands, `toggle` after, for every change you did not write yourself, including a group collapsing panels as it shrinks and a modal panel closing. When the user caused it, cancel `beforetoggle` to keep the panel as it is, for example while an editor has unsaved changes.
+
+## Layout
+
+- A panel with a `size` keeps it; panels without share the rest equally. One panel always stays flexible: with none, the last one fills.
+- A drag changes only the separator's two neighbours, and further panels it pushes down to their `min`. Every other panel keeps its size. A panel keeps its kind of size: `px` stays `px`, and a flexible or `%` panel gets a `%`, so it keeps its share when the group resizes. The later neighbour of a drag between flexible panels stays flexible.
+- Dragging below `min` holds a collapsible panel at `min` and snaps it collapsed past halfway to `collapsed-size`; dragging back past halfway expands it. Arrow keys snap as soon as they go below `min`. Expanding restores the size from before the collapse.
+- DOM order is priority. A shrinking group collapses collapsible panels from the end and expands them again when space returns; a collapse by the user stays. A panel the user or you expand moves to the front, so expanding always shows it.
+- Toggles and snaps animate; drags, mounting and window resizes never do. While a panel collapses or expands its content keeps its larger size, so it never squishes; its neighbours reflow live.
+- Collapsed is a state you or the user set, never inferred from size. A collapsed panel at 0 hides its content; a rail, `collapsed-size` above 0, keeps it, sized to the rail.
+- `horizontal` follows the writing direction, so right-to-left works for layout, drags and arrow keys.
+- Panels and separators may be added, removed or collapsed at any moment, even mid-drag.
 
 ## Install
 
@@ -68,15 +79,27 @@ React and Vue need no wrapper. For React 19 JSX typings, reference `bento/react`
 
 Default styles are barebones, like the browser's for inputs, and live inside the elements, so any rule of yours wins, Tailwind classes included. They use system colors, so dark mode and high contrast work. The separator is a 1px line with a 24px hit area, larger on touch screens, a resize cursor, a highlight on hover and drag, and a focus ring. Group, panel and separator are real elements, so `class`, `style`, `id`, `data-*` and `aria-*` land on them as written. Layout is ours: a `flex` or `flex-basis` of yours on a panel overrides it. A panel's `display`, flex and grid settings, `gap`, alignment and `overflow` lay out and scroll its children, so `class="flex flex-col gap-2 overflow-auto"` works on the panel. Padding and borders on the sides that collapse go on a content element inside, not the panel, or the panel stops collapsing at its padding. Margins on panels and separators are not supported; `gap` on the group is. `@container` queries inside a panel must be unnamed. Toggles animate with the panel's `transition-duration` and `transition-timing-function`, so `duration-300 ease-out` restyles them; any other `transition` on a panel would animate drags too. `--bento-size`, `--bento-min`, `--bento-max` and `--bento-collapsed-size` are readable from CSS.
 
-A modal panel is a full-height sheet on the side it sits on, over a backdrop. Style the panel itself: in modal mode its size, padding, background, border, radius and shadow go to the sheet, so `max-md:w-[85vw]` or a bottom sheet is plain CSS on the panel. The backdrop takes its color from `--bento-backdrop` on the panel, in Tailwind `[--bento-backdrop:rgb(0_0_0/.4)]`. Give a modal panel an `aria-label`; it names the dialog. Menus opened inside a modal panel must render inside it, since the rest of the page is inert. Opening a modal panel is up to you: write `collapsed = false`. The sheet fades in and out with the panel's `transition-duration`. Closing gives the page back at once: right after `collapsed = true` you can focus or scroll it while the sheet fades away.
+A modal panel is a full-height sheet on the side it sits on, over a backdrop. Style the panel itself: in modal mode its size, padding, background, border, radius and shadow go to the sheet, so `max-md:w-[85vw]` or a bottom sheet is plain CSS on the panel. The backdrop takes its color from `--bento-backdrop` on the panel, in Tailwind `[--bento-backdrop:rgb(0_0_0/.4)]`. Give a modal panel an `aria-label`; it names the dialog. Menus opened inside a modal panel must render inside it, since the rest of the page is inert. Opening a modal panel is up to you: write `collapsed = false`. One shows at a time; showing one collapses the others. Escape, the back gesture and a tap outside close it by collapsing, so `beforetoggle` can veto that too. The sheet fades in and out with the panel's `transition-duration`. Closing gives the page back at once: right after `collapsed = true` you can focus or scroll it while the sheet fades away.
 
 ## Accessibility
 
-Separators follow the WAI-ARIA window splitter pattern. Give each an `aria-label`, or `aria-labelledby` pointing at its panel's title. In browsers without ARIA element reflection, also add `aria-controls` with the panel's `id`. When a panel collapses while focus is inside it, focus moves to its separator. A panel collapsed to 0 hides its content from focus and assistive tech. With `prefers-reduced-motion`, the size change is instant and content cross-fades. Dragging is never animated.
+Separators follow the WAI-ARIA window splitter pattern; `aria-valuenow` is the primary panel's share of the group, 0 to 100. Keys with Alt, Ctrl or Meta are left to the browser, and F6 to your app. Give each an `aria-label`, or `aria-labelledby` pointing at its panel's title. In browsers without ARIA element reflection, also add `aria-controls` with the panel's `id`. When a panel collapses while focus is inside it, focus moves to its separator. A panel collapsed to 0 hides its content from focus and assistive tech. With `prefers-reduced-motion`, the size change is instant and content cross-fades. Dragging is never animated.
 
 ## Browser support
 
 Baseline Widely available: browsers from March 2024 on. Newer features enhance, never carry.
+
+## Not included
+
+- Docking, tabs, floating or popped-out panels, dragging panels to rearrange them: that is [dockview](https://dockview.dev).
+- Storing sizes: save `size` and `collapsed` on `resizeend` and `toggle`, and render them back as attributes.
+- A second API per framework.
+
+## Compared to
+
+- [react-resizable-panels](https://github.com/bvaughn/react-resizable-panels): React only, 15 kB min+gzip without React; no collapse animation or drawers. bento is under 10 kB with both, and borrows its drag and keyboard behavior.
+- Shoelace `sl-split-panel`: a web component, but two panes and no collapse animation.
+- split.js: plain JS, imperative, no animation.
 
 ## License
 
