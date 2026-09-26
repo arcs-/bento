@@ -73,14 +73,20 @@
   --log-toggle: var(--ink);
   --log-target: #1a222c;
   --log-detail: #5c6672;
-  --code-bg: #242a31;
-  --code-ink: #e3e7ec;
-  --tok-tag: #a9c7f0;
-  --tok-attr: #e6c88f;
-  --tok-value: #b9d99e;
-  --tok-comment: #929dab;
-  --tok-keyword: #e3aacb;
-  --tok-number: #e6c88f;
+  /*
+   * The bento code theme: another compartment of the box, dark titanium in both modes, in the
+   * colours of the lunch. Every token meets 4.5:1 on either background.
+   */
+  --code-bg: #1d2024;
+  --code-edge: inset 0 1px 3px rgb(0 0 0 / 0.5), inset 0 0 0 1px rgb(255 255 255 / 0.05);
+  --code-text: #f1ede4;
+  --code-tag: #ffce29;
+  --code-attr: #f4a6b8;
+  --code-string: #b5d98a;
+  --code-number: #ffb07a;
+  --code-keyword: #d7a6e8;
+  --code-comment: #8f98a3;
+  --code-punct: #aab2bb;
 
   --space-1: 8px;
   --space-2: 12px;
@@ -149,6 +155,6 @@
     --log-bg: #16191d;
     --log-target: #e5e9ed;
     --log-detail: #939daa;
-    --code-bg: #15181c;
+    --code-bg: #16181b;
   }
 }

@@ -217,24 +217,27 @@
 <h2 id="modal-panels">Modal panels</h2>
 
 <p>
-  While its <code>modal</code> query matches, a panel is a drawer. It arrives collapsed,
-  <code>collapsed = false</code> opens it, and Escape, back or a tap outside close it. Drag this
-  frame below 480px:
+  While its <code>modal</code> query matches, a panel is a drawer: it arrives collapsed,
+  <code>collapsed = false</code> opens it, and Escape, back or a tap outside close it. Open the
+  filters on the phone, then switch to desktop:
 </p>
 
-<!-- demo -->
-<div class="demo-frame demo-frame-bench">
-  <bento-group>
-    <bento-panel id="frame-panel" size="600px" min="280px">
-      <div class="demo-content frame-content">
-        <iframe src="modal-frame.html" title="Demo page with a filters panel"></iframe>
-      </div>
-    </bento-panel>
-    <bento-separator aria-label="Resize demo frame" aria-controls="frame-panel"></bento-separator>
-    <bento-panel> </bento-panel>
-  </bento-group>
+<div class="specimen">
+  <div class="specimen-stage device-stage">
+    <div class="device-switch" role="group" aria-label="Frame width">
+      <button class="satin-button" type="button" data-device="phone" aria-pressed="true">
+        Phone
+      </button>
+      <button class="satin-button" type="button" data-device="desktop" aria-pressed="false">
+        Desktop
+      </button>
+    </div>
+    <div class="device" data-device-frame="phone">
+      <iframe src="modal-frame.html" title="Demo page with a filters panel"></iframe>
+    </div>
+    <p class="device-caption">Same markup: a sidebar on wide screens, a drawer below 480px.</p>
+  </div>
 </div>
-<!-- /demo -->
 
 <!-- code: modal-frame.html#live | modal-frame.html -->
 

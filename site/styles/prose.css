@@ -93,11 +93,12 @@
   margin: 0 0 var(--space-5);
   padding: 16px 18px;
   overflow: auto;
-  color: var(--code-ink);
+  color: var(--code-text);
   font: 0.8125rem/1.65 var(--font-code);
   tab-size: 2;
   background: var(--code-bg);
   border-radius: var(--radius);
+  box-shadow: var(--code-edge);
 }
 
 .code code {
@@ -120,33 +121,33 @@
 }
 
 .tok-tag {
-  color: var(--tok-tag);
+  color: var(--code-tag);
 }
 
 .tok-attr {
-  color: var(--tok-attr);
+  color: var(--code-attr);
 }
 
 .tok-value,
 .tok-string {
-  color: var(--tok-value);
-}
-
-.tok-comment {
-  color: var(--tok-comment);
-  font-style: italic;
-}
-
-.tok-keyword {
-  color: var(--tok-keyword);
+  color: var(--code-string);
 }
 
 .tok-number {
-  color: var(--tok-number);
+  color: var(--code-number);
+}
+
+.tok-keyword {
+  color: var(--code-keyword);
+}
+
+.tok-comment {
+  color: var(--code-comment);
+  font-style: italic;
 }
 
 .tok-punct {
-  color: var(--tok-comment);
+  color: var(--code-punct);
 }
 
 /* Tables scroll sideways on narrow screens; rows are told apart by hairlines alone. */
