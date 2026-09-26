@@ -178,24 +178,25 @@
   white-space: nowrap;
 }
 
-/* A demo sits in a neutral frame, so bento shows its own look, with its markup right below. */
+/* A demo and its markup form one bordered unit, clearly set off from the page. */
 .specimen {
   margin: 1.6em 0 2.4em;
+  overflow: clip;
+  border: 1px solid var(--stage-edge);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 2px var(--button-drop);
 }
 
 .specimen-stage {
   display: grid;
   gap: 12px;
-  padding: 12px;
-  background: var(--surface);
-  border: 1px solid var(--hairline);
-  border-block-end: 0;
-  border-radius: var(--radius) var(--radius) 0 0;
+  padding: 14px;
+  background: var(--stage);
 }
 
 .specimen > .code {
   margin: 0;
-  border-radius: 0 0 var(--radius) var(--radius);
+  border-radius: 0;
 }
 
 .specimen-controls {

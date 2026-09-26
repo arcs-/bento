@@ -13,14 +13,18 @@
 
   .tray,
   .satin-button,
-  .specimen-stage,
-  .code,
+  .code-figure .code,
   .event-log {
     border: 1px solid CanvasText;
   }
 
-  .satin-button[aria-expanded]::before {
+  .satin-button[aria-expanded]::before,
+  .satin-button::after {
     display: none;
+  }
+
+  .specimen {
+    border-color: CanvasText;
   }
 
   .shell-group > bento-separator {

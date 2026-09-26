@@ -37,7 +37,23 @@
     rgb(255 255 255 / 0) 70%
   );
   --metal: var(--brushing), var(--sheen), linear-gradient(180deg, var(--frame), var(--frame-deep));
-  --satin: linear-gradient(180deg, var(--surface-raised), #eef0f2);
+  --button-top: #fdfdfe;
+  --button-bottom: #d9dee4;
+  --button-grain: rgb(255 255 255 / 0.18);
+  --button-edge: rgb(20 28 38 / 0.22);
+  --button-drop: rgb(20 28 38 / 0.18);
+  --button-sheen: rgb(255 255 255 / 0.7);
+  --button-ink: #1a222c;
+  --button-engrave: 0 1px 0 rgb(255 255 255 / 0.7);
+  --anodized-top: #3b6fbf;
+  --anodized-bottom: #1f4a8f;
+  --anodized-ink: #ffffff;
+  --lamp-off: #aab2bb;
+  --lamp-off-high: #e5e9ed;
+  --lamp-on-high: #d8e8ff;
+  --lamp-glow: rgb(59 111 191 / 0.55);
+  --stage: #eef1f4;
+  --stage-edge: rgb(26 34 44 / 0.3);
   --divider: linear-gradient(90deg, #f6f7f9, #b4bcc5 55%, #dde2e7);
   --divider-vertical: linear-gradient(180deg, #f6f7f9, #b4bcc5 55%, #dde2e7);
   --bevel-high: rgb(255 255 255 / 0.85);
@@ -97,7 +113,23 @@
       rgb(255 255 255 / 0.06) 45%,
       rgb(255 255 255 / 0) 70%
     );
-    --satin: linear-gradient(180deg, #3d444c, #343a41);
+    --button-top: #4f5761;
+    --button-bottom: #353c44;
+    --button-grain: rgb(255 255 255 / 0.04);
+    --button-edge: rgb(0 0 0 / 0.55);
+    --button-drop: rgb(0 0 0 / 0.4);
+    --button-sheen: rgb(255 255 255 / 0.16);
+    --button-ink: #eef1f4;
+    --button-engrave: 0 -1px 0 rgb(0 0 0 / 0.5);
+    --anodized-top: #9cc0f5;
+    --anodized-bottom: #6e9be0;
+    --anodized-ink: #10213b;
+    --lamp-off: #5d6670;
+    --lamp-off-high: #8c96a1;
+    --lamp-on-high: #e6f0ff;
+    --lamp-glow: rgb(147 184 240 / 0.6);
+    --stage: #23282e;
+    --stage-edge: rgb(229 233 237 / 0.3);
     --divider: linear-gradient(90deg, #5a636d, #3d444c 55%, #4f5760);
     --divider-vertical: linear-gradient(180deg, #5a636d, #3d444c 55%, #4f5760);
     --bevel-high: rgb(255 255 255 / 0.12);
