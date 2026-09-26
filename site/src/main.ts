@@ -1,5 +1,5 @@
 import type { BentoPanelElement } from "../../src/bento.ts";
-import { toggleAddedPanel } from "./demos/runtime-panel.ts";
+import { playground } from "./demos/playground.ts";
 import { rememberLayout } from "./demos/saved-layout.ts";
 import { guardUnsavedChanges } from "./demos/unsaved-changes.ts";
 import { EventLog } from "./event-log.ts";
@@ -37,9 +37,9 @@ function startDemos(): void {
   if (remembered && storage) rememberLayout(remembered, storage, "bento-docs-remembered-panel");
 
   const addButton = document.querySelector<HTMLButtonElement>("#add-panel");
-  const addGroup = document.querySelector("#runtime-demo");
-  const addTemplate = document.querySelector<HTMLTemplateElement>("#added-panel");
-  if (addButton && addGroup && addTemplate) toggleAddedPanel(addButton, addGroup, addTemplate);
+  const panelGroup = document.querySelector("#playground");
+  const panelTemplate = document.querySelector<HTMLTemplateElement>("#playground-panel");
+  if (addButton && panelGroup && panelTemplate) playground(panelGroup, addButton, panelTemplate);
 }
 
 /** Inspects the first demo panel, or the page's own content panel on pages without demos. */

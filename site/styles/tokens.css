@@ -1,5 +1,5 @@
 /*
- * A machined steel bento box: satin stainless by day, titanium by night. One anodized blue,
+ * A machined steel bento box: satin stainless by day, titanium by night. One chopstick yellow,
  * used sparingly, for what you can act on; a lacquer red only where a decision is asked.
  */
 :root {
@@ -13,10 +13,12 @@
   --ink: #1a222c;
   --ink-soft: #4a5562;
   --ink-faint: #66707c;
-  --accent: #245199;
-  --accent-tint: rgb(36 81 153 / 0.08);
+  /* The accent is the icon's chopstick yellow: a fill. Text and thin strokes use its dark ink. */
+  --accent: #ffce29;
+  --accent-ink: #7f5b00;
+  --accent-tint: rgb(255 206 41 / 0.22);
   --lacquer: #9e1f19;
-  --focus: #245199;
+  --focus: var(--accent-ink);
 
   /* The box is brushed steel; its compartments are a finer, lighter satin. */
   --frame: #d5dadf;
@@ -46,13 +48,13 @@
   --button-sheen: rgb(255 255 255 / 0.7);
   --button-ink: #1a222c;
   --button-engrave: 0 1px 0 rgb(255 255 255 / 0.7);
-  --anodized-top: #3b6fbf;
-  --anodized-bottom: #1f4a8f;
-  --anodized-ink: #ffffff;
+  --anodized-top: #ffe07a;
+  --anodized-bottom: #ffce29;
+  --anodized-ink: #1f1a0a;
   --lamp-off: #aab2bb;
   --lamp-off-high: #e5e9ed;
-  --lamp-on-high: #d8e8ff;
-  --lamp-glow: rgb(59 111 191 / 0.55);
+  --lamp-on-high: #fff3c4;
+  --lamp-glow: rgb(255 206 41 / 0.75);
   --stage: #eef1f4;
   --stage-edge: rgb(26 34 44 / 0.3);
   --divider: linear-gradient(90deg, #f6f7f9, #b4bcc5 55%, #dde2e7);
@@ -63,15 +65,13 @@
   --chrome-edge: 0 1px 0 rgb(255 255 255 / 0.7), inset 0 -1px 0 rgb(20 28 38 / 0.14);
 
   /* Elevation, used the same way everywhere: set in, raised, floating. */
-  --inset:
-    inset 0 2px 4px rgb(20 28 38 / 0.16), inset 0 0 0 1px rgb(20 28 38 / 0.12),
-    0 1px 0 rgb(255 255 255 / 0.8);
+  --inset: inset 0 2px 4px rgb(20 28 38 / 0.16), inset 0 0 0 1px rgb(20 28 38 / 0.12);
   --raised: 0 1px 2px rgb(20 28 38 / 0.12), 0 0 0 1px rgb(20 28 38 / 0.06);
   --floating: 0 16px 48px rgb(20 28 38 / 0.28), 0 0 0 1px rgb(20 28 38 / 0.06);
 
   --log-bg: #eceef1;
-  --log-type: #245199;
-  --log-toggle: #7a2e6b;
+  --log-type: var(--accent-ink);
+  --log-toggle: var(--ink);
   --log-target: #1a222c;
   --log-detail: #5c6672;
   --code-bg: #242a31;
@@ -92,10 +92,10 @@
     --ink: #e5e9ed;
     --ink-soft: #b1bac4;
     --ink-faint: #8e98a3;
-    --accent: #93b8f0;
-    --accent-tint: rgb(147 184 240 / 0.1);
+    --accent-ink: #ffce29;
+    --accent-tint: rgb(255 206 41 / 0.14);
     --lacquer: #ff9a8f;
-    --focus: #93b8f0;
+    --focus: var(--accent-ink);
 
     --frame: #30363d;
     --frame-deep: #292e34;
@@ -123,13 +123,11 @@
     --button-sheen: rgb(255 255 255 / 0.16);
     --button-ink: #eef1f4;
     --button-engrave: 0 -1px 0 rgb(0 0 0 / 0.5);
-    --anodized-top: #9cc0f5;
-    --anodized-bottom: #6e9be0;
-    --anodized-ink: #10213b;
+    --anodized-top: #ffe07a;
+    --anodized-bottom: #f2bd12;
     --lamp-off: #5d6670;
     --lamp-off-high: #8c96a1;
-    --lamp-on-high: #e6f0ff;
-    --lamp-glow: rgb(147 184 240 / 0.6);
+    --lamp-glow: rgb(255 206 41 / 0.6);
     --stage: #23282e;
     --stage-edge: rgb(229 233 237 / 0.3);
     --divider: linear-gradient(90deg, #5a636d, #3d444c 55%, #4f5760);
@@ -138,15 +136,11 @@
     --bevel-low: rgb(0 0 0 / 0.3);
     --chrome-edge: 0 1px 0 rgb(255 255 255 / 0.06), inset 0 -1px 0 rgb(0 0 0 / 0.45);
 
-    --inset:
-      inset 0 2px 4px rgb(0 0 0 / 0.45), inset 0 0 0 1px rgb(0 0 0 / 0.4),
-      0 1px 0 rgb(255 255 255 / 0.05);
+    --inset: inset 0 2px 4px rgb(0 0 0 / 0.45), inset 0 0 0 1px rgb(0 0 0 / 0.4);
     --raised: 0 1px 2px rgb(0 0 0 / 0.4), 0 0 0 1px rgb(255 255 255 / 0.05);
     --floating: 0 16px 48px rgb(0 0 0 / 0.55), 0 0 0 1px rgb(255 255 255 / 0.06);
 
     --log-bg: #16191d;
-    --log-type: #93b8f0;
-    --log-toggle: #e3aacb;
     --log-target: #e5e9ed;
     --log-detail: #939daa;
     --code-bg: #15181c;

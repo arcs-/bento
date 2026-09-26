@@ -75,8 +75,9 @@
 
 <p>
   A <code>collapsible</code> panel holds at <code>min</code>, then snaps shut past halfway to
-  <code>collapsed-size</code>. Enter on the separator toggles it, and so does writing
-  <code>collapsed</code>. <a href="decisions.html#0009-snap-at-halfway">Why halfway</a>
+  <code>collapsed-size</code>, 0 or a rail that keeps its content. Enter on the separator toggles
+  it, and so does writing <code>collapsed</code>.
+  <a href="decisions.html#0009-snap-at-halfway">Why halfway</a>
 </p>
 
 <!-- demo -->
@@ -91,9 +92,9 @@
     <bento-panel>
       <div class="demo-content"><strong>Main</strong></div>
     </bento-panel>
-    <bento-separator aria-label="Resize closed panel"></bento-separator>
-    <bento-panel id="starts-closed" size="180px" collapsible collapsed>
-      <div class="demo-content"><strong>Starts collapsed</strong><code>collapsed</code></div>
+    <bento-separator aria-label="Resize rail"></bento-separator>
+    <bento-panel id="starts-closed" size="180px" collapsible collapsed collapsed-size="48px">
+      <div class="demo-content"><strong>Rail</strong><code>collapsed-size="48px"</code></div>
     </bento-panel>
   </bento-group>
 </div>
@@ -107,56 +108,10 @@
     data-toggle-panel="starts-closed"
     aria-controls="starts-closed"
   >
-    Starts collapsed
+    Rail
   </button>
 </div>
 <!-- /demo -->
-
-<h2 id="rails">Rails</h2>
-
-<p>
-  With a <code>collapsed-size</code>, a collapsed panel keeps its content as a rail. The content
-  adapts by container query.
-</p>
-
-<!-- demo -->
-<div class="demo-frame">
-  <bento-group>
-    <bento-panel size="200px" min="150px" collapsible collapsed-size="48px">
-      <div class="demo-content rail-content">
-        <ul class="rail-list">
-          <li class="rail-item">
-            <svg viewBox="0 0 20 20" aria-hidden="true">
-              <circle cx="9" cy="9" r="5" />
-              <path d="m13 13 4 4" />
-            </svg>
-            <span>Search</span>
-          </li>
-          <li class="rail-item">
-            <svg viewBox="0 0 20 20" aria-hidden="true">
-              <path d="M3 5h14M3 10h14M3 15h9" />
-            </svg>
-            <span>Documents</span>
-          </li>
-          <li class="rail-item">
-            <svg viewBox="0 0 20 20" aria-hidden="true">
-              <circle cx="10" cy="10" r="3" />
-              <path d="M10 2v3M10 15v3M2 10h3M15 10h3" />
-            </svg>
-            <span>Settings</span>
-          </li>
-        </ul>
-      </div>
-    </bento-panel>
-    <bento-separator aria-label="Resize navigation"></bento-separator>
-    <bento-panel>
-      <div class="demo-content"><strong>Main</strong></div>
-    </bento-panel>
-  </bento-group>
-</div>
-<!-- /demo -->
-
-<!-- code: styles/demo-rail.css -->
 
 <h2 id="nesting">Nested groups</h2>
 
@@ -224,81 +179,41 @@
 </div>
 <!-- /demo -->
 
-<h2 id="keyboard">Keyboard</h2>
-
-<div class="table-well" tabindex="0">
-  <table>
-    <thead>
-      <tr>
-        <th scope="col">Key</th>
-        <th scope="col">Does</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Arrows along the group</td>
-        <td>10px, 100px with Shift</td>
-      </tr>
-      <tr>
-        <td>Enter</td>
-        <td>Toggle a collapsible primary panel</td>
-      </tr>
-      <tr>
-        <td>Home, End</td>
-        <td>Primary panel to its <code>min</code>, <code>max</code></td>
-      </tr>
-      <tr>
-        <td>Double-click</td>
-        <td>Back to the starting size and state</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
-<p>Both panels here have a size, so <code>aria-controls</code> picks the primary one.</p>
-
-<!-- demo -->
-<div class="demo-frame">
-  <bento-group>
-    <bento-panel id="left-pane" size="35%" min="20%" max="60%" collapsible>
-      <div class="demo-content">
-        <strong>Primary</strong><code>min="20%" max="60%"</code><span data-live-width></span>
-      </div>
-    </bento-panel>
-    <bento-separator aria-label="Resize primary pane" aria-controls="left-pane"></bento-separator>
-    <bento-panel size="30%" min="20%">
-      <div class="demo-content"><strong>Other</strong></div>
-    </bento-panel>
-  </bento-group>
-</div>
-<!-- /demo -->
-
 <h2 id="runtime">Adding panels</h2>
 
-<p>Panels and separators may come and go at any time, even mid-drag.</p>
+<p>
+  Panels and separators may come and go at any time, even mid-drag. Add a few, drag them, remove
+  some:
+</p>
 
 <!-- demo -->
 <div class="demo-frame">
-  <bento-group id="runtime-demo">
+  <bento-group id="playground">
     <bento-panel>
-      <div class="demo-content"><strong>Results</strong></div>
+      <div class="demo-content">
+        <strong data-label>Panel 1</strong><span data-live-width></span>
+        <button class="satin-button" type="button" data-remove aria-label="Remove panel 1">
+          Remove
+        </button>
+      </div>
     </bento-panel>
   </bento-group>
 </div>
-<template id="added-panel">
-  <bento-separator data-added aria-label="Resize details"></bento-separator>
-  <bento-panel id="details" data-added size="220px" min="160px" collapsible>
-    <div class="demo-content"><strong>Details</strong><code>size="220px"</code></div>
+<template id="playground-panel">
+  <bento-separator></bento-separator>
+  <bento-panel min="60px">
+    <div class="demo-content">
+      <strong data-label></strong><span data-live-width></span>
+      <button class="satin-button" type="button" data-remove>Remove</button>
+    </div>
   </bento-panel>
 </template>
 <div class="specimen-controls">
-  <button id="add-panel" class="satin-button" type="button" aria-pressed="false">
-    Show details
-  </button>
+  <button id="add-panel" class="satin-button anodized" type="button">Add panel</button>
 </div>
 <!-- /demo -->
 
-<!-- code: src/demos/runtime-panel.ts -->
+<!-- code: src/demos/playground.ts -->
 
 <h2 id="modal-panels">Modal panels</h2>
 

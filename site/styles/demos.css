@@ -47,6 +47,11 @@
   }
 }
 
+.demo-content [data-remove] {
+  align-self: flex-start;
+  margin-block-start: 4px;
+}
+
 [data-live-width] {
   color: var(--ink-faint);
   font-size: 0.8125rem;
