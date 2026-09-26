@@ -1,12 +1,3 @@
-/* In modal mode the panel's own box styles go to the sheet, and --bento-backdrop colors what is behind it. */
-#filters:state(modal) {
-  inline-size: min(260px, 85vw);
-  padding: 8px;
-  background: var(--metal);
-  box-shadow: var(--floating);
-  --bento-backdrop: rgb(20 26 34 / 0.35);
-}
-
 /* Opening a drawer is the app's job, so the buttons show only while the panel is modal. */
 .open-drawer {
   display: none;

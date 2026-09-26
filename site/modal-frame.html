@@ -13,9 +13,9 @@
     <link rel="stylesheet" href="/styles/site.css" />
     <script type="module" src="/src/main.ts"></script>
   </head>
-  <body>
+  <body class="frame-page">
     <!-- live -->
-    <bento-group class="frame-layout">
+    <bento-group>
       <bento-panel
         id="filters"
         size="200px"
@@ -24,7 +24,7 @@
         modal="(max-width: 480px)"
         aria-label="Filters"
       >
-        <div class="tray">
+        <div class="demo-content">
           <h2>Filters</h2>
           <fieldset class="filter-list">
             <legend>Material</legend>
@@ -39,7 +39,7 @@
       </bento-panel>
       <bento-separator aria-label="Resize filters" aria-controls="filters"></bento-separator>
       <bento-panel>
-        <div class="tray">
+        <div class="demo-content">
           <button
             class="satin-button open-drawer"
             type="button"

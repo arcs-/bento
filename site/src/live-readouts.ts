@@ -1,9 +1,5 @@
 import type { BentoPanelElement } from "../../src/bento.ts";
-
-const isPanel = (element: Element | null): element is BentoPanelElement =>
-  element?.localName === "bento-panel";
-
-const isModal = (panel: BentoPanelElement) => panel.modal !== "" && matchMedia(panel.modal).matches;
+import { isModal, isPanel } from "./panels.ts";
 
 function describePanel(panel: BentoPanelElement, name: string): string {
   if (isModal(panel)) return `${name}: drawer, ${panel.collapsed ? "closed" : "open"}`;

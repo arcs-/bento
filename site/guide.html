@@ -5,8 +5,8 @@
 <h1>Guide</h1>
 
 <p class="lead">
-  Every demo is live. The code under it is the markup that runs it, and the inspector logs its
-  events.
+  Every demo is live and in bento's default look. The code under it is the markup that runs it, and
+  the inspector shows its state and events. <a href="#styling">Styling</a> themes one.
 </p>
 
 <h2 id="groups">Groups</h2>
@@ -17,19 +17,21 @@
 </p>
 
 <!-- demo -->
-<bento-group class="demo-box">
-  <bento-panel>
-    <div class="tray"><strong>One</strong><span data-live-width></span></div>
-  </bento-panel>
-  <bento-separator aria-label="Resize one and two"></bento-separator>
-  <bento-panel>
-    <div class="tray"><strong>Two</strong><span data-live-width></span></div>
-  </bento-panel>
-  <bento-separator aria-label="Resize two and three"></bento-separator>
-  <bento-panel>
-    <div class="tray"><strong>Three</strong><span data-live-width></span></div>
-  </bento-panel>
-</bento-group>
+<div class="demo-frame">
+  <bento-group>
+    <bento-panel>
+      <div class="demo-content"><strong>One</strong><span data-live-width></span></div>
+    </bento-panel>
+    <bento-separator aria-label="Resize one and two"></bento-separator>
+    <bento-panel>
+      <div class="demo-content"><strong>Two</strong><span data-live-width></span></div>
+    </bento-panel>
+    <bento-separator aria-label="Resize two and three"></bento-separator>
+    <bento-panel>
+      <div class="demo-content"><strong>Three</strong><span data-live-width></span></div>
+    </bento-panel>
+  </bento-group>
+</div>
 <!-- /demo -->
 
 <p>
@@ -46,25 +48,27 @@
 </p>
 
 <!-- demo -->
-<bento-group class="demo-box">
-  <bento-panel size="200px" min="120px" max="320px">
-    <div class="tray">
-      <strong>Fixed</strong><code>200px, 120px to 320px</code><span data-live-width></span>
-    </div>
-  </bento-panel>
-  <bento-separator aria-label="Resize fixed panel"></bento-separator>
-  <bento-panel>
-    <div class="tray">
-      <strong>Flexible</strong><code>no size</code><span data-live-width></span>
-    </div>
-  </bento-panel>
-  <bento-separator aria-label="Resize share panel"></bento-separator>
-  <bento-panel size="25%" min="15%">
-    <div class="tray">
-      <strong>Share</strong><code>25%, at least 15%</code><span data-live-width></span>
-    </div>
-  </bento-panel>
-</bento-group>
+<div class="demo-frame">
+  <bento-group>
+    <bento-panel size="200px" min="120px" max="320px">
+      <div class="demo-content">
+        <strong>Fixed</strong><code>200px, 120px to 320px</code><span data-live-width></span>
+      </div>
+    </bento-panel>
+    <bento-separator aria-label="Resize fixed panel"></bento-separator>
+    <bento-panel>
+      <div class="demo-content">
+        <strong>Flexible</strong><code>no size</code><span data-live-width></span>
+      </div>
+    </bento-panel>
+    <bento-separator aria-label="Resize share panel"></bento-separator>
+    <bento-panel size="25%" min="15%">
+      <div class="demo-content">
+        <strong>Share</strong><code>25%, at least 15%</code><span data-live-width></span>
+      </div>
+    </bento-panel>
+  </bento-group>
+</div>
 <!-- /demo -->
 
 <h2 id="collapsing">Collapsing</h2>
@@ -76,21 +80,23 @@
 </p>
 
 <!-- demo -->
-<bento-group class="demo-box">
-  <bento-panel id="snapping" size="220px" min="160px" collapsible>
-    <div class="tray">
-      <strong>Collapsible</strong><code>min="160px"</code><span data-live-width></span>
-    </div>
-  </bento-panel>
-  <bento-separator aria-label="Resize collapsible panel"></bento-separator>
-  <bento-panel>
-    <div class="tray"><strong>Main</strong></div>
-  </bento-panel>
-  <bento-separator aria-label="Resize closed panel"></bento-separator>
-  <bento-panel id="starts-closed" size="180px" collapsible collapsed>
-    <div class="tray"><strong>Starts collapsed</strong><code>collapsed</code></div>
-  </bento-panel>
-</bento-group>
+<div class="demo-frame">
+  <bento-group>
+    <bento-panel id="snapping" size="220px" min="160px" collapsible>
+      <div class="demo-content">
+        <strong>Collapsible</strong><code>min="160px"</code><span data-live-width></span>
+      </div>
+    </bento-panel>
+    <bento-separator aria-label="Resize collapsible panel"></bento-separator>
+    <bento-panel>
+      <div class="demo-content"><strong>Main</strong></div>
+    </bento-panel>
+    <bento-separator aria-label="Resize closed panel"></bento-separator>
+    <bento-panel id="starts-closed" size="180px" collapsible collapsed>
+      <div class="demo-content"><strong>Starts collapsed</strong><code>collapsed</code></div>
+    </bento-panel>
+  </bento-group>
+</div>
 <div class="specimen-controls">
   <button class="satin-button" type="button" data-toggle-panel="snapping" aria-controls="snapping">
     Collapsible
@@ -114,38 +120,40 @@
 </p>
 
 <!-- demo -->
-<bento-group class="demo-box">
-  <bento-panel size="200px" min="150px" collapsible collapsed-size="48px">
-    <div class="tray rail-tray">
-      <ul class="rail-list">
-        <li class="rail-item">
-          <svg viewBox="0 0 20 20" aria-hidden="true">
-            <circle cx="9" cy="9" r="5" />
-            <path d="m13 13 4 4" />
-          </svg>
-          <span>Search</span>
-        </li>
-        <li class="rail-item">
-          <svg viewBox="0 0 20 20" aria-hidden="true">
-            <path d="M3 5h14M3 10h14M3 15h9" />
-          </svg>
-          <span>Documents</span>
-        </li>
-        <li class="rail-item">
-          <svg viewBox="0 0 20 20" aria-hidden="true">
-            <circle cx="10" cy="10" r="3" />
-            <path d="M10 2v3M10 15v3M2 10h3M15 10h3" />
-          </svg>
-          <span>Settings</span>
-        </li>
-      </ul>
-    </div>
-  </bento-panel>
-  <bento-separator aria-label="Resize navigation"></bento-separator>
-  <bento-panel>
-    <div class="tray"><strong>Main</strong></div>
-  </bento-panel>
-</bento-group>
+<div class="demo-frame">
+  <bento-group>
+    <bento-panel size="200px" min="150px" collapsible collapsed-size="48px">
+      <div class="demo-content rail-content">
+        <ul class="rail-list">
+          <li class="rail-item">
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <circle cx="9" cy="9" r="5" />
+              <path d="m13 13 4 4" />
+            </svg>
+            <span>Search</span>
+          </li>
+          <li class="rail-item">
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <path d="M3 5h14M3 10h14M3 15h9" />
+            </svg>
+            <span>Documents</span>
+          </li>
+          <li class="rail-item">
+            <svg viewBox="0 0 20 20" aria-hidden="true">
+              <circle cx="10" cy="10" r="3" />
+              <path d="M10 2v3M10 15v3M2 10h3M15 10h3" />
+            </svg>
+            <span>Settings</span>
+          </li>
+        </ul>
+      </div>
+    </bento-panel>
+    <bento-separator aria-label="Resize navigation"></bento-separator>
+    <bento-panel>
+      <div class="demo-content"><strong>Main</strong></div>
+    </bento-panel>
+  </bento-group>
+</div>
 <!-- /demo -->
 
 <!-- code: styles/demo-rail.css -->
@@ -155,27 +163,29 @@
 <p>A group can fill a panel, in either direction.</p>
 
 <!-- demo -->
-<bento-group class="demo-box demo-tall">
-  <bento-panel size="160px" min="120px" collapsible>
-    <div class="tray"><strong>Files</strong></div>
-  </bento-panel>
-  <bento-separator aria-label="Resize files"></bento-separator>
-  <bento-panel>
-    <bento-group orientation="vertical">
-      <bento-panel>
-        <div class="tray"><strong>Editor</strong></div>
-      </bento-panel>
-      <bento-separator aria-label="Resize terminal"></bento-separator>
-      <bento-panel size="35%" min="64px" collapsible>
-        <div class="tray"><strong>Terminal</strong></div>
-      </bento-panel>
-    </bento-group>
-  </bento-panel>
-  <bento-separator aria-label="Resize outline"></bento-separator>
-  <bento-panel size="150px" min="110px" collapsible>
-    <div class="tray"><strong>Outline</strong></div>
-  </bento-panel>
-</bento-group>
+<div class="demo-frame demo-frame-tall">
+  <bento-group>
+    <bento-panel size="160px" min="120px" collapsible>
+      <div class="demo-content"><strong>Files</strong></div>
+    </bento-panel>
+    <bento-separator aria-label="Resize files"></bento-separator>
+    <bento-panel>
+      <bento-group orientation="vertical">
+        <bento-panel>
+          <div class="demo-content"><strong>Editor</strong></div>
+        </bento-panel>
+        <bento-separator aria-label="Resize terminal"></bento-separator>
+        <bento-panel size="35%" min="64px" collapsible>
+          <div class="demo-content"><strong>Terminal</strong></div>
+        </bento-panel>
+      </bento-group>
+    </bento-panel>
+    <bento-separator aria-label="Resize outline"></bento-separator>
+    <bento-panel size="150px" min="110px" collapsible>
+      <div class="demo-content"><strong>Outline</strong></div>
+    </bento-panel>
+  </bento-group>
+</div>
 <!-- /demo -->
 
 <h2 id="vertical">Vertical</h2>
@@ -183,15 +193,17 @@
 <p><code>orientation="vertical"</code> stacks panels. Up and Down move the separator.</p>
 
 <!-- demo -->
-<bento-group orientation="vertical" class="demo-box demo-tall">
-  <bento-panel>
-    <div class="tray"><strong>Preview</strong></div>
-  </bento-panel>
-  <bento-separator aria-label="Resize console"></bento-separator>
-  <bento-panel size="120px" min="80px" collapsible>
-    <div class="tray"><strong>Console</strong><code>size="120px"</code></div>
-  </bento-panel>
-</bento-group>
+<div class="demo-frame demo-frame-tall">
+  <bento-group orientation="vertical">
+    <bento-panel>
+      <div class="demo-content"><strong>Preview</strong></div>
+    </bento-panel>
+    <bento-separator aria-label="Resize console"></bento-separator>
+    <bento-panel size="120px" min="80px" collapsible>
+      <div class="demo-content"><strong>Console</strong><code>size="120px"</code></div>
+    </bento-panel>
+  </bento-group>
+</div>
 <!-- /demo -->
 
 <h2 id="right-to-left">Right to left</h2>
@@ -199,15 +211,17 @@
 <p>Horizontal groups follow the writing direction, and arrow keys move the way they point.</p>
 
 <!-- demo -->
-<bento-group dir="rtl" class="demo-box">
-  <bento-panel size="200px" min="140px" collapsible>
-    <div class="tray"><strong>Start</strong><code>size="200px"</code></div>
-  </bento-panel>
-  <bento-separator aria-label="Resize start panel"></bento-separator>
-  <bento-panel>
-    <div class="tray"><strong>End</strong></div>
-  </bento-panel>
-</bento-group>
+<div class="demo-frame">
+  <bento-group dir="rtl">
+    <bento-panel size="200px" min="140px" collapsible>
+      <div class="demo-content"><strong>Start</strong><code>size="200px"</code></div>
+    </bento-panel>
+    <bento-separator aria-label="Resize start panel"></bento-separator>
+    <bento-panel>
+      <div class="demo-content"><strong>End</strong></div>
+    </bento-panel>
+  </bento-group>
+</div>
 <!-- /demo -->
 
 <h2 id="keyboard">Keyboard</h2>
@@ -244,17 +258,19 @@
 <p>Both panels here have a size, so <code>aria-controls</code> picks the primary one.</p>
 
 <!-- demo -->
-<bento-group class="demo-box">
-  <bento-panel id="left-pane" size="35%" min="20%" max="60%" collapsible>
-    <div class="tray">
-      <strong>Primary</strong><code>min="20%" max="60%"</code><span data-live-width></span>
-    </div>
-  </bento-panel>
-  <bento-separator aria-label="Resize primary pane" aria-controls="left-pane"></bento-separator>
-  <bento-panel size="30%" min="20%">
-    <div class="tray"><strong>Other</strong></div>
-  </bento-panel>
-</bento-group>
+<div class="demo-frame">
+  <bento-group>
+    <bento-panel id="left-pane" size="35%" min="20%" max="60%" collapsible>
+      <div class="demo-content">
+        <strong>Primary</strong><code>min="20%" max="60%"</code><span data-live-width></span>
+      </div>
+    </bento-panel>
+    <bento-separator aria-label="Resize primary pane" aria-controls="left-pane"></bento-separator>
+    <bento-panel size="30%" min="20%">
+      <div class="demo-content"><strong>Other</strong></div>
+    </bento-panel>
+  </bento-group>
+</div>
 <!-- /demo -->
 
 <h2 id="runtime">Adding panels</h2>
@@ -262,15 +278,17 @@
 <p>Panels and separators may come and go at any time, even mid-drag.</p>
 
 <!-- demo -->
-<bento-group id="runtime-demo" class="demo-box">
-  <bento-panel>
-    <div class="tray"><strong>Results</strong></div>
-  </bento-panel>
-</bento-group>
+<div class="demo-frame">
+  <bento-group id="runtime-demo">
+    <bento-panel>
+      <div class="demo-content"><strong>Results</strong></div>
+    </bento-panel>
+  </bento-group>
+</div>
 <template id="added-panel">
   <bento-separator data-added aria-label="Resize details"></bento-separator>
   <bento-panel id="details" data-added size="220px" min="160px" collapsible>
-    <div class="tray"><strong>Details</strong><code>size="220px"</code></div>
+    <div class="demo-content"><strong>Details</strong><code>size="220px"</code></div>
   </bento-panel>
 </template>
 <div class="specimen-controls">
@@ -291,17 +309,17 @@
 </p>
 
 <!-- demo -->
-<bento-group class="demo-box frame-bench">
-  <bento-panel id="frame-panel" size="600px" min="280px">
-    <div class="tray frame-tray">
-      <iframe src="modal-frame.html" title="Demo page with a filters panel"></iframe>
-    </div>
-  </bento-panel>
-  <bento-separator aria-label="Resize demo frame" aria-controls="frame-panel"></bento-separator>
-  <bento-panel>
-    <div class="tray bench-rest"></div>
-  </bento-panel>
-</bento-group>
+<div class="demo-frame demo-frame-bench">
+  <bento-group>
+    <bento-panel id="frame-panel" size="600px" min="280px">
+      <div class="demo-content frame-content">
+        <iframe src="modal-frame.html" title="Demo page with a filters panel"></iframe>
+      </div>
+    </bento-panel>
+    <bento-separator aria-label="Resize demo frame" aria-controls="frame-panel"></bento-separator>
+    <bento-panel> </bento-panel>
+  </bento-group>
+</div>
 <!-- /demo -->
 
 <!-- code: modal-frame.html#live | modal-frame.html -->
@@ -356,26 +374,28 @@
 </p>
 
 <!-- demo -->
-<bento-group id="events-demo" class="demo-box demo-tall">
-  <bento-panel id="notes" size="55%" min="220px" collapsible>
-    <div class="tray notes-tray">
-      <label for="notes-text"><strong>Notes</strong></label>
-      <textarea id="notes-text">Type here, then collapse this panel.</textarea>
-      <div class="discard-prompt" role="alert" data-discard-prompt hidden>
-        <span>Discard your changes?</span>
-        <button class="satin-button" type="button" data-discard>Discard</button>
-        <button class="satin-button" type="button" data-keep>Keep editing</button>
+<div class="demo-frame demo-frame-tall">
+  <bento-group id="events-demo">
+    <bento-panel id="notes" size="55%" min="220px" collapsible>
+      <div class="demo-content notes-content">
+        <label for="notes-text"><strong>Notes</strong></label>
+        <textarea id="notes-text">Type here, then collapse this panel.</textarea>
+        <div class="discard-prompt" role="alert" data-discard-prompt hidden>
+          <span>Discard your changes?</span>
+          <button class="satin-button" type="button" data-discard>Discard</button>
+          <button class="satin-button" type="button" data-keep>Keep editing</button>
+        </div>
       </div>
-    </div>
-  </bento-panel>
-  <bento-separator aria-label="Resize notes"></bento-separator>
-  <bento-panel>
-    <div class="tray">
-      <strong>Events in this group</strong>
-      <ol id="events-demo-log" class="event-log demo-log" data-event-log="#events-demo"></ol>
-    </div>
-  </bento-panel>
-</bento-group>
+    </bento-panel>
+    <bento-separator aria-label="Resize notes"></bento-separator>
+    <bento-panel>
+      <div class="demo-content">
+        <strong>Events in this group</strong>
+        <ol id="events-demo-log" class="event-log demo-log" data-event-log="#events-demo"></ol>
+      </div>
+    </bento-panel>
+  </bento-group>
+</div>
 <!-- /demo -->
 
 <!-- code: src/demos/unsaved-changes.ts -->
@@ -392,15 +412,17 @@
 </p>
 
 <!-- demo -->
-<bento-group class="demo-box">
-  <bento-panel id="remembered" size="240px" min="160px" collapsible>
-    <div class="tray"><strong>Remembered</strong><span data-live-width></span></div>
-  </bento-panel>
-  <bento-separator aria-label="Resize remembered panel"></bento-separator>
-  <bento-panel>
-    <div class="tray"><strong>Main</strong></div>
-  </bento-panel>
-</bento-group>
+<div class="demo-frame">
+  <bento-group>
+    <bento-panel id="remembered" size="240px" min="160px" collapsible>
+      <div class="demo-content"><strong>Remembered</strong><span data-live-width></span></div>
+    </bento-panel>
+    <bento-separator aria-label="Resize remembered panel"></bento-separator>
+    <bento-panel>
+      <div class="demo-content"><strong>Main</strong></div>
+    </bento-panel>
+  </bento-group>
+</div>
 <!-- /demo -->
 
 <!-- code: src/demos/saved-layout.ts -->
@@ -411,7 +433,8 @@
   <code>size</code> and <code>collapsed</code> are live, like an input's <code>value</code>. The
   attributes, or writes before the first layout, are the starting state that
   <code>defaultSize</code> and <code>defaultCollapsed</code> read and double-click restores. Writing
-  <code>collapsed</code> animates once the user has interacted with the page.
+  <code>collapsed</code> animates once the user has interacted with the page. The inspector shows
+  both side by side for any panel you click.
   <a href="decisions.html#0007-defaults-and-live-state">Why</a>
 </p>
 
@@ -420,37 +443,13 @@
 <h2 id="styling">Styling</h2>
 
 <p>
-  Any rule of yours wins. Put one element in each panel for padding and scrolling. Toggles take the
-  panel's <code>transition-duration</code> and timing function; live state is
-  <code>:state(collapsed)</code>, <code>:state(modal)</code> and <code>:state(dragging)</code>.
+  The demos above show bento's default look. This one is themed: any rule of yours wins over
+  bento's. It restyles the separators, gives each panel one content element, times a toggle with the
+  panel's <code>transition-duration</code>, dims <code>:state(collapsed)</code>, and styles the
+  drawer and its <code>--bento-backdrop</code> below 560px.
 </p>
 
-<!-- demo -->
-<bento-group class="demo-box styled-demo">
-  <bento-panel
-    id="styled"
-    class="duration-700 ease-out"
-    size="240px"
-    min="150px"
-    collapsible
-    collapsed-size="40px"
-  >
-    <div class="tray">
-      <strong>Slow</strong>
-      <span class="min-marker">min</span>
-    </div>
-  </bento-panel>
-  <bento-separator aria-label="Resize slow panel"></bento-separator>
-  <bento-panel>
-    <div class="tray"><strong>Main</strong></div>
-  </bento-panel>
-</bento-group>
-<div class="specimen-controls">
-  <button class="satin-button" type="button" data-toggle-panel="styled" aria-controls="styled">
-    Slow panel
-  </button>
-</div>
-<!-- /demo -->
+<!-- demo-file: demos/lunch-box.html -->
 
 <!-- code: styles/demo-styling.css -->
 

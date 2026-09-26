@@ -47,15 +47,17 @@ npm install bento
 <p>A sidebar from 160 to 400px that collapses, next to a panel that fills the rest:</p>
 
 <!-- demo -->
-<bento-group class="demo-box">
-  <bento-panel size="240px" min="160px" max="400px" collapsible>
-    <div class="tray">Sidebar</div>
-  </bento-panel>
-  <bento-separator aria-label="Resize sidebar"></bento-separator>
-  <bento-panel>
-    <div class="tray">Main</div>
-  </bento-panel>
-</bento-group>
+<div class="demo-frame">
+  <bento-group>
+    <bento-panel size="240px" min="160px" max="400px" collapsible>
+      <div class="demo-content">Sidebar</div>
+    </bento-panel>
+    <bento-separator aria-label="Resize sidebar"></bento-separator>
+    <bento-panel>
+      <div class="demo-content">Main</div>
+    </bento-panel>
+  </bento-group>
+</div>
 <!-- /demo -->
 
 <p>

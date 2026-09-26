@@ -17,7 +17,7 @@
   <body>
     <a class="skip-link" href="#content">Skip to content</a>
     <bento-group class="box" orientation="vertical">
-      <bento-panel class="titlebar" size="52px">
+      <bento-panel id="titlebar" class="titlebar" size="52px">
         <header class="titlebar-plate">
           <a class="wordmark" href="index.html" aria-label="bento, home">
             <svg class="wordmark-mark" viewBox="0 0 20 20" aria-hidden="true">
@@ -47,7 +47,7 @@
         </header>
       </bento-panel>
       <bento-panel class="workspace">
-        <bento-group class="layout">
+        <bento-group class="shell-group layout">
           <bento-panel
             id="contents"
             class="drawer"
@@ -91,32 +91,66 @@
             modal="(max-width: 1100px)"
             aria-label="Inspector"
           >
-            <aside class="tray tray-inspector" aria-labelledby="inspector-title">
-              <div class="inspector-head">
-                <h2 id="inspector-title">Event log</h2>
-                <button class="satin-button" type="button" data-clear-log="page-log">Clear</button>
-                <button
-                  class="satin-button drawer-close"
-                  type="button"
-                  data-close-panel="inspector"
+            <bento-group class="shell-group inspector-stack" orientation="vertical">
+              <bento-panel id="panel-pane" min="160px">
+                <section
+                  class="tray tray-inspector"
+                  aria-labelledby="panel-inspector-title"
+                  data-panel-inspector
                 >
-                  Close
-                </button>
-              </div>
-              <p class="inspector-note">
-                Every bento event on this page, heard in the capture phase.
-              </p>
-              <ol id="page-log" class="event-log" data-event-log="document"></ol>
-            </aside>
+                  <div class="inspector-head">
+                    <h2 id="panel-inspector-title">Panel</h2>
+                    <button
+                      class="satin-button drawer-close"
+                      type="button"
+                      data-close-panel="inspector"
+                    >
+                      Close
+                    </button>
+                  </div>
+                  <p class="inspector-note">
+                    <code data-inspected-name>none</code>. Click, focus or hover a panel.
+                  </p>
+                  <table class="inspector-table">
+                    <thead>
+                      <tr>
+                        <td></td>
+                        <th scope="col">Live</th>
+                        <th scope="col">Start</th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                  <dl class="inspector-facts"></dl>
+                </section>
+              </bento-panel>
+              <bento-separator
+                aria-label="Resize event log"
+                aria-controls="log-pane"
+                tabindex="0"
+              ></bento-separator>
+              <bento-panel id="log-pane" size="40%" min="140px" collapsible collapsed-size="52px">
+                <section class="tray tray-inspector" aria-labelledby="inspector-title">
+                  <div class="inspector-head">
+                    <h2 id="inspector-title">Event log</h2>
+                    <button class="satin-button" type="button" data-clear-log="page-log">
+                      Clear
+                    </button>
+                  </div>
+                  <ol id="page-log" class="event-log" data-event-log="document"></ol>
+                </section>
+              </bento-panel>
+            </bento-group>
           </bento-panel>
         </bento-group>
       </bento-panel>
-      <bento-panel class="statusbar" size="28px">
+      <bento-panel id="statusbar" class="statusbar" size="28px">
         <footer class="statusbar-row">
           <output class="status-cell" data-status-of="contents">Contents</output>
           <output class="status-cell status-cell-wide" data-status-of="page-panel">Page</output>
           <output class="status-cell" data-status-of="inspector">Inspector</output>
           <span class="status-cell status-cell-end">MIT licensed</span>
+          <a class="status-link" href="https://stillh.art" rel="author">stillh.art</a>
         </footer>
       </bento-panel>
     </bento-group>
