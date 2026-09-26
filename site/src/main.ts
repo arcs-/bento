@@ -1,6 +1,5 @@
 import type { BentoPanelElement } from "../../src/bento.ts";
 import { playground } from "./demos/playground.ts";
-import { rememberLayout } from "./demos/saved-layout.ts";
 import { guardUnsavedChanges } from "./demos/unsaved-changes.ts";
 import { EventLog } from "./event-log.ts";
 import { showLiveSizes } from "./live-readouts.ts";
@@ -20,15 +19,6 @@ function startEventLogs(): void {
   }
 }
 
-/** Storage can be missing or throw, in private windows or with site data blocked. */
-function localStorageIfAvailable(): Storage | null {
-  try {
-    return window.localStorage;
-  } catch {
-    return null;
-  }
-}
-
 function startDemos(): void {
   const switcher = document.querySelector(".device-switch");
   const device = document.querySelector<HTMLElement>("[data-device-frame]");
@@ -36,10 +26,6 @@ function startDemos(): void {
 
   const editor = document.querySelector<BentoPanelElement>("bento-panel#notes");
   if (editor) guardUnsavedChanges(editor);
-
-  const remembered = document.querySelector<BentoPanelElement>("bento-panel#remembered");
-  const storage = localStorageIfAvailable();
-  if (remembered && storage) rememberLayout(remembered, storage, "bento-docs-remembered-panel");
 
   const addButton = document.querySelector<HTMLButtonElement>("#add-panel");
   const panelGroup = document.querySelector("#playground");

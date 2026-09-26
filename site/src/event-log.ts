@@ -1,9 +1,7 @@
 import type { BentoPanelElement } from "../../src/bento.ts";
+import { isPanel } from "./panels.ts";
 
 const panelEvents = ["resize", "resizeend", "beforetoggle", "toggle"] as const;
-
-const isPanel = (target: EventTarget | null): target is BentoPanelElement =>
-  target instanceof HTMLElement && target.localName === "bento-panel";
 
 const panelName = (panel: BentoPanelElement) => (panel.id ? `#${panel.id}` : "a panel");
 

@@ -3,6 +3,7 @@
   body,
   .satin-button,
   .specimen-stage,
+  .lunch-box,
   [class*="food-"] {
     background: Canvas;
   }

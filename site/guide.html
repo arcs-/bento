@@ -5,78 +5,48 @@
 <h1>Guide</h1>
 
 <p class="lead">
-  Every demo is live and in bento's default look. The code under it is the markup that runs it, and
-  the inspector shows its state and events. <a href="#styling">Styling</a> themes one.
+  Live demos in bento's default look, each above the markup that runs it. Click a panel: the
+  inspector compares its live <code>size</code> and <code>collapsed</code> with the starting state
+  and logs its events.
 </p>
 
 <h2 id="groups">Groups</h2>
 
 <p>
-  Panels without a <code>size</code> share the space. A separator between two panels makes the line
-  between them draggable.
+  A panel with a <code>size</code> keeps it between <code>min</code> and <code>max</code>, in
+  <code>px</code> or <code>%</code>; panels without share the rest. Horizontal groups follow the
+  writing direction, so right to left works.
 </p>
 
 <!-- demo -->
 <div class="demo-frame">
   <bento-group>
-    <bento-panel>
-      <div class="demo-content"><strong>One</strong><span data-live-width></span></div>
-    </bento-panel>
-    <bento-separator aria-label="Resize one and two"></bento-separator>
-    <bento-panel>
-      <div class="demo-content"><strong>Two</strong><span data-live-width></span></div>
-    </bento-panel>
-    <bento-separator aria-label="Resize two and three"></bento-separator>
-    <bento-panel>
-      <div class="demo-content"><strong>Three</strong><span data-live-width></span></div>
-    </bento-panel>
-  </bento-group>
-</div>
-<!-- /demo -->
-
-<p>
-  Separators are yours to write. Each resizes its <em>primary panel</em>: the neighbour with a
-  <code>size</code> or <code>collapsible</code>, the later one on a tie, or the one its
-  <code>aria-controls</code> names.
-</p>
-
-<h2 id="sizes">Size, min and max</h2>
-
-<p>
-  Lengths are <code>px</code> or <code>%</code> of the group; other units fall back to the default.
-  Dragging writes <code>px</code>, and earlier panels keep their space.
-</p>
-
-<!-- demo -->
-<div class="demo-frame">
-  <bento-group>
-    <bento-panel size="200px" min="120px" max="320px">
+    <bento-panel size="40%" min="120px" max="360px">
       <div class="demo-content">
-        <strong>Fixed</strong><code>200px, 120px to 320px</code><span data-live-width></span>
+        <strong>Sized</strong><code>40%, 120px to 360px</code><span data-live-width></span>
       </div>
     </bento-panel>
-    <bento-separator aria-label="Resize fixed panel"></bento-separator>
+    <bento-separator aria-label="Resize sized panel"></bento-separator>
     <bento-panel>
       <div class="demo-content">
         <strong>Flexible</strong><code>no size</code><span data-live-width></span>
       </div>
     </bento-panel>
-    <bento-separator aria-label="Resize share panel"></bento-separator>
-    <bento-panel size="25%" min="15%">
-      <div class="demo-content">
-        <strong>Share</strong><code>25%, at least 15%</code><span data-live-width></span>
-      </div>
-    </bento-panel>
   </bento-group>
 </div>
 <!-- /demo -->
 
+<p>
+  A separator resizes its primary panel: the neighbour with a <code>size</code> or
+  <code>collapsible</code>, the later one on a tie, or the one its <code>aria-controls</code> names.
+</p>
+
 <h2 id="collapsing">Collapsing</h2>
 
 <p>
-  A <code>collapsible</code> panel holds at <code>min</code>, then snaps shut past halfway to
-  <code>collapsed-size</code>, 0 or a rail that keeps its content. Enter on the separator toggles
-  it, and so does writing <code>collapsed</code>.
+  A <code>collapsible</code> panel holds at <code>min</code>, then snaps to its
+  <code>collapsed-size</code> past halfway: 0, or a rail that keeps its content. Enter on the
+  separator toggles it, and so does writing <code>collapsed</code>.
 </p>
 
 <!-- demo -->
@@ -114,7 +84,10 @@
 
 <h2 id="nesting">Nested groups</h2>
 
-<p>A group can fill a panel, in either direction.</p>
+<p>
+  A group can fill a panel. <code>orientation="vertical"</code> stacks its panels, and Up and Down
+  move its separators.
+</p>
 
 <!-- demo -->
 <div class="demo-frame demo-frame-tall">
@@ -130,7 +103,7 @@
         </bento-panel>
         <bento-separator aria-label="Resize terminal"></bento-separator>
         <bento-panel size="35%" min="64px" collapsible>
-          <div class="demo-content"><strong>Terminal</strong></div>
+          <div class="demo-content"><strong>Terminal</strong><code>size="35%"</code></div>
         </bento-panel>
       </bento-group>
     </bento-panel>
@@ -142,47 +115,10 @@
 </div>
 <!-- /demo -->
 
-<h2 id="vertical">Vertical</h2>
-
-<p><code>orientation="vertical"</code> stacks panels. Up and Down move the separator.</p>
-
-<!-- demo -->
-<div class="demo-frame demo-frame-tall">
-  <bento-group orientation="vertical">
-    <bento-panel>
-      <div class="demo-content"><strong>Preview</strong></div>
-    </bento-panel>
-    <bento-separator aria-label="Resize console"></bento-separator>
-    <bento-panel size="120px" min="80px" collapsible>
-      <div class="demo-content"><strong>Console</strong><code>size="120px"</code></div>
-    </bento-panel>
-  </bento-group>
-</div>
-<!-- /demo -->
-
-<h2 id="right-to-left">Right to left</h2>
-
-<p>Horizontal groups follow the writing direction, and arrow keys move the way they point.</p>
-
-<!-- demo -->
-<div class="demo-frame">
-  <bento-group dir="rtl">
-    <bento-panel size="200px" min="140px" collapsible>
-      <div class="demo-content"><strong>Start</strong><code>size="200px"</code></div>
-    </bento-panel>
-    <bento-separator aria-label="Resize start panel"></bento-separator>
-    <bento-panel>
-      <div class="demo-content"><strong>End</strong></div>
-    </bento-panel>
-  </bento-group>
-</div>
-<!-- /demo -->
-
 <h2 id="runtime">Adding panels</h2>
 
 <p>
-  Panels and separators may come and go at any time, even mid-drag. Add a few, drag them, remove
-  some:
+  Panels and separators may come and go at any time, even mid-drag. Add a few, then remove some:
 </p>
 
 <!-- demo -->
@@ -217,7 +153,7 @@
 <h2 id="modal-panels">Modal panels</h2>
 
 <p>
-  While its <code>modal</code> query matches, a panel is a drawer: it arrives collapsed,
+  While its <code>modal</code> query matches, a panel is a drawer that arrives collapsed:
   <code>collapsed = false</code> opens it, and Escape, back or a tap outside close it. Open the
   filters on the phone, then switch to desktop:
 </p>
@@ -243,48 +179,12 @@
 
 <!-- code: styles/demo-modal.css -->
 
-<p>Style the panel itself; its box styles go to the sheet. One drawer shows at a time.</p>
-
 <h2 id="events">Events</h2>
 
-<div class="table-well" tabindex="0">
-  <table>
-    <thead>
-      <tr>
-        <th scope="col">Event</th>
-        <th scope="col">Fires</th>
-        <th scope="col">Cancelable</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><code>resize</code></td>
-        <td>The user changed the size, at most once per frame</td>
-        <td>no</td>
-      </tr>
-      <tr>
-        <td><code>resizeend</code></td>
-        <td>A drag, key press or double-click is done</td>
-        <td>no</td>
-      </tr>
-      <tr>
-        <td><code>beforetoggle</code></td>
-        <td>Before a collapse or expand you did not write</td>
-        <td>when the user caused it</td>
-      </tr>
-      <tr>
-        <td><code>toggle</code></td>
-        <td>After it</td>
-        <td>no</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
 <p>
-  Events fire on the panel and never bubble; listen on a parent with <code>capture: true</code>.
-  Your own writes fire nothing. Cancel <code>beforetoggle</code> to keep unsaved work: type in the
-  notes, then collapse them.
+  Panels fire <code>resize</code>, <code>resizeend</code>, <code>beforetoggle</code> and
+  <code>toggle</code>; none bubbles, so a parent listens with <code>capture: true</code>. Cancel
+  <code>beforetoggle</code> to keep unsaved work: type in the notes, then collapse them.
 </p>
 
 <!-- demo -->
@@ -314,101 +214,52 @@
 
 <!-- code: src/demos/unsaved-changes.ts -->
 
-<p>The logs are this capture-phase listener:</p>
+<p>To keep sizes across reloads, save the live state and render it back as the attributes:</p>
 
-<!-- code: src/event-log.ts -->
-
-<h2 id="saving">Saving sizes</h2>
-
-<p>
-  Save on <code>resizeend</code> and <code>toggle</code>, then render it back as the attributes.
-  Resize, then reload:
-</p>
-
-<!-- demo -->
-<div class="demo-frame">
-  <bento-group>
-    <bento-panel id="remembered" size="240px" min="160px" collapsible>
-      <div class="demo-content"><strong>Remembered</strong><span data-live-width></span></div>
-    </bento-panel>
-    <bento-separator aria-label="Resize remembered panel"></bento-separator>
-    <bento-panel>
-      <div class="demo-content"><strong>Main</strong></div>
-    </bento-panel>
-  </bento-group>
-</div>
-<!-- /demo -->
-
-<!-- code: src/demos/saved-layout.ts -->
-
-<h2 id="live-state">Live state</h2>
-
-<p>
-  <code>size</code> and <code>collapsed</code> are live, like an input's <code>value</code>. The
-  attributes, or writes before the first layout, are the starting state that
-  <code>defaultSize</code> and <code>defaultCollapsed</code> read and double-click restores. Writing
-  <code>collapsed</code> animates once the user has interacted with the page. The inspector shows
-  both side by side for any panel you click.
-</p>
-
-<!-- code: src/panel-controls.ts -->
+<!-- snippet ts -->
+const save = () => store({ size: panel.size, collapsed: panel.collapsed });
+panel.addEventListener("resizeend", save); panel.addEventListener("toggle", save);
+<!-- /snippet -->
 
 <h2 id="styling">Styling</h2>
 
 <p>
-  The demos above show bento's default look. This one is themed: any rule of yours wins over
-  bento's. The group is the box and each panel a dish, styled on the elements themselves; one
-  content element per panel only carries padding. It restyles the separators, times a toggle with
-  the panel's <code>transition-duration</code>, dims <code>:state(collapsed)</code>, and styles the
-  drawer and its <code>--bento-backdrop</code> below 560px.
+  Any rule of yours wins over bento's. This box styles the group, panels and separators themselves,
+  times a toggle with <code>transition-duration</code>, dims <code>:state(collapsed)</code> and
+  turns the side dishes into a drawer below 560px.
 </p>
 
 <!-- demo-file: demos/lunch-box.html -->
 
 <!-- code: styles/demo-styling.css -->
 
-<p>
-  With Tailwind, classes land where you write them, and <code>--bento-backdrop</code> colors a
-  drawer's backdrop:
-</p>
+<p>Utility classes work the same way:</p>
 
 <!-- snippet html -->
 <bento-panel
-  class="duration-300 ease-out bg-white max-md:w-[85vw] [--bento-backdrop:rgb(0_0_0/.4)]"
+  class="overflow-auto duration-300 ease-out bg-white max-md:w-[85vw] [--bento-backdrop:rgb(0_0_0/.4)]"
   size="320px"
   min="240px"
   collapsible
   modal="(max-width: 768px)"
   aria-label="Filters"
 >
-  <div class="h-full overflow-auto p-4">…</div>
+  <div class="p-4">…</div>
 </bento-panel>
 <!-- /snippet -->
 
 <h2 id="react-and-vue">React and Vue</h2>
 
 <p>
-  No wrapper needed. In React 19, reference <code>bento/react</code> for typings. The first props
-  are the starting state and later ones are live writes, so <code>collapsed</code> can be
-  controlled. React does not yet attach <code>on*</code> handlers while hydrating (<a
-    href="https://github.com/facebook/react/issues/35446"
-    rel="external"
+  No wrapper needed. React 19 takes typings from <code>bento/react</code>, and later props are live
+  writes, so <code>collapsed</code> can be controlled; listen through a ref, since hydration skips
+  <code>on*</code> handlers (<a href="https://github.com/facebook/react/issues/35446" rel="external"
     >react#35446</a
-  >), so listen through a ref:
+  >).
 </p>
 
 <!-- code: snippets/react-layout.tsx | Layout.tsx -->
 
-<p>In Vue, mark <code>bento-</code> tags as custom elements:</p>
+<p>Vue only needs <code>bento-</code> tags marked as custom elements:</p>
 
 <!-- code: snippets/vue-vite.config.ts | vite.config.ts -->
-
-<!-- snippet html -->
-<bento-group>
-  <bento-panel id="sidebar" size="320px" collapsible aria-label="Sidebar" @resizeend="saveSize">
-    <nav class="h-full overflow-auto">…</nav>
-  </bento-panel>
-  <bento-separator aria-label="Resize sidebar" aria-controls="sidebar"></bento-separator>
-  <bento-panel><main class="h-full overflow-auto">…</main></bento-panel>
-</bento-group>
-<!-- /snippet -->

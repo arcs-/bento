@@ -8,8 +8,6 @@
 
 <h2 id="install">Install</h2>
 
-<p>The package will be <code>bento</code> on npm.</p>
-
 <!-- snippet sh -->
 npm install bento
 <!-- /snippet -->
@@ -28,14 +26,10 @@ npm install bento
 <!-- /snippet -->
 
 <p>
-  In Next.js, put it in the root layout's <code>&lt;head&gt;</code>;
-  <code>beforeInteractive</code> does not block. <code>import "bento"</code> works for apps that
-  render only on the client.
+  In Next.js, put it in the root layout's <code>&lt;head&gt;</code>, since
+  <code>beforeInteractive</code> does not block. A page that loads it later hides the elements until
+  then:
 </p>
-
-<h2 id="late-loading">Loading it later</h2>
-
-<p>Then hide the elements until they are defined:</p>
 
 <!-- snippet css -->
 :is(bento-group, bento-panel, bento-separator):not(:defined) { visibility: hidden }
@@ -43,7 +37,10 @@ npm install bento
 
 <h2 id="first-layout">A first layout</h2>
 
-<p>A sidebar from 160 to 400px that collapses, next to a panel that fills the rest:</p>
+<p>
+  The group fills its parent's height. Padding goes on an element inside each panel, so the panel
+  can collapse to 0.
+</p>
 
 <!-- demo -->
 <div class="demo-frame">
@@ -58,8 +55,3 @@ npm install bento
   </bento-group>
 </div>
 <!-- /demo -->
-
-<p>
-  Every attribute is optional. Put one element in each panel for padding and scrolling, and give the
-  group a height.
-</p>

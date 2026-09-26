@@ -1,7 +1,7 @@
 <title>API reference</title>
 <meta
   name="description"
-  content="Every bento element, attribute, property, event, custom state and CSS hook."
+  content="Every bento element, attribute, property, event, custom state and CSS hook, and the rules that go with them."
 />
 
 <h1>API reference</h1>
@@ -26,8 +26,8 @@
         <td><code>orientation</code></td>
         <td><code>horizontal</code></td>
         <td>
-          <code>horizontal</code> follows the writing direction, <code>vertical</code> stacks.
-          Reflected.
+          <code>horizontal</code> follows the writing direction, <code>vertical</code> stacks. The
+          property reflects it.
         </td>
       </tr>
     </tbody>
@@ -49,12 +49,12 @@
       <tr>
         <td><code>size</code></td>
         <td>fill</td>
-        <td>Starting size, <code>px</code> or <code>%</code></td>
+        <td>Starting size; panels without one share the rest</td>
       </tr>
       <tr>
         <td><code>min</code></td>
         <td><code>0</code></td>
-        <td>Smallest size; content never gets smaller</td>
+        <td>Smallest size; the content never gets smaller</td>
       </tr>
       <tr>
         <td><code>max</code></td>
@@ -64,7 +64,7 @@
       <tr>
         <td><code>collapsible</code></td>
         <td>off</td>
-        <td>Snaps collapsed past halfway below <code>min</code></td>
+        <td>Holds at <code>min</code>, snaps collapsed past halfway</td>
       </tr>
       <tr>
         <td><code>collapsed</code></td>
@@ -74,7 +74,7 @@
       <tr>
         <td><code>collapsed-size</code></td>
         <td><code>0</code></td>
-        <td>Size when collapsed, for a rail</td>
+        <td>Size when collapsed; above 0 it is a rail that keeps its content</td>
       </tr>
       <tr>
         <td><code>modal</code></td>
@@ -82,13 +82,15 @@
         <td>Media query; while it matches, the panel is a drawer</td>
       </tr>
       <tr>
-        <td><code>aria-label</code></td>
+        <td><code>aria-label</code>, <code>aria-labelledby</code></td>
         <td>none</td>
-        <td>Also names the drawer</td>
+        <td>Also name the drawer</td>
       </tr>
     </tbody>
   </table>
 </div>
+
+<p>Lengths are <code>px</code> or <code>%</code> of the group.</p>
 
 <div class="table-well" tabindex="0">
   <table>
@@ -103,21 +105,17 @@
       <tr>
         <td><code>size</code></td>
         <td>live</td>
-        <td>
-          Size now; <code>""</code> while filling. Writes before the first layout are the start.
-        </td>
+        <td>Size now, <code>""</code> while filling</td>
       </tr>
       <tr>
         <td><code>collapsed</code></td>
         <td>live</td>
-        <td>
-          Collapsed now. Writes animate after user activation; on a drawer, opens or closes it.
-        </td>
+        <td>Collapsed now; on a drawer, closed</td>
       </tr>
       <tr>
         <td><code>defaultSize</code>, <code>defaultCollapsed</code></td>
         <td>starting state</td>
-        <td>What double-click restores; writing sets the attribute</td>
+        <td>Read the starting state; writing sets the attribute</td>
       </tr>
       <tr>
         <td>
@@ -143,17 +141,17 @@
     <tbody>
       <tr>
         <td><code>resize</code></td>
-        <td>The user changed the size, at most once per frame</td>
+        <td>The user changed its size, directly or by pushing; at most once per frame</td>
         <td>no</td>
       </tr>
       <tr>
         <td><code>resizeend</code></td>
-        <td>A drag, key press or double-click is done</td>
+        <td>A drag, key press or double-click reset is done</td>
         <td>no</td>
       </tr>
       <tr>
         <td><code>beforetoggle</code></td>
-        <td>Before a collapse or expand you did not write</td>
+        <td>Before a collapse or expand you did not write, a shrinking group's included</td>
         <td>when the user caused it</td>
       </tr>
       <tr>
@@ -166,8 +164,9 @@
 </div>
 
 <p>
-  None bubbles. Toggle events are <code>ToggleEvent</code>s with <code>"open"</code> and
-  <code>"closed"</code>. Nothing fires for your own writes or the first layout.
+  None bubbles; a parent listens in the capture phase. Toggle events are
+  <code>ToggleEvent</code>s from <code>"open"</code> to <code>"closed"</code> or back. Nothing fires
+  for your property writes, attribute changes or the first layout.
 </p>
 
 <div class="table-well" tabindex="0">
@@ -181,22 +180,22 @@
     <tbody>
       <tr>
         <td><code>:state(collapsed)</code>, <code>:state(modal)</code></td>
-        <td>Live state</td>
+        <td>Match the live state</td>
       </tr>
       <tr>
         <td>
           <code>--bento-size</code>, <code>--bento-min</code>, <code>--bento-max</code>,
           <code>--bento-collapsed-size</code>
         </td>
-        <td>Read the starting attributes</td>
+        <td>Read the starting state; setting them is not supported</td>
       </tr>
       <tr>
         <td><code>--bento-backdrop</code></td>
-        <td>Drawer backdrop color</td>
+        <td>Set on the panel, colors the drawer's backdrop</td>
       </tr>
       <tr>
         <td><code>transition-duration</code>, <code>transition-timing-function</code></td>
-        <td>Toggle timing, default <code>0.2s ease</code></td>
+        <td>Time toggles and the drawer's fade, default <code>0.2s ease</code></td>
       </tr>
     </tbody>
   </table>
@@ -219,7 +218,7 @@
       </tr>
       <tr>
         <td><code>aria-controls</code></td>
-        <td>Picks the primary panel; write it for browsers without element reflection</td>
+        <td>Picks the primary panel; needed in browsers without element reflection</td>
       </tr>
       <tr>
         <td><code>tabindex</code></td>
@@ -230,18 +229,107 @@
 </div>
 
 <p>
-  Role, orientation and values go through <code>ElementInternals</code>.
-  <code>:state(dragging)</code> matches while dragged. Keys are in the
+  It resizes its primary panel: the neighbour with a <code>size</code> or <code>collapsible</code>,
+  the later one on a tie. <code>:state(dragging)</code> matches while it is dragged; its keys are on
   <a href="accessibility.html#keys">Accessibility</a>.
 </p>
+
+<h2 id="rules">Rules</h2>
+
+<div class="table-well" tabindex="0">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Topic</th>
+        <th scope="col">Rule</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Starting state</td>
+        <td>
+          Set by the attributes, or by property writes before the first layout, as React makes;
+          double-click restores it. A changed attribute applies to the live state only while neither
+          the user nor a property write has changed it, and never animates.
+        </td>
+      </tr>
+      <tr>
+        <td>Animation</td>
+        <td>
+          Toggles and snaps animate; drags, mounting and window resizes never do. Writing
+          <code>collapsed</code> animates only once the user has interacted with the page, so
+          corrections on load are instant.
+        </td>
+      </tr>
+      <tr>
+        <td>Toggle timing</td>
+        <td>
+          The panel's <code>transition-duration</code> and <code>transition-timing-function</code>;
+          any other <code>transition</code> on a panel animates drags too.
+        </td>
+      </tr>
+      <tr>
+        <td>Sizes</td>
+        <td>
+          A drag keeps a panel's kind of size: <code>px</code> stays <code>px</code>, a flexible or
+          <code>%</code> panel gets a <code>%</code>. One panel always fills. A shrinking group
+          collapses collapsible panels from the end and expands them when space returns.
+        </td>
+      </tr>
+      <tr>
+        <td>Content</td>
+        <td>
+          A panel's <code>display</code>, flex and grid settings, <code>gap</code>, alignment and
+          <code>overflow</code> lay out and scroll its children. Padding and borders on the sides
+          that collapse go on a content element inside, or the panel stops collapsing at them.
+        </td>
+      </tr>
+      <tr>
+        <td>Layout</td>
+        <td>
+          Your <code>flex</code> or <code>flex-basis</code> on a panel overrides bento's layout.
+          Margins on panels and separators are not supported; <code>gap</code> on the group is.
+        </td>
+      </tr>
+      <tr>
+        <td>Container queries</td>
+        <td><code>@container</code> queries inside a panel must be unnamed.</td>
+      </tr>
+      <tr>
+        <td>Drawers</td>
+        <td>
+          <code>collapsed = false</code> opens one, and one shows at a time. Escape, back and a tap
+          outside close it by collapsing, so <code>beforetoggle</code> can veto. Closing gives the
+          page back at once: you can focus or scroll it while the sheet fades.
+        </td>
+      </tr>
+      <tr>
+        <td>Drawer styles</td>
+        <td>
+          The panel's size, padding, background, border, radius and shadow style the sheet. The page
+          behind is inert, so menus opened inside must render inside it.
+        </td>
+      </tr>
+      <tr>
+        <td>React 19</td>
+        <td>
+          Hydration does not attach custom elements' <code>on*</code> handlers (<a
+            href="https://github.com/facebook/react/issues/35446"
+            rel="external"
+            >react#35446</a
+          >); add listeners through a ref, and render <code>tabindex="0"</code> on separators.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 <h2 id="types">TypeScript</h2>
 
 <p>
-  The types register the elements in <code>HTMLElementTagNameMap</code> and export
-  <code>BentoGroupElement</code>, <code>BentoPanelElement</code>,
-  <code>BentoSeparatorElement</code>, <code>BentoToggleEvent</code> and friends.
-  <code>bento/react</code> adds JSX typings.
+  The types register the elements in <code>HTMLElementTagNameMap</code> and export them, such as
+  <code>BentoPanelElement</code> and <code>BentoToggleEvent</code>; <code>bento/react</code> adds
+  JSX typings.
 </p>
 
 <!-- code: snippets/typed-listener.ts | keep-open.ts -->

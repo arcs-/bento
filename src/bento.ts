@@ -21,7 +21,7 @@ export interface BentoPanelEventMap extends Omit<
 > {
   /** The user changed the live size, directly or by pushing it; at most once per frame. */
   resize: Event;
-  /** A drag or key press is done, on pointer or key up, like `scrollend`. */
+  /** A drag, key press or double-click reset is done, on pointer or key up, like `scrollend`. */
   resizeend: Event;
   /** Before a collapse or expand the app did not write; cancelable only when the user caused it. */
   beforetoggle: BentoToggleEvent;
@@ -46,7 +46,7 @@ export interface BentoGroupElement extends HTMLElement {
  */
 export interface BentoPanelElement extends HTMLElement {
   /**
-   * Live size in `px` or `%`; dragging writes px. `""` while the panel fills; writing `""`,
+   * Live size in `px` or `%`; a drag keeps its kind, and a filling panel it pins gets `%`. `""` while the panel fills; writing `""`,
    * `null` or `undefined` makes it fill. Writes before the first layout are the starting size.
    */
   get size(): string;
