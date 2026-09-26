@@ -385,48 +385,154 @@ body {
   }
 }
 
-.inspector-table {
-  inline-size: 100%;
-  font: 0.8125rem/1.4 var(--font-code);
-  border-collapse: collapse;
+/* The panel inspector: small labelled sections, labels muted, values in one tidy column. */
+.inspector-hint {
+  margin: 0;
+  color: var(--ink-faint);
+  font-size: 0.875rem;
 }
 
-.inspector-table th {
-  padding: 4px 8px 4px 0;
+.inspector-body {
+  display: grid;
+  gap: var(--space-4);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  font-variant-numeric: tabular-nums;
+}
+
+.inspector-body:empty {
+  display: none;
+}
+
+.inspector-section {
+  display: grid;
+  gap: var(--space-1);
+}
+
+.inspector-section h3 {
+  margin: 0;
   color: var(--ink-faint);
   font: 600 0.75rem/1.2 var(--font-plate);
-  letter-spacing: 0.02em;
-  text-align: start;
+  letter-spacing: 0.03em;
 }
 
-.inspector-table tbody th {
+.inspector-code {
+  font: 0.75rem/1.3 var(--font-code);
+  overflow-wrap: anywhere;
+}
+
+.inspector-muted {
+  margin: 0;
+  color: var(--ink-faint);
+}
+
+/* Live next to start; a row where they differ is tinted, so a change shows at a glance. */
+.compare {
+  inline-size: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.compare th {
+  padding: 2px var(--space-1);
+  color: var(--ink-faint);
+  font: 500 0.6875rem/1.2 var(--font-plate);
+  letter-spacing: 0.03em;
+  text-align: end;
+}
+
+.compare tbody th {
+  padding-inline-start: 0;
   color: var(--ink-soft);
   font: inherit;
   letter-spacing: 0;
+  text-align: start;
 }
 
-.inspector-table td {
-  padding: 6px 8px 6px 0;
+.compare td {
+  padding: 4px var(--space-1);
   color: var(--ink);
+  text-align: end;
+}
+
+.compare .differs td {
+  background: var(--accent-tint);
+}
+
+.compare .differs td:first-of-type {
+  border-start-start-radius: var(--radius-small);
+  border-end-start-radius: var(--radius-small);
+}
+
+.compare .differs td:last-of-type {
+  border-start-end-radius: var(--radius-small);
+  border-end-end-radius: var(--radius-small);
+}
+
+.facts {
+  display: grid;
+  margin: 0;
+}
+
+.fact {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding-block: 4px;
+}
+
+.fact + .fact {
   border-block-start: 1px solid var(--hairline);
 }
 
-.inspector-facts {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 4px 12px;
-  margin: 0;
-  font: 0.8125rem/1.4 var(--font-code);
-}
-
-.inspector-facts dt {
+.fact dt {
   color: var(--ink-soft);
 }
 
-.inspector-facts dd {
+.fact dd {
+  min-inline-size: 0;
   margin: 0;
-  overflow-wrap: anywhere;
   color: var(--ink);
+  text-align: end;
+}
+
+/* Booleans are pills: a filled one with a check for yes, a hollow one for no. */
+.flag {
+  display: inline-block;
+  padding: 1px 8px;
+  color: var(--ink-faint);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px var(--toc-line);
+}
+
+.flag-on {
+  color: var(--anodized-ink);
+  background: var(--accent);
+  box-shadow: none;
+}
+
+.flag-on::before {
+  content: "✓ ";
+}
+
+.state-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.state-tag {
+  padding: 1px 8px;
+  color: var(--accent-ink);
+  font: 0.75rem/1.4 var(--font-code);
+  background: var(--accent-tint);
+  border-radius: 999px;
 }
 
 /* The inspected demo panel, marked quietly in place. */

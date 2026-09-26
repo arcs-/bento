@@ -47,16 +47,11 @@ function startDemos(): void {
   if (addButton && panelGroup && panelTemplate) playground(panelGroup, addButton, panelTemplate);
 }
 
-/** Inspects the first demo panel, or the page's own content panel on pages without demos. */
-function startPanelInspector(): void {
+/** The inspector starts empty and inspects whatever panel is clicked, focused or hovered. */
+function startPanelInspector(): PanelInspector | null {
   const root = document.querySelector<HTMLElement>("[data-panel-inspector]");
   const inspectorPanel = document.querySelector("#inspector");
-  const first =
-    document.querySelector<BentoPanelElement>(".specimen-stage bento-panel") ??
-    document.querySelector<BentoPanelElement>("bento-panel#page-panel");
-  if (!root || !inspectorPanel || !first) return;
-  const inspector = new PanelInspector(root, inspectorPanel);
-  inspector.inspect(first);
+  return root && inspectorPanel ? new PanelInspector(root, inspectorPanel) : null;
 }
 
 function startSectionLinks(): void {
