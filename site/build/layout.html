@@ -50,7 +50,7 @@
         <bento-group class="shell-group layout">
           <bento-panel
             id="contents"
-            class="drawer"
+            class="drawer tray-panel"
             size="248px"
             min="200px"
             max="360px"
@@ -60,7 +60,7 @@
             aria-label="Contents"
           >
             <div class="tray tray-nav">
-              <nav aria-label="Site">{{navigation}}</nav>
+              {{navigation}}
               <button class="satin-button drawer-close" type="button" data-close-panel="contents">
                 Close
               </button>
@@ -71,7 +71,7 @@
             aria-controls="contents"
             tabindex="0"
           ></bento-separator>
-          <bento-panel id="page-panel" class="page-panel">
+          <bento-panel id="page-panel" class="page-panel tray-panel">
             <main id="content" class="tray tray-page" tabindex="-1">
               <article class="prose">{{content}}</article>
             </main>
@@ -92,7 +92,7 @@
             aria-label="Inspector"
           >
             <bento-group class="shell-group inspector-stack" orientation="vertical">
-              <bento-panel id="panel-pane" min="160px">
+              <bento-panel id="panel-pane" class="tray-panel" min="160px">
                 <section
                   class="tray tray-inspector"
                   aria-labelledby="panel-inspector-title"
@@ -129,7 +129,14 @@
                 aria-controls="log-pane"
                 tabindex="0"
               ></bento-separator>
-              <bento-panel id="log-pane" size="40%" min="140px" collapsible collapsed-size="52px">
+              <bento-panel
+                id="log-pane"
+                class="tray-panel"
+                size="40%"
+                min="140px"
+                collapsible
+                collapsed-size="52px"
+              >
                 <section class="tray tray-inspector" aria-labelledby="inspector-title">
                   <div class="inspector-head">
                     <h2 id="inspector-title">Event log</h2>

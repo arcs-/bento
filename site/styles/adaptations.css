@@ -11,7 +11,15 @@
     background: Canvas;
   }
 
-  .tray,
+  .tray-panel {
+    outline: 1px solid CanvasText;
+    outline-offset: -1px;
+  }
+
+  .toc-link[aria-current="true"]::before {
+    background: Highlight;
+  }
+
   .satin-button,
   .code-figure .code,
   .event-log {
