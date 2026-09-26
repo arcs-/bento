@@ -6,15 +6,15 @@ A feature counts once every engine has shipped it for 30 months. MDN and caniuse
 
 | Feature | Used for | Widely available |
 |---|---|---|
-| custom elements, shadow DOM, `:defined` | the elements, hide until defined | yes, for years |
+| custom elements, shadow DOM, `::part()` | the elements, the modal backdrop | yes, for years |
 | transitions on `flex-basis` | collapse and expand | yes, for years |
+| `ElementInternals` ARIA | separator role and values | yes, since October 2023 |
+| constructed stylesheets, `adoptedStyleSheets` | all styles, CSP-safe | yes, since September 2025 |
 | `<dialog>` modal | modal panels | yes, since September 2024 |
 | `overflow: clip` | the clipping wrapper | yes, since March 2025 |
 | `@container` size queries | content adapts to its panel | yes, since August 2025 |
 | `inert` | background behind a modal panel | yes, since October 2025 |
-| `:state()` custom states | live state for CSS | from November 2026 |
-| typed `attr()` | first paint before JS | no, enhancement only |
-| `@property` | typed, non-inherited `--bento-*` | no, enhancement only; January 2027 |
+| `:state()` custom states | live state for app CSS, never for our own | from November 2026 |
 
 ## What Bento does not use, and when that could change
 
@@ -22,26 +22,19 @@ A feature counts once every engine has shipped it for 30 months. MDN and caniuse
 |---|---|---|
 | `popover` | `<dialog>` for modal panels | July 2027 |
 | declarative shadow DOM | nothing needed | February 2027 |
+| typed `attr()` | nothing needed ([0004](0004-attributes-only.md)) | no date yet |
+| `@property` | nothing needed | January 2027 |
 
-## First paint of server-rendered HTML, by browser
-
-| Browser | Before any JS | Definition script blocking in head | Script not blocking |
-|---|---|---|---|
-| Chrome, Edge 133+ (February 2025) | correct, from CSS | correct | correct |
-| Firefox 155+ (September 2026) | correct, from CSS | correct | correct |
-| Safari, all versions so far | wrong | correct, upgrade at parse time | hidden until defined |
-| any browser older than those rows | wrong | correct, upgrade at parse time | hidden until defined |
-
-Safari has typed `attr()` in Technology Preview since April 2026; Safari 27 shipped in September 2026 without it.
+## First paint of server-rendered HTML
+Correct in every browser once the definition script blocks in the head: the elements upgrade at parse time ([0006](0006-define-early.md)). A page that loads it later must hide undefined elements itself until then.
 
 ## Why
-"Last versions" leaves out everyone a year behind, which enterprise customers often are. Widely available is the industry definition of safe, and the tables show it costs nothing that matters: every carrying feature is in, and the one enhancement degrades to a correct paint a script later.
+"Last versions" leaves out everyone a year behind, which enterprise customers often are. Widely available is the industry definition of safe, and the tables show it costs nothing that matters: every carrying feature is in.
 
 ## Sources
 - [Baseline definition](https://web.dev/baseline)
 - [Popover API is Baseline Newly available, January 2025](https://web.dev/blog/popover-baseline)
 - [Declarative shadow DOM status](https://webstatus.dev/features/declarative-shadow-dom)
 - [Typed attr() status](https://webstatus.dev/features/attr)
-- [Firefox 155 release notes](https://www.firefox.com/en-US/firefox/155.0/releasenotes/)
-- [WebKit features for Safari 27.0](https://webkit.org/blog/18325/webkit-features-for-safari-27-0/)
+- [Constructable stylesheets status](https://webstatus.dev/features/constructed-stylesheets)
 - MDN browser-compat-data 8.1.3

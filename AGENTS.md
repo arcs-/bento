@@ -16,6 +16,8 @@ Before any task, read these files in full. They are the source of truth; code fo
   - @decisions/0009-snap-at-halfway.md
   - @decisions/0010-veto-with-beforetoggle.md
   - @decisions/0011-aria-through-element-internals.md
+  - @decisions/0012-no-document-stylesheet.md
+  - @decisions/0013-modal-styled-through-the-panel.md
 
 ## Working
 - Be minimal and precise, in answers and in code.
