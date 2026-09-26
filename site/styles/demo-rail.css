@@ -1,0 +1,39 @@
+/* A rail keeps its content, sized to the rail; below 80px the labels leave, by container query. */
+.rail-tray {
+  padding-inline: 8px;
+}
+
+.rail-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.rail-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-block-size: 32px;
+  font: 600 0.9375rem/1 var(--font-plate);
+}
+
+.rail-item svg {
+  flex: none;
+  inline-size: 20px;
+  block-size: 20px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.6;
+}
+
+@container (max-width: 80px) {
+  .rail-item {
+    justify-content: center;
+  }
+
+  .rail-item span {
+    display: none;
+  }
+}

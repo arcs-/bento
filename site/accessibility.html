@@ -1,0 +1,54 @@
+<title>Accessibility</title>
+<meta name="description" content="What bento does for accessibility, and what you write." />
+
+<h1>Accessibility</h1>
+
+<p class="lead">
+  Separators follow the
+  <a href="https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/" rel="external"
+    >WAI-ARIA window splitter pattern</a
+  >. The names are yours.
+</p>
+
+<h2 id="what-you-write">What you write</h2>
+
+<!-- snippet html -->
+<bento-panel id="sidebar" size="320px" collapsible modal="(max-width: 768px)" aria-label="Sidebar">
+  <nav class="h-full overflow-auto">…</nav>
+</bento-panel>
+<bento-separator aria-label="Resize sidebar" aria-controls="sidebar"></bento-separator>
+<!-- /snippet -->
+
+<ul>
+  <li>A label on every separator, and on a modal panel, where it names the drawer.</li>
+  <li><code>aria-controls</code> for browsers without ARIA element reflection.</li>
+  <li><code>tabindex="0"</code> on separators a framework hydrates; elsewhere bento adds it.</li>
+</ul>
+
+<h2 id="what-bento-does">What bento does</h2>
+
+<ul>
+  <li>
+    Role, orientation and <code>aria-valuenow</code>, the primary panel's share from 0 to 100,
+    through <code>ElementInternals</code>.
+    <a href="decisions.html#0011-aria-through-element-internals">Why</a>
+  </li>
+  <li>
+    Arrows, Enter, Home and End on the focused separator; keys with Alt, Ctrl or Meta go to the
+    browser. F6 is left to your app.
+  </li>
+  <li>Arrow keys snap at <code>min</code>, so the drag threshold never traps a keyboard.</li>
+  <li>
+    A panel collapsed to 0 hides its content with <code>display: none</code>. If focus was inside,
+    it moves to the separator.
+  </li>
+  <li>
+    A modal panel is a real modal <code>&lt;dialog&gt;</code>: top layer, inert page, Escape to
+    close.
+  </li>
+  <li>
+    Reduced motion: the size jumps and the content cross-fades.
+    <a href="decisions.html#0001-reduced-motion">Why</a>
+  </li>
+  <li>System colors, so forced colors work; a 24px hit area, 40px on touch screens.</li>
+</ul>

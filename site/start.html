@@ -1,0 +1,64 @@
+<title>Getting started</title>
+<meta
+  name="description"
+  content="Install bento, load its script blocking in the head, and write a first layout."
+/>
+
+<h1>Getting started</h1>
+
+<h2 id="install">Install</h2>
+
+<p>The package will be <code>bento</code> on npm. A CDN URL is not settled yet.</p>
+
+<!-- snippet sh -->
+npm install bento
+<!-- /snippet -->
+
+<h2 id="load-the-script">Load it blocking in the head</h2>
+
+<p>
+  A plain script, not a module, <code>async</code> or <code>defer</code>, so panels lay out while
+  the page is parsed. It brings its own styles and needs no CSP exception.
+  <a href="decisions.html#0006-define-early">Why</a>
+</p>
+
+<!-- snippet html -->
+<head>
+  <script src="/bento.js"></script>
+</head>
+<!-- /snippet -->
+
+<p>
+  In Next.js, put it in the root layout's <code>&lt;head&gt;</code>;
+  <code>beforeInteractive</code> does not block. <code>import "bento"</code> works for apps that
+  render only on the client.
+</p>
+
+<h2 id="late-loading">Loading it later</h2>
+
+<p>Then hide the elements until they are defined:</p>
+
+<!-- snippet css -->
+:is(bento-group, bento-panel, bento-separator):not(:defined) { visibility: hidden }
+<!-- /snippet -->
+
+<h2 id="first-layout">A first layout</h2>
+
+<p>A sidebar from 160 to 400px that collapses, next to a panel that fills the rest:</p>
+
+<!-- demo -->
+<bento-group class="demo-box">
+  <bento-panel size="240px" min="160px" max="400px" collapsible>
+    <div class="tray">Sidebar</div>
+  </bento-panel>
+  <bento-separator aria-label="Resize sidebar"></bento-separator>
+  <bento-panel>
+    <div class="tray">Main</div>
+  </bento-panel>
+</bento-group>
+<!-- /demo -->
+
+<p>
+  Every attribute is optional. Put one element in each panel for padding and scrolling, and give the
+  group a height.
+</p>

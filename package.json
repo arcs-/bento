@@ -32,7 +32,10 @@
     "lint": "oxlint",
     "format": "oxfmt",
     "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
-    "check": "oxlint && oxfmt --check && pnpm typecheck && vitest --run"
+    "check": "oxlint && oxfmt --check && pnpm typecheck && vitest --run",
+    "site:dev": "vite --config site/vite.config.ts",
+    "site:build": "tsc -p site && vite build --config site/vite.config.ts",
+    "site:preview": "vite preview --config site/vite.config.ts"
   },
   "devDependencies": {
     "@types/node": "26.6.1",

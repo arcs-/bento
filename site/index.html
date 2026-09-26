@@ -1,0 +1,84 @@
+<title>bento – resizable panels as web components</title>
+<meta
+  name="description"
+  content="Resizable panel layouts as three custom elements: drag, collapse, rails and drawers, in any framework or none."
+/>
+<meta name="inspector" content="open" />
+
+<h1>Resizable panel layouts, written as HTML</h1>
+
+<p class="lead">
+  Three custom elements for layouts you can drag, collapse to a rail, and turn into drawers on small
+  screens. In any framework or none, under 10 kB.
+</p>
+
+<p class="hint">
+  Drag a divider, or tab to one and press Enter. Double-click puts a compartment back.
+</p>
+
+<!-- demo -->
+<bento-group class="demo-box hero-box">
+  <bento-panel id="onigiri" size="26%" min="130px" collapsible collapsed-size="44px">
+    <div class="tray food-onigiri">
+      <strong>Onigiri</strong>
+      <code>collapsed-size="44px"</code>
+      <span data-live-width></span>
+    </div>
+  </bento-panel>
+  <bento-separator aria-label="Resize onigiri" aria-controls="onigiri"></bento-separator>
+  <bento-panel id="rice">
+    <div class="tray food-rice">
+      <span class="food-rice-plum"></span>
+      <strong>Rice</strong>
+      <code>no size, fills</code>
+      <span data-live-width></span>
+    </div>
+  </bento-panel>
+  <bento-separator aria-label="Resize side dishes" aria-controls="sides"></bento-separator>
+  <bento-panel id="sides" size="30%" min="150px" collapsible>
+    <bento-group orientation="vertical">
+      <bento-panel id="tamagoyaki">
+        <div class="tray food-tamagoyaki">
+          <strong>Tamagoyaki</strong>
+          <span data-live-width></span>
+        </div>
+      </bento-panel>
+      <bento-separator aria-label="Resize pickles" aria-controls="pickles"></bento-separator>
+      <bento-panel id="pickles" size="40%" min="56px" collapsible>
+        <div class="tray food-pickles">
+          <strong>Pickles</strong>
+        </div>
+      </bento-panel>
+    </bento-group>
+  </bento-panel>
+</bento-group>
+<!-- /demo -->
+
+<h2 id="promises">What it promises</h2>
+
+<ul class="promises">
+  <li><strong>Any framework.</strong> Plain HTML, React, Vue: no adapters.</li>
+  <li>
+    <strong>Right first paint.</strong> One blocking script; server-rendered panels never jump.
+    <a href="decisions.html#0006-define-early">Why</a>
+  </li>
+  <li><strong>Animated collapse.</strong> Toggles animate; drags and window resizes don't.</li>
+  <li>
+    <strong>Reduced motion.</strong> The size jumps and the content cross-fades.
+    <a href="decisions.html#0001-reduced-motion">Why</a>
+  </li>
+  <li>
+    <strong>Small screens.</strong> A <code>modal</code> media query turns a panel into a drawer.
+    <a href="guide.html#modal-panels">See it</a>
+  </li>
+  <li>
+    <strong>Accessible.</strong> The WAI-ARIA window splitter pattern, keys included.
+    <a href="accessibility.html">Details</a>
+  </li>
+  <li>
+    <strong>Strict CSP.</strong> No inline styles, no exceptions.
+    <a href="compatibility.html#csp">How</a>
+  </li>
+</ul>
+
+<p>This page is a bento box too: drag its dividers, or narrow the window to get drawers.</p>

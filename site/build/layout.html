@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <meta name="color-scheme" content="light dark" />
+    <title>{{title}}</title>
+    <meta name="description" content="{{description}}" />
+    <script src="{{bentoScript}}" vite-ignore></script>
+    <link rel="stylesheet" href="/styles/site.css" />
+    <script type="module" src="/src/main.ts"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#content">Skip to content</a>
+    <bento-group class="box" orientation="vertical">
+      <bento-panel class="titlebar" size="52px">
+        <header class="titlebar-plate">
+          <a class="wordmark" href="index.html" aria-label="bento, home">
+            <svg class="wordmark-mark" viewBox="0 0 20 20" aria-hidden="true">
+              <rect x="2" y="3.5" width="16" height="13" rx="2" />
+              <path d="M8.5 3.5v13M8.5 10h9.5" />
+            </svg>
+            <span>bento</span>
+          </a>
+          <div class="titlebar-controls">
+            <button
+              class="satin-button"
+              type="button"
+              data-toggle-panel="contents"
+              aria-controls="contents"
+            >
+              Contents
+            </button>
+            <button
+              class="satin-button"
+              type="button"
+              data-toggle-panel="inspector"
+              aria-controls="inspector"
+            >
+              Inspector
+            </button>
+          </div>
+        </header>
+      </bento-panel>
+      <bento-panel class="workspace">
+        <bento-group class="layout">
+          <bento-panel
+            id="contents"
+            class="drawer"
+            size="248px"
+            min="200px"
+            max="360px"
+            collapsible
+            collapsed-size="56px"
+            modal="(max-width: 720px)"
+            aria-label="Contents"
+          >
+            <div class="tray tray-nav">
+              <nav aria-label="Site">{{navigation}}</nav>
+              <button class="satin-button drawer-close" type="button" data-close-panel="contents">
+                Close
+              </button>
+            </div>
+          </bento-panel>
+          <bento-separator
+            aria-label="Resize contents"
+            aria-controls="contents"
+            tabindex="0"
+          ></bento-separator>
+          <bento-panel id="page-panel" class="page-panel">
+            <main id="content" class="tray tray-page" tabindex="-1">
+              <article class="prose">{{content}}</article>
+            </main>
+          </bento-panel>
+          <bento-separator
+            aria-label="Resize inspector"
+            aria-controls="inspector"
+            tabindex="0"
+          ></bento-separator>
+          <bento-panel
+            id="inspector"
+            class="drawer"
+            size="320px"
+            min="240px"
+            max="520px"
+            collapsible{{inspectorCollapsed}}
+            modal="(max-width: 1100px)"
+            aria-label="Inspector"
+          >
+            <aside class="tray tray-inspector" aria-labelledby="inspector-title">
+              <div class="inspector-head">
+                <h2 id="inspector-title">Event log</h2>
+                <button class="satin-button" type="button" data-clear-log="page-log">Clear</button>
+                <button
+                  class="satin-button drawer-close"
+                  type="button"
+                  data-close-panel="inspector"
+                >
+                  Close
+                </button>
+              </div>
+              <p class="inspector-note">
+                Every bento event on this page, heard in the capture phase.
+              </p>
+              <ol id="page-log" class="event-log" data-event-log="document"></ol>
+            </aside>
+          </bento-panel>
+        </bento-group>
+      </bento-panel>
+      <bento-panel class="statusbar" size="28px">
+        <footer class="statusbar-row">
+          <output class="status-cell" data-status-of="contents">Contents</output>
+          <output class="status-cell status-cell-wide" data-status-of="page-panel">Page</output>
+          <output class="status-cell" data-status-of="inspector">Inspector</output>
+          <span class="status-cell status-cell-end">MIT licensed</span>
+        </footer>
+      </bento-panel>
+    </bento-group>
+  </body>
+</html>

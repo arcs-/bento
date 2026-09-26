@@ -1,0 +1,247 @@
+<title>API reference</title>
+<meta
+  name="description"
+  content="Every bento element, attribute, property, event, custom state and CSS hook."
+/>
+
+<h1>API reference</h1>
+
+<p class="lead">
+  Every attribute is optional and has a property. A bad value falls back to the default.
+</p>
+
+<h2 id="group">&lt;bento-group&gt;</h2>
+
+<div class="table-well" tabindex="0">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Attribute</th>
+        <th scope="col">Default</th>
+        <th scope="col">Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>orientation</code></td>
+        <td><code>horizontal</code></td>
+        <td>
+          <code>horizontal</code> follows the writing direction, <code>vertical</code> stacks.
+          Reflected.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="panel">&lt;bento-panel&gt;</h2>
+
+<div class="table-well" tabindex="0">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Attribute</th>
+        <th scope="col">Default</th>
+        <th scope="col">Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>size</code></td>
+        <td>fill</td>
+        <td>Starting size, <code>px</code> or <code>%</code></td>
+      </tr>
+      <tr>
+        <td><code>min</code></td>
+        <td><code>0</code></td>
+        <td>Smallest size; content never gets smaller</td>
+      </tr>
+      <tr>
+        <td><code>max</code></td>
+        <td>none</td>
+        <td>Largest size</td>
+      </tr>
+      <tr>
+        <td><code>collapsible</code></td>
+        <td>off</td>
+        <td>Snaps collapsed past halfway below <code>min</code></td>
+      </tr>
+      <tr>
+        <td><code>collapsed</code></td>
+        <td>off</td>
+        <td>Starts collapsed</td>
+      </tr>
+      <tr>
+        <td><code>collapsed-size</code></td>
+        <td><code>0</code></td>
+        <td>Size when collapsed, for a rail</td>
+      </tr>
+      <tr>
+        <td><code>modal</code></td>
+        <td>never</td>
+        <td>Media query; while it matches, the panel is a drawer</td>
+      </tr>
+      <tr>
+        <td><code>aria-label</code></td>
+        <td>none</td>
+        <td>Also names the drawer</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="table-well" tabindex="0">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Property</th>
+        <th scope="col">Kind</th>
+        <th scope="col">Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>size</code></td>
+        <td>live</td>
+        <td>
+          Size now; <code>""</code> while filling. Writes before the first layout are the start.
+        </td>
+      </tr>
+      <tr>
+        <td><code>collapsed</code></td>
+        <td>live</td>
+        <td>
+          Collapsed now. Writes animate after user activation; on a drawer, opens or closes it.
+        </td>
+      </tr>
+      <tr>
+        <td><code>defaultSize</code>, <code>defaultCollapsed</code></td>
+        <td>starting state</td>
+        <td>What double-click restores; writing sets the attribute</td>
+      </tr>
+      <tr>
+        <td>
+          <code>min</code>, <code>max</code>, <code>collapsible</code>, <code>collapsedSize</code>,
+          <code>modal</code>
+        </td>
+        <td>reflected</td>
+        <td><code>""</code> or <code>false</code> when absent</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="table-well" tabindex="0">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Event</th>
+        <th scope="col">Fires</th>
+        <th scope="col">Cancelable</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>resize</code></td>
+        <td>The user changed the size, at most once per frame</td>
+        <td>no</td>
+      </tr>
+      <tr>
+        <td><code>resizeend</code></td>
+        <td>A drag, key press or double-click is done</td>
+        <td>no</td>
+      </tr>
+      <tr>
+        <td><code>beforetoggle</code></td>
+        <td>Before a collapse or expand you did not write</td>
+        <td>when the user caused it</td>
+      </tr>
+      <tr>
+        <td><code>toggle</code></td>
+        <td>After it</td>
+        <td>no</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+  None bubbles. Toggle events are <code>ToggleEvent</code>s with <code>"open"</code> and
+  <code>"closed"</code>. Nothing fires for your own writes or the first layout.
+</p>
+
+<div class="table-well" tabindex="0">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">CSS</th>
+        <th scope="col">Use</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>:state(collapsed)</code>, <code>:state(modal)</code></td>
+        <td>Live state</td>
+      </tr>
+      <tr>
+        <td>
+          <code>--bento-size</code>, <code>--bento-min</code>, <code>--bento-max</code>,
+          <code>--bento-collapsed-size</code>
+        </td>
+        <td>Read the starting attributes</td>
+      </tr>
+      <tr>
+        <td><code>--bento-backdrop</code></td>
+        <td>Drawer backdrop color</td>
+      </tr>
+      <tr>
+        <td><code>transition-duration</code>, <code>transition-timing-function</code></td>
+        <td>Toggle timing, default <code>0.2s ease</code></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="separator">&lt;bento-separator&gt;</h2>
+
+<div class="table-well" tabindex="0">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Attribute</th>
+        <th scope="col">Meaning</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>aria-label</code>, <code>aria-labelledby</code></td>
+        <td>Its name; required</td>
+      </tr>
+      <tr>
+        <td><code>aria-controls</code></td>
+        <td>Picks the primary panel; write it for browsers without element reflection</td>
+      </tr>
+      <tr>
+        <td><code>tabindex</code></td>
+        <td>Added as <code>"0"</code> when absent</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+  Role, orientation and values go through <code>ElementInternals</code>.
+  <code>:state(dragging)</code> matches while dragged. Keys are in the
+  <a href="guide.html#keyboard">guide</a>.
+</p>
+
+<h2 id="types">TypeScript</h2>
+
+<p>
+  The types register the elements in <code>HTMLElementTagNameMap</code> and export
+  <code>BentoGroupElement</code>, <code>BentoPanelElement</code>,
+  <code>BentoSeparatorElement</code>, <code>BentoToggleEvent</code> and friends.
+  <code>bento/react</code> adds JSX typings.
+</p>
+
+<!-- code: snippets/typed-listener.ts | keep-open.ts -->
