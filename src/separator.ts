@@ -1,40 +1,16 @@
 import type { BentoSeparatorElement } from "./bento.ts";
 import { setState } from "./elements.ts";
-import { BentoPanel } from "./panel.ts";
+import { groupOf } from "./group-link.ts";
+import { BentoPanel, hasStartingSize } from "./panel.ts";
+import type { SeparatorRender } from "./render.ts";
 import { type Axis, separatorRules, separatorSheet } from "./styles.ts";
-
-/** What a separator asks of its group. Deltas are px towards the end of the group. */
-export interface SeparatorGroupLink {
-  readonly axis: Axis;
-  /** A drag starts: moves measure from the layout now. */
-  startDrag(separator: BentoSeparator): void;
-  dragTo(separator: BentoSeparator, delta: number): void;
-  endDrag(): void;
-  /** A key moves the separator from where it is. */
-  step(separator: BentoSeparator, delta: number): void;
-  /** Home and End move the primary panel to its `min` or `max`. */
-  stepPrimaryTo(separator: BentoSeparator, bound: "min" | "max"): void;
-  /** Key up: the key's resizes are done. */
-  endSteps(): void;
-  toggle(separator: BentoSeparator): void;
-  reset(separator: BentoSeparator): void;
-}
-
-/** What the group decides about a separator on each layout. */
-export interface SeparatorRender {
-  readonly axis: Axis;
-  readonly hidden: boolean;
-  /** Percentages of the group's space for the primary panel. */
-  readonly now: number;
-  readonly min: number;
-  readonly max: number;
-}
 
 type PointerState =
   | { readonly kind: "idle" }
   | {
       readonly kind: "dragging";
       readonly pointerId: number;
+      readonly axis: Axis;
       /** The pointer coordinate at the press, on the group's axis. */
       readonly origin: number;
       /** 1, or -1 where the axis runs against the coordinate, in right-to-left. */
@@ -44,7 +20,20 @@ type PointerState =
       released: boolean;
     };
 
-const hasSizeOrCollapses = (panel: BentoPanel) => panel.hasAttribute("size") || panel.collapsible;
+/**
+ * The panel a separator resizes and toggles: the neighbour its `aria-controls` names, else the
+ * one with a starting size or `collapsible`, the later one on a tie.
+ */
+export let primaryPanel!: (separator: BentoSeparator) => BentoPanel | null;
+export let renderSeparator!: (separator: BentoSeparator, render: SeparatorRender) => void;
+
+const hasSizeOrCollapses = (panel: BentoPanel) => hasStartingSize(panel) || panel.collapsible;
+
+const coordinateOn = (axis: Axis, event: PointerEvent) =>
+  axis === "inline" ? event.clientX : event.clientY;
+
+/** ARIA values are percentages with one decimal. */
+const ariaPercent = (share: number) => String(Math.round(share * 10) / 10);
 
 const stepKeys: Record<Axis, Record<string, 1 | -1>> = {
   inline: { ArrowRight: 1, ArrowLeft: -1 },
@@ -55,7 +44,6 @@ export class BentoSeparator extends HTMLElement implements BentoSeparatorElement
   readonly #internals = this.attachInternals();
   readonly #sheet = new CSSStyleSheet();
   #rules = "";
-  #group: SeparatorGroupLink | null = null;
   #pointer: PointerState = { kind: "idle" };
   /** Until its group renders it, a separator looks like one in a horizontal group. */
   #look: Pick<SeparatorRender, "axis" | "hidden"> = { axis: "inline", hidden: false };
@@ -70,9 +58,9 @@ export class BentoSeparator extends HTMLElement implements BentoSeparatorElement
       this.addEventListener(type, this.#released);
     }
     this.addEventListener("keydown", this.#keyPressed);
-    this.addEventListener("keyup", () => this.#group?.endSteps());
-    this.addEventListener("blur", () => this.#group?.endSteps());
-    this.addEventListener("dblclick", () => this.#group?.reset(this));
+    this.addEventListener("keyup", () => groupOf(this)?.endSteps());
+    this.addEventListener("blur", () => groupOf(this)?.endSteps());
+    this.addEventListener("dblclick", () => groupOf(this)?.reset(this));
     this.#writeRules();
   }
 
@@ -84,20 +72,12 @@ export class BentoSeparator extends HTMLElement implements BentoSeparatorElement
     this.#endDrag();
   }
 
-  attach(group: SeparatorGroupLink): void {
-    this.#group = group;
+  static {
+    primaryPanel = (separator) => separator.#primary();
+    renderSeparator = (separator, render) => separator.#render(render);
   }
 
-  /** Leaves `group`, unless the element moved on to another group already. */
-  detach(group: SeparatorGroupLink): void {
-    if (this.#group === group) this.#group = null;
-  }
-
-  /**
-   * The panel it resizes and toggles: the neighbour its `aria-controls` names, else the one
-   * with a `size` or `collapsible`, the later one on a tie.
-   */
-  get primary(): BentoPanel | null {
+  #primary(): BentoPanel | null {
     const before = this.previousElementSibling;
     const after = this.nextElementSibling;
     const neighbours = [before, after].filter((neighbour) => neighbour instanceof BentoPanel);
@@ -111,13 +91,13 @@ export class BentoSeparator extends HTMLElement implements BentoSeparatorElement
     return named ?? neighbours.findLast(hasSizeOrCollapses) ?? neighbours.at(-1) ?? null;
   }
 
-  render(render: SeparatorRender): void {
+  #render(render: SeparatorRender): void {
     this.#look = render;
-    const primary = this.primary;
+    const primary = this.#primary();
     this.#internals.ariaOrientation = render.axis === "inline" ? "vertical" : "horizontal";
-    this.#internals.ariaValueNow = String(Math.round(render.now));
-    this.#internals.ariaValueMin = String(Math.round(render.min));
-    this.#internals.ariaValueMax = String(Math.round(render.max));
+    this.#internals.ariaValueNow = ariaPercent(render.now);
+    this.#internals.ariaValueMin = ariaPercent(render.min);
+    this.#internals.ariaValueMax = ariaPercent(render.max);
     if ("ariaControlsElements" in this.#internals) {
       this.#internals.ariaControlsElements = primary ? [primary] : [];
     }
@@ -132,37 +112,38 @@ export class BentoSeparator extends HTMLElement implements BentoSeparatorElement
     this.#sheet.replaceSync(rules);
   }
 
-  /** The pointer coordinate on the group's axis, and which way it runs. */
-  #axisOf(event: PointerEvent): { coordinate: number; direction: 1 | -1 } {
-    const inline = this.#group?.axis !== "block";
-    const rightToLeft = inline && getComputedStyle(this).direction === "rtl";
-    return { coordinate: inline ? event.clientX : event.clientY, direction: rightToLeft ? -1 : 1 };
+  /** 1, or -1 where the axis runs against screen coordinates, in right-to-left; reads style. */
+  #towardsEnd(axis: Axis): 1 | -1 {
+    return axis === "inline" && getComputedStyle(this).direction === "rtl" ? -1 : 1;
   }
 
   readonly #pressed = (event: PointerEvent) => {
-    if (event.button !== 0 || this.#pointer.kind !== "idle" || !this.#group) return;
+    const group = groupOf(this);
+    if (event.button !== 0 || this.#pointer.kind !== "idle" || !group) return;
     event.preventDefault();
     this.focus({ preventScroll: true });
     this.setPointerCapture(event.pointerId);
-    const { coordinate, direction } = this.#axisOf(event);
+    const axis = group.axis();
+    const origin = coordinateOn(axis, event);
     this.#pointer = {
       kind: "dragging",
       pointerId: event.pointerId,
-      origin: coordinate,
-      direction,
-      latest: coordinate,
+      axis,
+      origin,
+      direction: this.#towardsEnd(axis),
+      latest: origin,
       frame: null,
       released: false,
     };
     setState(this.#internals, "dragging", true);
     this.#writeRules();
-    this.#group.startDrag(this);
+    group.startDrag(this);
   };
 
   readonly #moved = (event: PointerEvent) => {
     const pointer = this.#pointer;
     if (pointer.kind !== "dragging" || event.pointerId !== pointer.pointerId) return;
-    pointer.latest = this.#axisOf(event).coordinate;
+    pointer.latest = coordinateOn(pointer.axis, event);
     pointer.frame ??= requestAnimationFrame(this.#frame);
   };
 
@@ -171,7 +152,7 @@ export class BentoSeparator extends HTMLElement implements BentoSeparatorElement
     const pointer = this.#pointer;
     if (pointer.kind !== "dragging") return;
     pointer.frame = null;
-    this.#group?.dragTo(this, (pointer.latest - pointer.origin) * pointer.direction);
+    groupOf(this)?.dragTo(this, (pointer.latest - pointer.origin) * pointer.direction);
     if (pointer.released) this.#endDrag();
   };
 
@@ -190,21 +171,22 @@ export class BentoSeparator extends HTMLElement implements BentoSeparatorElement
     this.#pointer = { kind: "idle" };
     setState(this.#internals, "dragging", false);
     this.#writeRules();
-    this.#group?.endDrag();
+    groupOf(this)?.endDrag();
   }
 
+  /** Keys with Alt, Ctrl or Meta are the browser's shortcuts; Shift makes a step 100px. */
   readonly #keyPressed = (event: KeyboardEvent) => {
-    const group = this.#group;
-    if (!group) return;
-    const step = stepKeys[group.axis][event.key];
+    const group = groupOf(this);
+    if (!group || event.altKey || event.ctrlKey || event.metaKey) return;
+    const axis = group.axis();
+    const step = stepKeys[axis][event.key];
     if (step) {
-      const mirrored = group.axis === "inline" && getComputedStyle(this).direction === "rtl";
       const distance = event.shiftKey ? 100 : 10;
-      group.step(this, step * distance * (mirrored ? -1 : 1));
+      group.step(this, step * distance * this.#towardsEnd(axis));
     } else if (event.key === "Home" || event.key === "End") {
       group.stepPrimaryTo(this, event.key === "Home" ? "min" : "max");
     } else if (event.key === "Enter") {
-      group.toggle(this);
+      if (!event.repeat) group.toggle(this);
     } else return;
     event.preventDefault();
   };

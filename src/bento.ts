@@ -45,13 +45,21 @@ export interface BentoGroupElement extends HTMLElement {
  * String properties reflect like HTML's: `""` when the attribute is absent.
  */
 export interface BentoPanelElement extends HTMLElement {
-  /** Live size in `px` or `%`; dragging writes px. `""` while the panel fills. */
-  size: string;
-  /** Live collapsed state. Writing it animates like a toggle and fires no event. */
-  collapsed: boolean;
-  /** Reflects the `size` attribute, the starting size. */
+  /**
+   * Live size in `px` or `%`; dragging writes px. `""` while the panel fills; writing `""`,
+   * `null` or `undefined` makes it fill. Writes before the first layout are the starting size.
+   */
+  get size(): string;
+  set size(size: string | null | undefined);
+  /**
+   * Live collapsed state. Writing it fires no event; it animates like a toggle once the page
+   * has had user activation. Writes before the first layout are the starting state.
+   */
+  get collapsed(): boolean;
+  set collapsed(collapsed: boolean | null | undefined);
+  /** The starting size: the `size` attribute, or a `size` write before the first layout. Writing it writes the attribute. */
   defaultSize: string;
-  /** Reflects the `collapsed` attribute, the starting state. */
+  /** The starting collapsed state, from the attribute or an early write. Writing it writes the attribute. */
   defaultCollapsed: boolean;
   /** Reflects `min`; absent means 0. */
   min: string;

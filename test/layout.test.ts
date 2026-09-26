@@ -1,19 +1,27 @@
 import { describe, expect, test } from "vitest";
+import { page } from "vitest/browser";
 import {
   block,
+  frames,
   drag,
   group,
   groupSize,
   height,
   layout,
   panel,
+  panelEventTypes,
   pressKeys,
+  recordErrors,
+  recordEvents,
   render,
+  sampleFrames,
   sampleUntilAt,
   separator,
+  settleAt,
   sidebarLayout,
   width,
 } from "./fixtures.ts";
+import { testViewport } from "./viewport.ts";
 
 const twoBarePanels = `
   <bento-panel id="first"></bento-panel>
@@ -80,13 +88,13 @@ describe("sizes", () => {
     expect(width(panel("first"))).toBeCloseTo(300, 0);
   });
 
-  test("a percentage is of the group", async () => {
+  test("a percentage is of the group's space, what its panels share", async () => {
     await render(layout(threePanels('size="25%"')));
 
-    expect(width(panel("first"))).toBeCloseTo(groupSize.width / 4, 0);
+    expect(width(panel("first"))).toBeCloseTo((groupSize.width - separatorsWidth()) / 4, 0);
 
     group("layout").style.width = "800px";
-    await sampleUntilAt(() => width(panel("first")), 200);
+    await sampleUntilAt(() => width(panel("first")), (800 - separatorsWidth()) / 4);
   });
 
   test("with no flexible panel the last one fills", async () => {
@@ -128,6 +136,17 @@ describe("sizes", () => {
     expect(width(first)).toBeCloseTo(width(second), 0);
     expect(width(first) + width(separator("handle")) + width(second) + 20).toBeCloseTo(
       groupSize.width,
+      0,
+    );
+  });
+
+  test("a child that renders no box takes no gap", async () => {
+    await render(`
+      <style>#layout { gap: 10px }</style>
+      ${layout(`${twoBarePanels}<template></template><div style="display: none"></div>`)}`);
+
+    expect(width(panel("first"))).toBeCloseTo(
+      (groupSize.width - width(separator("handle")) - 20) / 2,
       0,
     );
   });
@@ -259,7 +278,72 @@ describe("nesting", () => {
   });
 });
 
+describe("a nested group its collapsed panel hides", () => {
+  test("keeps its layout, fires nothing, and applies a write made meanwhile without animating", async () => {
+    await render(
+      layout(`
+        <bento-panel id="outer" size="400px" collapsible>
+          <bento-group id="inner" style="height: 100px">
+            <bento-panel id="inner-first" size="200px"></bento-panel>
+            <bento-separator id="inner-handle"></bento-separator>
+            <bento-panel id="inner-end" size="150px" min="100px" collapsible></bento-panel>
+          </bento-group>
+        </bento-panel>
+        <bento-separator id="handle"></bento-separator>
+        <bento-panel id="main"></bento-panel>`),
+    );
+    const innerEvents = recordEvents(group("inner"), panelEventTypes, { capture: true });
+    const innerEnd = panel("inner-end");
+
+    await pressKeys(separator("handle"), "{Enter}");
+    await settleAt(() => width(panel("outer")), 0);
+    innerEnd.collapsed = true;
+    await frames();
+    await pressKeys(separator("handle"), "{Enter}");
+    const innerEndWidths = await sampleFrames(() => width(innerEnd), 3);
+    await settleAt(() => width(panel("outer")), 400);
+
+    for (const sample of innerEndWidths) expect(sample).toBeCloseTo(0, 0);
+    const innerSpace = 400 - width(separator("inner-handle"));
+    expect(width(panel("inner-first"))).toBeCloseTo(innerSpace, 0);
+    expect(innerEvents).toEqual([]);
+  });
+});
+
+const shareWidth = () => width(panel("share"));
+
+describe("a percentage size and the viewport", () => {
+  test("follows a viewport resize", async () => {
+    await render(`
+      <style>body { margin: 0 }</style>
+      <bento-group id="layout" style="width: 100%; height: 100px">
+        <bento-panel id="share" size="25%"></bento-panel>
+        <bento-separator id="handle"></bento-separator>
+        <bento-panel></bento-panel>
+      </bento-group>`);
+    expect(shareWidth()).toBeCloseTo((testViewport.width - width(separator("handle"))) / 4, 0);
+
+    await page.viewport(600, 600);
+
+    await sampleUntilAt(shareWidth, (600 - width(separator("handle"))) / 4);
+  });
+});
+
 describe("dynamic panels", () => {
+  test("a panel removed while it animates leaves the rest filling the group", async () => {
+    await render(sidebarLayout('size="300px" collapsible'));
+    const errors = recordErrors();
+    await pressKeys(separator("handle"), "{Enter}");
+    await frames(3);
+
+    panel("sidebar").remove();
+    separator("handle").remove();
+    await frames();
+
+    expect(width(panel("main"))).toBeCloseTo(groupSize.width, 0);
+    expect(errors()).toEqual([]);
+  });
+
   test("panels and separators added or removed at runtime relayout", async () => {
     await render(sidebarLayout('size="300px"'));
     const main = panel("main");

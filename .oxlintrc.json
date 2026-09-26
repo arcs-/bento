@@ -10,7 +10,7 @@
     "import/no-unassigned-import": [
       "error",
       {
-        "allow": ["**/define.ts", "**/react.ts"]
+        "allow": ["**/define.ts", "**/react.ts", "**/dist/bento.js"]
       }
     ],
     "vitest/expect-expect": [

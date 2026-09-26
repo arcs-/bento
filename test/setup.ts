@@ -1,4 +1,5 @@
-import "../src/define.ts";
+/** The shipped, minified script, which test/build.ts builds before every run. */
+import "../dist/bento.js";
 import { afterEach } from "vitest";
 import { commands, page } from "vitest/browser";
 import { removeRendered } from "./fixtures.ts";

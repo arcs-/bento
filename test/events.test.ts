@@ -93,7 +93,7 @@ describe("resize and resizeend", () => {
     expect(resized).toEqual(new Set(["first", "last"]));
   });
 
-  test("no event fires for the first layout, the initial modal mode or a group resize", async () => {
+  test("no event fires for the first layout, its group collapses, the initial modal mode or a group resize", async () => {
     await page.viewport(600, 600);
     const container = parse(`
       ${sidebarLayout('size="25%" collapsible')}
@@ -101,16 +101,26 @@ describe("resize and resizeend", () => {
         <bento-panel id="drawer" size="200px" collapsible modal="(max-width: 700px)"></bento-panel>
         <bento-separator></bento-separator>
         <bento-panel></bento-panel>
+      </bento-group>
+      <bento-group style="width: 300px; height: 100px">
+        <bento-panel size="200px"></bento-panel>
+        <bento-separator></bento-separator>
+        <bento-panel id="too-wide" size="200px" min="150px" collapsible></bento-panel>
       </bento-group>`);
     const recorded = recordEvents(container, panelEventTypes, { capture: true });
+    const tooWide = container.querySelector("#too-wide");
+    if (!tooWide) throw new Error("no panel parsed");
+    const onPanel = recordEvents(tooWide, panelEventTypes);
 
     mount(container);
     await frames(5);
     expect(panel("drawer").collapsed).toBe(true);
+    expect(panel("too-wide").collapsed).toBe(true);
     group("layout").style.width = "800px";
     await frames(5);
 
     expect(recorded).toEqual([]);
+    expect(onPanel).toEqual([]);
   });
 });
 

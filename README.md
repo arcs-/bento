@@ -42,11 +42,11 @@ Every attribute is optional. Attributes set the starting state; after that, drag
 | `collapsed-size` | `0` | size when collapsed, for example a rail |
 | `modal` | never | media query; when it matches, the panel leaves the group and shows as a modal dialog while not collapsed |
 
-**`<bento-separator>`** is the draggable line between two panels. It resizes its primary panel: the neighbour with a `size` or `collapsible`, the later one on a tie, or the one its `aria-controls` names. Keyboard: arrow keys resize by 10px, 100px with Shift, Enter toggles collapse, Home and End go to min and max; double-click resets to the default size and collapsed state. It is focusable and adds `tabindex="0"` if you didn't; when React hydrates it, render `tabindex="0"` yourself. It stays next to a collapsed panel, so it can reopen it, and hides next to a modal one. Adding and removing separators is up to you.
+**`<bento-separator>`** is the draggable line between two panels. It resizes its primary panel: the neighbour with a `size` or `collapsible`, the later one on a tie, or the one its `aria-controls` names. Keyboard: arrow keys resize by 10px, 100px with Shift, Enter toggles collapse, Home and End go to min and max; double-click resets to the starting size and collapsed state. It is focusable and adds `tabindex="0"` if you didn't; when React hydrates it, render `tabindex="0"` yourself. It stays next to a collapsed panel, so it can reopen it, and hides next to a modal one. Adding and removing separators is up to you.
 
-Every attribute has a property. `size` and `collapsed` are live and writable; their attributes are the defaults, reflected by `defaultSize` and `defaultCollapsed`, like `value` and `defaultValue` on `<input>`.
+Every attribute has a property. `size` and `collapsed` are live and writable. Their attributes, or property writes before the panel is laid out, are the starting state, read by `defaultSize` and `defaultCollapsed`, like `value` and `defaultValue` on `<input>`. Writing `collapsed` animates once the user has interacted with the page; corrections on load, such as after hydration, apply instantly.
 
-Events fire on the panel and never bubble; to hear them on a parent, listen in the capture phase. `resize` whenever the user changes its `size`, directly or by pushing it, at most once per frame; `resizeend` when a drag or key press is done, like `scroll` and `scrollend`. No event fires when you write a property, nor for the first layout. `beforetoggle` before a panel collapses or expands, `toggle` after, for every change you did not write yourself, including a group collapsing panels as it shrinks and a modal panel closing. When the user caused it, cancel `beforetoggle` to keep the panel as it is, for example while an editor has unsaved changes.
+Events fire on the panel and never bubble; to hear them on a parent, listen in the capture phase. `resize` whenever the user changes its `size`, directly or by pushing it, at most once per frame; `resizeend` when a drag, key press or double-click reset is done, like `scroll` and `scrollend`. No event fires when you write a property, nor for the first layout. `beforetoggle` before a panel collapses or expands, `toggle` after, for every change you did not write yourself, including a group collapsing panels as it shrinks and a modal panel closing. When the user caused it, cancel `beforetoggle` to keep the panel as it is, for example while an editor has unsaved changes.
 
 ## Install
 
@@ -62,7 +62,7 @@ If you load it later, hide the elements until then:
 :is(bento-group, bento-panel, bento-separator):not(:defined) { visibility: hidden }
 ```
 
-React and Vue need no wrapper. For React 19 JSX typings, reference `bento/react`; props use the attribute names, and events are `onresize`, `onresizeend`, `onbeforetoggle` and `ontoggle`, with a `Capture` suffix on parents. Vue compiler settings: TBD.
+React and Vue need no wrapper. For React 19 JSX typings, reference `bento/react`; props use the attribute names, and events are `onresize`, `onresizeend`, `onbeforetoggle` and `ontoggle`, with a `Capture` suffix on parents. The first props are the starting state; later ones are live writes, so `collapsed` can be controlled. React 19 does not yet attach these handlers while hydrating server-rendered HTML ([facebook/react#35446](https://github.com/facebook/react/issues/35446)); there, add listeners through a ref. Vue compiler settings: TBD.
 
 ## Styling
 
@@ -72,7 +72,7 @@ A modal panel is a full-height sheet on the side it sits on, over a backdrop. St
 
 ## Accessibility
 
-Separators follow the WAI-ARIA window splitter pattern. Give each an `aria-label`, or `aria-labelledby` pointing at its panel's title. In browsers without ARIA element reflection, also add `aria-controls` with the panel's `id`. A panel collapsed to 0 hides its content from focus and assistive tech. With `prefers-reduced-motion`, the size change is instant and content cross-fades. Dragging is never animated.
+Separators follow the WAI-ARIA window splitter pattern. Give each an `aria-label`, or `aria-labelledby` pointing at its panel's title. In browsers without ARIA element reflection, also add `aria-controls` with the panel's `id`. When a panel collapses while focus is inside it, focus moves to its separator. A panel collapsed to 0 hides its content from focus and assistive tech. With `prefers-reduced-motion`, the size change is instant and content cross-fades. Dragging is never animated.
 
 ## Browser support
 

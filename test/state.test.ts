@@ -1,17 +1,22 @@
 import { describe, expect, test } from "vitest";
 import { page, userEvent } from "vitest/browser";
 import {
+  activateUser,
+  animationsDone,
+  block,
   doubleClick,
   drag,
   frames,
   group,
   isBetween,
+  layout,
   mount,
   panel,
   parse,
   pixels,
   pressKeys,
   render,
+  renderBuiltSidebarLayout,
   sampleFrames,
   sampleUntilAt,
   separator,
@@ -19,6 +24,8 @@ import {
   sidebarLayout,
   width,
 } from "./fixtures.ts";
+
+const veto = (event: Event) => event.preventDefault();
 
 function describeMutation({ type, attributeName, target }: MutationRecord): string {
   const targetId = target instanceof Element ? `#${target.id}` : "";
@@ -99,6 +106,39 @@ describe("properties", () => {
   });
 });
 
+const lifecycle = ["constructor", "connectedCallback", "disconnectedCallback"];
+
+/** Every name an element answers to beyond `HTMLElement`: its own keys and its class's. */
+function surfaceOf(tag: keyof HTMLElementTagNameMap): string[] {
+  const element = document.createElement(tag);
+  const prototype: object = customElements.get(tag)?.prototype ?? {};
+  return [...Object.keys(element), ...Object.getOwnPropertyNames(prototype)].toSorted();
+}
+
+describe("public surface", () => {
+  test("no element carries an internal member, only its documented properties", () => {
+    expect(surfaceOf("bento-group")).toEqual(
+      [...lifecycle, "attributeChangedCallback", "orientation"].toSorted(),
+    );
+    expect(surfaceOf("bento-panel")).toEqual(
+      [
+        ...lifecycle,
+        "attributeChangedCallback",
+        "size",
+        "collapsed",
+        "defaultSize",
+        "defaultCollapsed",
+        "min",
+        "max",
+        "collapsible",
+        "collapsedSize",
+        "modal",
+      ].toSorted(),
+    );
+    expect(surfaceOf("bento-separator")).toEqual(lifecycle.toSorted());
+  });
+});
+
 describe("live state", () => {
   test("size is live and writable; the attribute stays the default", async () => {
     await render(sidebarLayout('size="300px"'));
@@ -116,9 +156,10 @@ describe("live state", () => {
     expect(getComputedStyle(sidebar).getPropertyValue("--bento-size").trim()).toBe("300px");
   });
 
-  test("collapsed is live and writable, and writing it animates", async () => {
+  test("collapsed is live and writable, and writing it animates after user activation", async () => {
     await render(sidebarLayout('size="300px" collapsible'));
     const sidebar = panel("sidebar");
+    await activateUser();
 
     sidebar.collapsed = true;
     const collapsing = await sampleUntilAt(() => width(sidebar), 0);
@@ -250,5 +291,116 @@ describe("attribute changes after upgrade", () => {
 
     expect(sidebar.collapsed).toBe(false);
     expect(width(sidebar)).toBeCloseTo(300, 0);
+  });
+});
+
+describe("starting state", () => {
+  test("property writes before the first layout are the start, as React makes them", async () => {
+    await renderBuiltSidebarLayout({ size: "250px", collapsed: true, collapsible: true });
+    const sidebar = panel("sidebar");
+    const sidebarWidth = () => width(sidebar);
+
+    expect(sidebar.hasAttribute("size")).toBe(false);
+    expect(sidebar.defaultSize).toBe("250px");
+    expect(sidebar.defaultCollapsed).toBe(true);
+    expect(sidebarWidth()).toBeCloseTo(0, 0);
+    expect(getComputedStyle(block("sidebar-content")).getPropertyValue("--bento-size").trim()).toBe(
+      "250px",
+    );
+
+    await pressKeys(separator("handle"), "{Enter}");
+    await settleAt(sidebarWidth, 250);
+    await drag(separator("handle"), 50);
+    await doubleClick(separator("handle"));
+    expect(sidebar.collapsed).toBe(true);
+    expect(sidebar.size).toBe("250px");
+  });
+
+  test("a later attribute change moves the start, and the live state while clean", async () => {
+    await renderBuiltSidebarLayout({ size: "250px", collapsible: true });
+    const sidebar = panel("sidebar");
+
+    sidebar.setAttribute("size", "200px");
+    await frames();
+    for (const sample of await sampleFrames(() => width(sidebar)))
+      expect(sample).toBeCloseTo(200, 0);
+    expect(sidebar.defaultSize).toBe("200px");
+
+    await drag(separator("handle"), 50);
+    sidebar.defaultSize = "150px";
+    await frames(5);
+    expect(width(sidebar)).toBeCloseTo(250, 0);
+
+    await doubleClick(separator("handle"));
+    await settleAt(() => width(sidebar), 150);
+    expect(sidebar.size).toBe("150px");
+  });
+
+  test("null and undefined, as React writes for a removed prop, mean no size and expanded", async () => {
+    await render(sidebarLayout('size="300px" collapsible collapsed'));
+    const sidebar = panel("sidebar");
+
+    sidebar.size = undefined;
+    sidebar.collapsed = null;
+    await frames();
+    await animationsDone();
+
+    expect(sidebar.size).toBe("");
+    expect(sidebar.collapsed).toBe(false);
+    expect(width(sidebar)).toBeCloseTo(width(panel("main")), 0);
+    sidebar.setAttribute("size", "200px");
+    await frames(5);
+    expect(width(sidebar)).toBeCloseTo(width(panel("main")), 0);
+  });
+
+  test("a write equal to the live value changes nothing, so the live state stays clean", async () => {
+    await render(sidebarLayout('size="300px" collapsible'));
+    const sidebar = panel("sidebar");
+
+    sidebar.size = "300px";
+    sidebar.collapsed = false;
+    sidebar.setAttribute("size", "200px");
+    sidebar.setAttribute("collapsed", "");
+    await frames();
+
+    for (const sample of await sampleFrames(() => width(sidebar))) expect(sample).toBeCloseTo(0, 0);
+    sidebar.removeAttribute("collapsed");
+    await settleAt(() => width(sidebar), 200);
+  });
+
+  test("removing a clean collapsed attribute expands the panel to the front, like any expand", async () => {
+    await render(
+      layout(`
+        <bento-panel id="start" size="300px" min="200px" collapsible></bento-panel>
+        <bento-separator></bento-separator>
+        <bento-panel id="main" min="300px"></bento-panel>
+        <bento-separator></bento-separator>
+        <bento-panel id="end" size="300px" min="200px" collapsible collapsed></bento-panel>`),
+    );
+    group("layout").style.width = "700px";
+    await frames();
+
+    panel("end").removeAttribute("collapsed");
+
+    await expect.poll(() => panel("start").collapsed).toBe(true);
+    expect(panel("end").collapsed).toBe(false);
+    await settleAt(() => width(panel("end")), 300);
+  });
+
+  test("a vetoed double-click keeps the collapsed state the user's", async () => {
+    await render(sidebarLayout('size="300px" collapsible'));
+    const sidebar = panel("sidebar");
+    await pressKeys(separator("handle"), "{Enter}");
+    await settleAt(() => width(sidebar), 0);
+    sidebar.addEventListener("beforetoggle", veto);
+
+    await doubleClick(separator("handle"));
+    sidebar.removeEventListener("beforetoggle", veto);
+    sidebar.setAttribute("collapsed", "");
+    sidebar.removeAttribute("collapsed");
+    await frames(5);
+
+    expect(sidebar.collapsed).toBe(true);
+    expect(width(sidebar)).toBeCloseTo(0, 0);
   });
 });

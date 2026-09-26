@@ -1,6 +1,15 @@
 import { build } from "vite";
+import type { TestProject } from "vitest/node";
 
-/** Builds dist/bento.js first, so the parse-time tests load the script that ships. */
-export default async function buildBundle(): Promise<void> {
+const buildBundle = async (): Promise<void> => {
   await build({ logLevel: "warn", build: { emptyOutDir: false } });
+};
+
+/**
+ * Builds dist/bento.js before every run, watch reruns included, so every test loads the
+ * minified script that ships.
+ */
+export default async function setup(project: TestProject): Promise<void> {
+  await buildBundle();
+  project.onTestsRerun(buildBundle);
 }

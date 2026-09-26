@@ -24,6 +24,8 @@ export default defineConfig({
   test: {
     include: ["test/**/*.test.ts"],
     globalSetup: ["test/build.ts"],
+    /** Tests load the built script, not the sources, so a source change reruns them all. */
+    forceRerunTriggers: ["**/src/**"],
     setupFiles: ["test/setup.ts"],
     /** The pointer is the page's, shared by every test file's frame, so files take turns. */
     fileParallelism: false,

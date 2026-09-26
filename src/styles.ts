@@ -44,8 +44,11 @@ export function groupRules(axis: Axis): string {
   return `:host { flex-direction: ${axis === "inline" ? "row" : "column"} }`;
 }
 
-/** The attribute defaults, declared on every panel so that none inherits an outer panel's. */
-export interface PanelDefaults {
+/**
+ * The values of `--bento-size`, `--bento-min`, `--bento-max` and `--bento-collapsed-size`: the
+ * attribute defaults, declared on every panel so that none inherits an outer panel's.
+ */
+export interface BentoCustomProperties {
   readonly size: string | null;
   readonly min: string;
   readonly max: string | null;
@@ -59,7 +62,8 @@ export type ContentState =
   /** During a toggle: kept at a fixed size, anchored at the edge that does not move. */
   | { readonly kind: "frozen"; readonly size: number; readonly anchor: "start" | "end" };
 
-export type PanelRender =
+/** How a panel looks in its group, beside the content or as a modal sheet. */
+export type PanelLook =
   | {
       readonly kind: "inline";
       readonly axis: Axis;
@@ -76,7 +80,7 @@ export type PanelRender =
       readonly size: string | null;
     };
 
-function defaultsRule({ size, min, max, collapsedSize }: PanelDefaults): string {
+function customPropertiesRule({ size, min, max, collapsedSize }: BentoCustomProperties): string {
   return `:host { --bento-size: ${size ?? "initial"}; --bento-min: ${min}; --bento-max: ${max ?? "initial"}; --bento-collapsed-size: ${collapsedSize} }`;
 }
 
@@ -106,16 +110,16 @@ function modalRules(axis: Axis, side: "start" | "end", size: string | null): str
   }`;
 }
 
-export function panelRules(defaults: PanelDefaults, render: PanelRender): string {
-  if (render.kind === "modal") {
-    return defaultsRule(defaults) + modalRules(render.axis, render.side, render.size);
+export function panelRules(properties: BentoCustomProperties, look: PanelLook): string {
+  if (look.kind === "modal") {
+    return customPropertiesRule(properties) + modalRules(look.axis, look.side, look.size);
   }
-  const { axis, basis, fillMin, fillMax, content } = render;
+  const { axis, basis, fillMin, fillMax, content } = look;
   const flex =
     basis === null
       ? `flex: 1 1 0; min-${axis}-size: ${fillMin}; max-${axis}-size: ${fillMax ?? "none"}`
       : `flex: 0 0 ${basis}`;
-  return `${defaultsRule(defaults)} :host { ${flex} } ${contentRules(axis, content)}`;
+  return `${customPropertiesRule(properties)} :host { ${flex} } ${contentRules(axis, content)}`;
 }
 
 export interface SeparatorLook {
@@ -128,7 +132,7 @@ export function separatorRules({ axis, hidden, dragging }: SeparatorLook): strin
   const hitArea = (reach: number) => `:host::before { inset-${axis}: -${reach}px }`;
   return `
     :host { ${axis}-size: 1px; cursor: ${axis === "inline" ? "col" : "row"}-resize }
-    ${hitArea(12)} @media (pointer: coarse) { ${hitArea(20)} }
+    ${hitArea(11.5)} @media (pointer: coarse) { ${hitArea(19.5)} }
     ${dragging ? ":host { background: Highlight }" : ""}
     ${hidden ? ":host { display: none !important }" : ""}`;
 }

@@ -1,5 +1,5 @@
 import { commands, page, userEvent } from "vitest/browser";
-import type { BentoToggleEvent } from "../src/bento.ts";
+import type { BentoPanelElement, BentoToggleEvent } from "../src/bento.ts";
 
 /** Test helpers. They only use what any page can: markup, properties, input and geometry. */
 
@@ -19,16 +19,22 @@ export function mount(container: HTMLElement): HTMLElement {
   return container;
 }
 
-/** Renders markup and waits for the first frame, the moment of the first paint. */
+/**
+ * Renders markup and waits until the first frame has painted. A frame's callbacks run before
+ * its `ResizeObserver` delivery, the first measured layout, so that is one frame later.
+ */
 export async function render(markup: string): Promise<HTMLElement> {
   const container = mount(parse(markup));
-  await nextFrame();
+  await frames(2);
   return container;
 }
+
+const cleanups: (() => void)[] = [];
 
 export function removeRendered(): void {
   for (const container of renderedContainers) container.remove();
   renderedContainers.clear();
+  for (const cleanup of cleanups.splice(0)) cleanup();
 }
 
 export function byId<Tag extends keyof HTMLElementTagNameMap>(
@@ -61,6 +67,42 @@ export function sidebarLayout(sidebarAttributes = "", groupAttributes = ""): str
   );
 }
 
+function createWithId<Tag extends keyof HTMLElementTagNameMap>(
+  tag: Tag,
+  id: string,
+): HTMLElementTagNameMap[Tag] {
+  const created = document.createElement(tag);
+  created.id = id;
+  return created;
+}
+
+/** What an app writes as properties, as React 19 does on the client. */
+export type PanelProperties = Partial<
+  Pick<BentoPanelElement, "size" | "collapsed" | "min" | "max" | "collapsible" | "collapsedSize">
+>;
+
+/**
+ * The sidebar shape of `sidebarLayout`, built as React 19 builds it on the client: elements
+ * created, properties set, then inserted, so that no `size` or `collapsed` attribute exists.
+ */
+export async function renderBuiltSidebarLayout(sidebarProperties: PanelProperties): Promise<void> {
+  const layoutGroup = createWithId("bento-group", "layout");
+  layoutGroup.setAttribute("style", `width: ${groupSize.width}px; height: ${groupSize.height}px`);
+  const sidebar = Object.assign(createWithId("bento-panel", "sidebar"), sidebarProperties);
+  const sidebarContent = createWithId("div", "sidebar-content");
+  sidebarContent.setAttribute("style", "height: 100px; background: rgb(0, 0, 255)");
+  sidebar.append(sidebarContent);
+  const handle = createWithId("bento-separator", "handle");
+  handle.setAttribute("aria-label", "Sidebar");
+  const main = createWithId("bento-panel", "main");
+  main.append(createWithId("div", "main-content"));
+  layoutGroup.append(sidebar, handle, main);
+  const container = document.createElement("div");
+  container.append(layoutGroup);
+  mount(container);
+  await frames(2);
+}
+
 export const group = (id: string) => byId("bento-group", id);
 export const panel = (id: string) => byId("bento-panel", id);
 export const separator = (id: string) => byId("bento-separator", id);
@@ -88,6 +130,34 @@ export function isBetween(value: number, start: number, end: number): boolean {
   return (
     value > Math.min(start, end) + pixelTolerance && value < Math.max(start, end) - pixelTolerance
   );
+}
+
+/**
+ * Every running animation of the page, those in shadow trees too, such as a modal panel's
+ * sheet fading; `document.getAnimations()` leaves shadow trees out.
+ */
+export function pageAnimations(): Animation[] {
+  const shadowRoots = [...document.querySelectorAll("*")].flatMap((element) =>
+    element.shadowRoot ? [element.shadowRoot] : [],
+  );
+  return [document, ...shadowRoots].flatMap((root) => root.getAnimations());
+}
+
+/** Waits until every running animation of the page has finished. */
+export async function animationsDone(): Promise<void> {
+  await Promise.all(pageAnimations().map((animation) => animation.finished.catch(() => {})));
+}
+
+/**
+ * Gives the page user activation, as a click anywhere does. Before it, an app's write of
+ * `collapsed` is a correction on load and applies at once.
+ */
+export async function activateUser(): Promise<void> {
+  const target = document.createElement("button");
+  target.setAttribute("style", "position: fixed; right: 0; bottom: 0; width: 4px; height: 4px");
+  document.body.append(target);
+  await userEvent.click(target);
+  target.remove();
 }
 
 export function nextFrame(): Promise<DOMHighResTimeStamp> {
@@ -213,6 +283,20 @@ export function isColor(color: Color, expected: Color): boolean {
     Math.abs(color.green - expected.green) <= colorTolerance &&
     Math.abs(color.blue - expected.blue) <= colorTolerance
   );
+}
+
+/** Records uncaught errors and unhandled rejections from now until the test ends. */
+export function recordErrors(): () => unknown[] {
+  const errors: unknown[] = [];
+  const record = (event: ErrorEvent | PromiseRejectionEvent) =>
+    errors.push("error" in event ? event.error : event.reason);
+  window.addEventListener("error", record);
+  window.addEventListener("unhandledrejection", record);
+  cleanups.push(() => {
+    window.removeEventListener("error", record);
+    window.removeEventListener("unhandledrejection", record);
+  });
+  return () => errors;
 }
 
 /** Records events of the given types on a target, in the phase asked for. */

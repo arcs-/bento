@@ -22,8 +22,9 @@ export function formatLength({ amount, unit }: Length): string {
   return `${amount}${unit}`;
 }
 
+/** A px length rounded to 0.01px, so a live size carries no float noise into what apps save. */
 export function pixelLength(amount: number): Length {
-  return { amount, unit: "px" };
+  return { amount: Math.round(amount * 100) / 100, unit: "px" };
 }
 
 /** Resolves a length against the group's space, which `%` is a share of. */
