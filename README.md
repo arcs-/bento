@@ -7,6 +7,7 @@ A framework independent library that creates nicely resizable panel UIs.
 - Based on web components and works well in react and vue
 - Works with SSR as well as small/mobile screens
 - Animations aiding in understanding layout changes
+- The aim is to be as small as reasonable, around 10kb gzipped
 
 ```html
 <bento-group>
