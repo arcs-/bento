@@ -73,7 +73,7 @@ Nothing does N panels + declarative HTML + animated collapse + modal panels.
 
 ## Goal
 - independent open source library under MIT, published as `bento` on npm
-- small: the definition script blocks the first paint, under 8 kB min+gzip, about half of react-resizable-panels with animation and modal panels included
+- small: the definition script blocks the first paint, under 10 kB min+gzip, well under react-resizable-panels' 15 kB with animation and modal panels included
 - replaces react-resizable-panels in a real app; Vue later, again typings only
 - docs site themed like a metal bento box: chrome, brushed metal, 1990s style; the content lives in panels
 
