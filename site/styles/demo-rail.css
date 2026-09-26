@@ -1,5 +1,5 @@
 /* A rail keeps its content, sized to the rail; below 80px the labels leave, by container query. */
-.rail-tray {
+.rail-content {
   padding-inline: 8px;
 }
 
@@ -16,7 +16,7 @@
   align-items: center;
   gap: 10px;
   min-block-size: 32px;
-  font: 600 0.9375rem/1 var(--font-plate);
+  font-size: 0.9375rem;
 }
 
 .rail-item svg {

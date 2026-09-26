@@ -1,28 +1,37 @@
-/* Demo boxes: small bento boxes of their own, sized so the layout never depends on the page. */
+/*
+ * Demos show bento as it ships: these rules style only the frame around a demo and the plain
+ * content inside its panels, never the group, the panels or the separators.
+ */
 
-.demo-box {
-  gap: 6px;
+.demo-frame {
   block-size: 13rem;
 }
 
-.demo-tall {
+.demo-frame-tall {
   block-size: 20rem;
 }
 
-.demo-box .tray {
+.demo-frame-bench {
+  block-size: 24rem;
+}
+
+.demo-content {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  box-sizing: border-box;
+  block-size: 100%;
   padding: 12px;
+  overflow: auto;
   font-size: 0.9375rem;
   line-height: 1.4;
 }
 
-.demo-box .tray strong {
-  font: 700 1.0625rem/1.2 var(--font-plate);
+.demo-content strong {
+  font-weight: 600;
 }
 
-.demo-box .tray code {
+.demo-content code {
   align-self: flex-start;
   max-inline-size: 100%;
   overflow: hidden;
@@ -31,113 +40,32 @@
   white-space: nowrap;
 }
 
-/* Narrow compartments keep their name and drop the details. */
+/* Narrow panels keep their name and drop the details. */
 @container (max-width: 200px) {
-  .demo-box .tray code {
+  .demo-content code {
     display: none;
   }
 }
 
 [data-live-width] {
   color: var(--ink-faint);
-  font: 500 0.8125rem/1 var(--font-plate);
+  font-size: 0.8125rem;
   font-variant-numeric: tabular-nums;
 }
 
-/* The hero: a lunch in steel. Each tray takes the colour of what it holds. */
-.hero-box {
-  block-size: clamp(16rem, 42vh, 24rem);
-}
-
-.hero-box .tray {
-  justify-content: flex-end;
-  color: #1f1a14;
-}
-
-.hero-box .tray code {
-  color: inherit;
-  background: rgb(255 255 255 / 0.45);
-  border-color: rgb(0 0 0 / 0.12);
-}
-
-.hero-box [data-live-width] {
-  color: rgb(31 26 20 / 0.75);
-}
-
-.food-onigiri {
-  background: linear-gradient(180deg, transparent 58%, #26331f 58%), #f7f5ef;
-}
-
-.hero-box .food-onigiri,
-.hero-box .food-onigiri [data-live-width] {
-  color: #f3f1ea;
-}
-
-.hero-box .food-onigiri code {
-  background: rgb(255 255 255 / 0.12);
-  border-color: rgb(255 255 255 / 0.2);
-}
-
-.food-rice {
-  background:
-    radial-gradient(ellipse 3px 1.6px, #fff 60%, transparent 70%) 0 0 / 11px 7px,
-    radial-gradient(ellipse 3px 1.6px, #fdfcf8 60%, transparent 70%) 5px 3px / 13px 9px,
-    #f1eee6;
-}
-
-.food-rice-plum {
-  display: block;
-  inline-size: 34px;
-  block-size: 34px;
-  margin: auto;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #f2a0a8, #b3263a 65%, #7d1526);
-  box-shadow: 0 2px 3px rgb(0 0 0 / 0.25);
-}
-
-.food-tamagoyaki {
-  background:
-    repeating-linear-gradient(180deg, transparent 0 22px, rgb(190 130 20 / 0.16) 22px 23px), #f4dc8c;
-}
-
-.food-pickles {
-  background: #ecbcc8;
-}
-
-@container (max-width: 90px) {
-  .hero-box .tray [data-live-width] {
-    display: none;
-  }
-
-  .hero-box .tray strong {
-    writing-mode: vertical-rl;
-    rotate: 180deg;
-  }
-}
-
-/* The frame that holds the modal demo page; dragging its divider changes the frame's width. */
-.frame-bench {
-  block-size: 24rem;
-}
-
-.frame-bench .frame-tray {
+.frame-content {
   padding: 0;
-  overflow: hidden;
 }
 
-.frame-bench iframe {
+.frame-content iframe {
   display: block;
   inline-size: 100%;
   block-size: 100%;
   border: 0;
 }
 
-.bench-rest {
-  background: repeating-linear-gradient(135deg, var(--hairline) 0 1px, transparent 1px 10px);
-}
-
 /* The editor that guards unsaved changes. */
-.notes-tray textarea {
+.notes-content textarea {
   flex: 1;
   min-block-size: 4rem;
   padding: 8px;
@@ -145,9 +73,8 @@
   font: 0.875rem/1.5 var(--font-code);
   resize: none;
   background: var(--surface-raised);
-  border: 0;
+  border: 1px solid var(--hairline);
   border-radius: var(--radius-small);
-  box-shadow: var(--inset);
 }
 
 .discard-prompt {
@@ -171,20 +98,17 @@
 }
 
 /* The page loaded in the modal demo frame. */
-.frame-layout {
-  gap: 6px;
-  padding: 8px;
+.frame-page {
+  background: var(--surface);
 }
 
-.frame-layout .tray {
-  display: flex;
-  flex-direction: column;
+.frame-page .demo-content {
   gap: 10px;
 }
 
-.frame-layout h2 {
+.frame-page h2 {
   margin: 0;
-  font: 700 1.125rem/1.2 var(--font-plate);
+  font-size: 1.0625rem;
 }
 
 .product-list,
@@ -195,10 +119,4 @@
   padding: 0;
   list-style: none;
   border: 0;
-}
-
-.product-list li {
-  padding: 8px 10px;
-  background: var(--hairline);
-  border-radius: var(--radius-small);
 }

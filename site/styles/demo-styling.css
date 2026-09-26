@@ -1,27 +1,126 @@
-/* Toggle timing is the panel's own transition-duration and timing function, named as Tailwind names them. */
-.duration-700 {
-  transition-duration: 700ms;
+/* The box: brushed steel, with a gap between the compartments. */
+.lunch-box {
+  block-size: clamp(16rem, 42vh, 24rem);
+  padding: 10px;
+  background: var(--metal);
+  border-radius: var(--radius);
+}
+
+.lunch-box bento-group {
+  gap: 6px;
+}
+
+/* Metal dividers instead of the default line; rules of yours always win over bento's. */
+.lunch-box bento-separator {
+  inline-size: 8px;
+  background: var(--divider);
+  border-radius: 4px;
+  box-shadow:
+    inset 1px 0 0 var(--bevel-high),
+    inset -1px 0 0 var(--bevel-low);
+}
+
+.lunch-box bento-group[orientation="vertical"] > bento-separator {
+  inline-size: auto;
+  block-size: 8px;
+  background: var(--divider-vertical);
+}
+
+.lunch-box bento-separator:hover,
+.lunch-box bento-separator:state(dragging) {
+  background: var(--accent);
+}
+
+/* One content element per panel: a recessed compartment in the colour of what it holds. */
+.compartment {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 4px;
+  block-size: 100%;
+  padding: 12px;
+  color: #1f1a14;
+  border-radius: var(--radius);
+  box-shadow: var(--inset);
+}
+
+.compartment [data-live-width] {
+  color: inherit;
+  opacity: 0.75;
+}
+
+.compartment code {
+  align-self: flex-start;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.food-onigiri {
+  color: #f3f1ea;
+  background: linear-gradient(180deg, transparent 58%, #26331f 58%), #f7f5ef;
+}
+
+.food-rice {
+  background:
+    radial-gradient(ellipse 3px 1.6px, #fff 60%, transparent 70%) 0 0 / 11px 7px,
+    radial-gradient(ellipse 3px 1.6px, #fdfcf8 60%, transparent 70%) 5px 3px / 13px 9px,
+    #f1eee6;
+}
+
+.food-rice-plum {
+  display: block;
+  inline-size: 34px;
+  block-size: 34px;
+  margin: auto;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #f2a0a8, #b3263a 65%, #7d1526);
+}
+
+.food-tamagoyaki {
+  background:
+    repeating-linear-gradient(180deg, transparent 0 22px, rgb(190 130 20 / 0.16) 22px 23px), #f4dc8c;
+}
+
+.food-pickles {
+  background: #ecbcc8;
+}
+
+/* Narrow compartments drop details; a rail turns its name on its side. */
+@container (max-width: 200px) {
+  .compartment code {
+    display: none;
+  }
+}
+
+@container (max-width: 90px) {
+  .compartment [data-live-width] {
+    display: none;
+  }
+
+  .compartment strong {
+    writing-mode: vertical-rl;
+    rotate: 180deg;
+  }
+}
+
+/* Live state: a collapsed compartment dims. */
+.lunch-box bento-panel:state(collapsed) > .compartment {
+  filter: saturate(0.4);
+}
+
+/* Tailwind-style utilities on a panel set its toggle timing. */
+.duration-500 {
+  transition-duration: 500ms;
 }
 
 .ease-out {
   transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
 }
 
-/* Live state for CSS: a folded panel, and a separator while it is dragged. */
-.styled-demo bento-panel:state(collapsed) > .tray {
-  background: var(--frame);
-}
-
-.styled-demo bento-separator:state(dragging) {
-  background: var(--accent);
-}
-
-/* The attribute defaults are readable: this bar is exactly as wide as the panel's min. */
-.min-marker {
-  inline-size: var(--bento-min);
-  padding: 2px 6px;
-  font-size: 0.75rem;
-  white-space: nowrap;
-  background: repeating-linear-gradient(135deg, rgb(27 74 140 / 0.18) 0 4px, transparent 4px 8px);
-  border-inline-end: 2px solid var(--accent);
+/* Below 560px the side dishes are a drawer: the sheet takes the panel's own styles. */
+#sides:state(modal) {
+  inline-size: min(300px, 85vw);
+  padding: 10px;
+  background: var(--metal);
+  --bento-backdrop: rgb(20 26 34 / 0.4);
 }

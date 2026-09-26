@@ -23,17 +23,17 @@
     display: none;
   }
 
-  bento-separator {
+  .shell-group > bento-separator {
     background: CanvasText;
     border-radius: 0;
   }
 
-  bento-separator:hover,
-  bento-separator:focus-visible {
+  .shell-group > bento-separator:hover,
+  .shell-group > bento-separator:focus-visible {
     background: Highlight;
   }
 
-  bento-separator:state(dragging) {
+  .shell-group > bento-separator:state(dragging) {
     background: Highlight;
   }
 

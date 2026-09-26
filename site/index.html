@@ -13,46 +13,12 @@
 </p>
 
 <p class="hint">
-  Drag a divider, or tab to one and press Enter. Double-click puts a compartment back.
+  Drag a divider, or tab to one and press Enter. This lunch box is styled with a little CSS; the
+  <a href="guide.html#styling">Styling</a> guide shows it, and every other demo shows the default
+  look.
 </p>
 
-<!-- demo -->
-<bento-group class="demo-box hero-box">
-  <bento-panel id="onigiri" size="26%" min="130px" collapsible collapsed-size="44px">
-    <div class="tray food-onigiri">
-      <strong>Onigiri</strong>
-      <code>collapsed-size="44px"</code>
-      <span data-live-width></span>
-    </div>
-  </bento-panel>
-  <bento-separator aria-label="Resize onigiri" aria-controls="onigiri"></bento-separator>
-  <bento-panel id="rice">
-    <div class="tray food-rice">
-      <span class="food-rice-plum"></span>
-      <strong>Rice</strong>
-      <code>no size, fills</code>
-      <span data-live-width></span>
-    </div>
-  </bento-panel>
-  <bento-separator aria-label="Resize side dishes" aria-controls="sides"></bento-separator>
-  <bento-panel id="sides" size="30%" min="150px" collapsible>
-    <bento-group orientation="vertical">
-      <bento-panel id="tamagoyaki">
-        <div class="tray food-tamagoyaki">
-          <strong>Tamagoyaki</strong>
-          <span data-live-width></span>
-        </div>
-      </bento-panel>
-      <bento-separator aria-label="Resize pickles" aria-controls="pickles"></bento-separator>
-      <bento-panel id="pickles" size="40%" min="56px" collapsible>
-        <div class="tray food-pickles">
-          <strong>Pickles</strong>
-        </div>
-      </bento-panel>
-    </bento-group>
-  </bento-panel>
-</bento-group>
-<!-- /demo -->
+<!-- demo-file: demos/lunch-box.html -->
 
 <h2 id="promises">What it promises</h2>
 

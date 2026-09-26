@@ -4,6 +4,7 @@ import { rememberLayout } from "./demos/saved-layout.ts";
 import { guardUnsavedChanges } from "./demos/unsaved-changes.ts";
 import { EventLog } from "./event-log.ts";
 import { showLiveSizes } from "./live-readouts.ts";
+import { PanelInspector } from "./panel-inspector.ts";
 import { wirePanelControls } from "./panel-controls.ts";
 
 function startEventLogs(): void {
@@ -40,7 +41,20 @@ function startDemos(): void {
   if (addButton && addGroup && addTemplate) toggleAddedPanel(addButton, addGroup, addTemplate);
 }
 
+/** Inspects the first demo panel, or the page's own content panel on pages without demos. */
+function startPanelInspector(): void {
+  const root = document.querySelector<HTMLElement>("[data-panel-inspector]");
+  const inspectorPanel = document.querySelector("#inspector");
+  const first =
+    document.querySelector<BentoPanelElement>(".specimen-stage bento-panel") ??
+    document.querySelector<BentoPanelElement>("bento-panel#page-panel");
+  if (!root || !inspectorPanel || !first) return;
+  const inspector = new PanelInspector(root, inspectorPanel);
+  inspector.inspect(first);
+}
+
 startEventLogs();
+startPanelInspector();
 startDemos();
 wirePanelControls();
 showLiveSizes();

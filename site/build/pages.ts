@@ -118,6 +118,18 @@ function renderCodeInclude(reference: string, caption: string | undefined): stri
   return `<figure class="code-figure"><figcaption>${title}</figcaption>${codeBlock(code, language, caption ?? path)}</figure>`;
 }
 
+/** A demo, live and as the code it is. */
+function renderDemo(markup: string): string {
+  return `<div class="specimen"><div class="specimen-stage">${markup}</div>${codeBlock(markup, "html", "Markup of the demo above")}</div>`;
+}
+
+/** A demo kept in its own file, so pages that show the same one share it. */
+function renderDemoFile(path: string): string {
+  const absolutePath = join(siteRoot, path);
+  includedFiles.add(absolutePath);
+  return renderDemo(readFileSync(absolutePath, "utf8"));
+}
+
 /** Expands the markers a page writes; every demo is shown live and as the code it is. */
 function expandMarkers(content: string): string {
   return content
@@ -126,10 +138,9 @@ function expandMarkers(content: string): string {
       (_block, language: string, code: string) => codeBlock(code, toLanguage(language)),
     )
     .replaceAll(liveBlock, (_block, kind: string, markup: string) =>
-      kind === "live"
-        ? markup
-        : `<div class="specimen"><div class="specimen-stage">${markup}</div>${codeBlock(markup, "html", "Markup of the demo above")}</div>`,
+      kind === "live" ? markup : renderDemo(markup),
     )
+    .replaceAll(/<!-- demo-file: (\S+) -->/g, (_marker, path: string) => renderDemoFile(path))
     .replaceAll(
       /<!-- code: (\S+)(?: \| (.+?))? -->/g,
       (_marker, reference: string, caption: string | undefined) =>
