@@ -43,6 +43,12 @@ const coordinateOn = (axis: Axis, event: PointerEvent) =>
 /** ARIA values are percentages with one decimal. */
 const ariaPercent = (share: number) => String(Math.round(share * 10) / 10);
 
+/**
+ * No text gets selected while a drag crosses the panels. The press itself is not prevented, so
+ * the browser focuses the separator as a pointer focus, without a focus ring.
+ */
+const preventSelection = (event: Event) => event.preventDefault();
+
 const stepKeys: Record<Axis, Record<string, 1 | -1>> = {
   inline: { ArrowRight: 1, ArrowLeft: -1 },
   block: { ArrowDown: 1, ArrowUp: -1 },
@@ -130,8 +136,6 @@ export class BentoSeparator extends HTMLElement implements BentoSeparatorElement
   readonly #pressed = (event: PointerEvent) => {
     const group = groupOf(this);
     if (event.button !== 0 || this.#pointer.kind !== "idle" || !group) return;
-    event.preventDefault();
-    this.focus({ preventScroll: true });
     this.setPointerCapture(event.pointerId);
     const axis = group.axis();
     const origin = coordinateOn(axis, event);
@@ -147,6 +151,7 @@ export class BentoSeparator extends HTMLElement implements BentoSeparatorElement
     };
     setState(this.#internals, "dragging", true);
     this.#writeRules();
+    this.ownerDocument.addEventListener("selectstart", preventSelection, { capture: true });
     group.startDrag(this);
   };
 
@@ -179,6 +184,7 @@ export class BentoSeparator extends HTMLElement implements BentoSeparatorElement
     if (pointer.kind !== "dragging") return;
     if (pointer.frame !== null) cancelAnimationFrame(pointer.frame);
     this.#pointer = { kind: "idle" };
+    this.ownerDocument.removeEventListener("selectstart", preventSelection, { capture: true });
     setState(this.#internals, "dragging", false);
     this.#writeRules();
     groupOf(this)?.endDrag();

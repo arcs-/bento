@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, test } from "vitest";
 import bentoScript from "../dist/bento.js?raw";
-import { isBetween, mount, press, release } from "./fixtures.ts";
+import { userEvent } from "vitest/browser";
+import { isBetween, mount, moveBy, press, release } from "./fixtures.ts";
 
 /**
  * These tests load the built dist/bento.js, as a page would, into a fresh document:
@@ -185,6 +186,52 @@ describe("a blocking script in the head", () => {
     const before = new Set([...(frameWindow.globalsBefore ?? []), "globalsBefore"]);
 
     expect(frameWindow.globalsAfter?.filter((name) => !before.has(name))).toEqual([]);
+  });
+});
+
+/** A page with one separator between two panels of text. */
+const separatorPage = () => `<!doctype html>
+  <html><head><script src="${bentoScriptUrl()}"></script></head><body style="margin: 0">
+    <bento-group style="height: 200px">
+      <bento-panel id="sidebar" size="200px"><p>Sidebar text a drag could select</p></bento-panel>
+      <bento-separator id="handle" aria-label="Sidebar"></bento-separator>
+      <bento-panel><p>Main text a drag could select</p></bento-panel>
+    </bento-group>
+    <button id="after">after</button>
+  </body></html>`;
+
+/** Presses on the separator, 200px into the frame, through real mouse input on the frame. */
+const pressSeparator = (frame: Element) => press(frame, 200 - frameSize.width / 2, -50);
+
+describe("focus on a fresh page", () => {
+  test("a mouse press on the first interaction focuses the separator without a focus ring", async () => {
+    const frameWindow = await loadDocument(separatorPage());
+    const handle = frameWindow.document.getElementById("handle");
+    const frame = frameWindow.frameElement;
+    if (!handle || !frame) throw new Error("no separator in the frame");
+
+    await pressSeparator(frame);
+    expect(frameWindow.document.activeElement).toBe(handle);
+    expect(handle.matches(":focus-visible")).toBe(false);
+    await moveBy(150);
+    await release();
+
+    expect(handle.matches(":focus-visible")).toBe(false);
+    expect(frameWindow.getSelection()?.toString()).toBe("");
+    expect(
+      frameWindow.document.getElementById("sidebar")?.getBoundingClientRect().width,
+    ).toBeCloseTo(350, 0);
+  });
+
+  test("Tab focus shows the focus ring", async () => {
+    const frameWindow = await loadDocument(separatorPage());
+    const handle = frameWindow.document.getElementById("handle");
+    frameWindow.document.getElementById("after")?.focus();
+
+    await userEvent.keyboard("{Shift>}{Tab}{/Shift}");
+
+    expect(frameWindow.document.activeElement).toBe(handle);
+    expect(handle?.matches(":focus-visible")).toBe(true);
   });
 });
 
