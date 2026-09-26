@@ -71,7 +71,52 @@ const languages: Record<string, Language> = {
   ".html": "html",
 };
 
-const liveBlock = /<!-- (demo|live) -->([\s\S]*?)<!-- \/\1 -->/g;
+/** A demo, shown live and as code; `<!-- demo tall -->` gives it a taller stage. */
+const demoBlock = /<!-- demo( tall)? -->([\s\S]*?)<!-- \/demo -->/g;
+/** Markup of a whole page that a code include narrows to with `#live`. */
+const liveBlock = /<!-- live -->([\s\S]*?)<!-- \/live -->/g;
+
+/**
+ * What the code of a demo leaves out, because it only makes the demo read well on this site:
+ * elements marked `data-demo-only` or `data-live-width`, with their content, and the classes
+ * that give demos the site's look. The live demo keeps all of it, so both have one source.
+ */
+const siteOnlyElement = /<([\w-]+)\b[^>]*\sdata-(?:demo-only|live-width)\b[^>]*>/;
+const siteOnlyClasses = new Set([
+  "demo-content",
+  "notes-content",
+  "discard-prompt",
+  "specimen-controls",
+  "satin-button",
+  "anodized",
+]);
+
+/** The index just past the element whose start tag is at `start`, nested namesakes included. */
+function elementEnd(html: string, start: number, tag: string): number {
+  let depth = 0;
+  for (const match of html.slice(start).matchAll(new RegExp(`<(/?)${tag}\\b[^>]*>`, "g"))) {
+    depth += match[1] ? -1 : 1;
+    if (depth === 0) return start + match.index + match[0].length;
+  }
+  throw new Error(`a site-only <${tag}> in a demo is never closed`);
+}
+
+function withoutSiteOnlyElements(html: string): string {
+  const marked = siteOnlyElement.exec(html);
+  if (!marked) return html;
+  const end = elementEnd(html, marked.index, marked[1] ?? "");
+  return withoutSiteOnlyElements(html.slice(0, marked.index) + html.slice(end));
+}
+
+const withoutSiteOnlyClasses = (html: string) =>
+  html.replaceAll(/\sclass="([^"]*)"/g, (_attribute, classes: string) => {
+    const kept = classes.split(/\s+/).filter((name) => name && !siteOnlyClasses.has(name));
+    return kept.length > 0 ? ` class="${kept.join(" ")}"` : "";
+  });
+
+/** A demo's markup as a user would write it; lines left empty by a removal go too. */
+const demoCode = (markup: string) =>
+  withoutSiteOnlyClasses(withoutSiteOnlyElements(markup)).replaceAll(/^[ \t]*\n/gm, "");
 
 /** The files a page includes as code, so the dev server reloads when one changes. */
 export const includedFiles = new Set<string>();
@@ -88,15 +133,16 @@ function renderCodeInclude(reference: string, caption: string | undefined): stri
   const language = languages[extname(path)] ?? "sh";
   const code =
     fragment === "live"
-      ? [...source.matchAll(liveBlock)].map((match) => match[2] ?? "").join("\n")
+      ? demoCode([...source.matchAll(liveBlock)].map((match) => match[1] ?? "").join("\n"))
       : source;
   const title = escapeHtml(caption ?? path);
   return `<figure class="code-figure"><figcaption>${title}</figcaption>${codeBlock(code, language, caption ?? path)}</figure>`;
 }
 
-/** A demo, live and as the code it is. */
-function renderDemo(markup: string): string {
-  return `<div class="specimen"><div class="specimen-stage">${markup}</div>${codeBlock(markup, "html", "Markup of the demo above")}</div>`;
+/** A demo, live and as the code a user would write for it. */
+function renderDemo(markup: string, tall = false): string {
+  const stage = tall ? "specimen-stage specimen-stage-tall" : "specimen-stage";
+  return `<div class="specimen"><div class="${stage}">${markup}</div>${codeBlock(demoCode(markup), "html", "Markup of the demo above")}</div>`;
 }
 
 /** A demo kept in its own file, so pages that show the same one share it. */
@@ -113,8 +159,9 @@ function expandMarkers(content: string): string {
       /<!-- snippet (\w+) -->([\s\S]*?)<!-- \/snippet -->/g,
       (_block, language: string, code: string) => codeBlock(code, toLanguage(language)),
     )
-    .replaceAll(liveBlock, (_block, kind: string, markup: string) =>
-      kind === "live" ? markup : renderDemo(markup),
+    .replaceAll(liveBlock, (_block, markup: string) => markup)
+    .replaceAll(demoBlock, (_block, tall: string | undefined, markup: string) =>
+      renderDemo(markup, tall !== undefined),
     )
     .replaceAll(/<!-- demo-file: (\S+) -->/g, (_marker, path: string) => renderDemoFile(path))
     .replaceAll(

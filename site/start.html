@@ -15,8 +15,9 @@ npm install bento
 <h2 id="load-the-script">Load it blocking in the head</h2>
 
 <p>
-  A plain script, not a module, <code>async</code> or <code>defer</code>, so panels lay out while
-  the page is parsed. It brings its own styles and needs no CSP exception.
+  To prevent layout shifts ensure <code>bento.js</code> is loaded as a blocking script in the
+  <code>&lt;head&gt;</code>. A plain script, not a module, <code>async</code> or <code>defer</code>;
+  it brings its own styles and needs no CSP exception.
 </p>
 
 <!-- snippet html -->
@@ -43,15 +44,13 @@ npm install bento
 </p>
 
 <!-- demo -->
-<div class="demo-frame">
-  <bento-group>
-    <bento-panel size="240px" min="160px" max="400px" collapsible>
-      <div class="demo-content">Sidebar</div>
-    </bento-panel>
-    <bento-separator aria-label="Resize sidebar"></bento-separator>
-    <bento-panel>
-      <div class="demo-content">Main</div>
-    </bento-panel>
-  </bento-group>
-</div>
+<bento-group>
+  <bento-panel size="240px" min="160px" max="400px" collapsible>
+    <div class="demo-content">Sidebar</div>
+  </bento-panel>
+  <bento-separator aria-label="Resize sidebar"></bento-separator>
+  <bento-panel>
+    <div class="demo-content">Main</div>
+  </bento-panel>
+</bento-group>
 <!-- /demo -->

@@ -19,21 +19,19 @@
 </p>
 
 <!-- demo -->
-<div class="demo-frame">
-  <bento-group>
-    <bento-panel size="40%" min="120px" max="360px">
-      <div class="demo-content">
-        <strong>Sized</strong><code>40%, 120px to 360px</code><span data-live-width></span>
-      </div>
-    </bento-panel>
-    <bento-separator aria-label="Resize sized panel"></bento-separator>
-    <bento-panel>
-      <div class="demo-content">
-        <strong>Flexible</strong><code>no size</code><span data-live-width></span>
-      </div>
-    </bento-panel>
-  </bento-group>
-</div>
+<bento-group>
+  <bento-panel size="40%" min="120px" max="360px">
+    <div class="demo-content">
+      Sized<code data-demo-only>40%, 120px to 360px</code><span data-live-width></span>
+    </div>
+  </bento-panel>
+  <bento-separator aria-label="Resize sized panel"></bento-separator>
+  <bento-panel>
+    <div class="demo-content">
+      Flexible<code data-demo-only>no size</code><span data-live-width></span>
+    </div>
+  </bento-panel>
+</bento-group>
 <!-- /demo -->
 
 <p>
@@ -50,24 +48,22 @@
 </p>
 
 <!-- demo -->
-<div class="demo-frame">
-  <bento-group>
-    <bento-panel id="snapping" size="220px" min="160px" collapsible>
-      <div class="demo-content">
-        <strong>Collapsible</strong><code>min="160px"</code><span data-live-width></span>
-      </div>
-    </bento-panel>
-    <bento-separator aria-label="Resize collapsible panel"></bento-separator>
-    <bento-panel>
-      <div class="demo-content"><strong>Main</strong></div>
-    </bento-panel>
-    <bento-separator aria-label="Resize rail"></bento-separator>
-    <bento-panel id="starts-closed" size="180px" collapsible collapsed collapsed-size="48px">
-      <div class="demo-content"><strong>Rail</strong><code>collapsed-size="48px"</code></div>
-    </bento-panel>
-  </bento-group>
-</div>
-<div class="specimen-controls">
+<bento-group>
+  <bento-panel id="snapping" size="220px" min="160px" collapsible>
+    <div class="demo-content">
+      Collapsible<code data-demo-only>min="160px"</code><span data-live-width></span>
+    </div>
+  </bento-panel>
+  <bento-separator aria-label="Resize collapsible panel"></bento-separator>
+  <bento-panel>
+    <div class="demo-content">Main</div>
+  </bento-panel>
+  <bento-separator aria-label="Resize rail"></bento-separator>
+  <bento-panel id="starts-closed" size="180px" collapsible collapsed collapsed-size="48px">
+    <div class="demo-content">Rail<code data-demo-only>collapsed-size="48px"</code></div>
+  </bento-panel>
+</bento-group>
+<div class="specimen-controls" data-demo-only>
   <button class="satin-button" type="button" data-toggle-panel="snapping" aria-controls="snapping">
     Collapsible
   </button>
@@ -89,30 +85,28 @@
   move its separators.
 </p>
 
-<!-- demo -->
-<div class="demo-frame demo-frame-tall">
-  <bento-group>
-    <bento-panel size="160px" min="120px" collapsible>
-      <div class="demo-content"><strong>Files</strong></div>
-    </bento-panel>
-    <bento-separator aria-label="Resize files"></bento-separator>
-    <bento-panel>
-      <bento-group orientation="vertical">
-        <bento-panel>
-          <div class="demo-content"><strong>Editor</strong></div>
-        </bento-panel>
-        <bento-separator aria-label="Resize terminal"></bento-separator>
-        <bento-panel size="35%" min="64px" collapsible>
-          <div class="demo-content"><strong>Terminal</strong><code>size="35%"</code></div>
-        </bento-panel>
-      </bento-group>
-    </bento-panel>
-    <bento-separator aria-label="Resize outline"></bento-separator>
-    <bento-panel size="150px" min="110px" collapsible>
-      <div class="demo-content"><strong>Outline</strong></div>
-    </bento-panel>
-  </bento-group>
-</div>
+<!-- demo tall -->
+<bento-group>
+  <bento-panel size="160px" min="120px" collapsible>
+    <div class="demo-content">Files</div>
+  </bento-panel>
+  <bento-separator aria-label="Resize files"></bento-separator>
+  <bento-panel>
+    <bento-group orientation="vertical">
+      <bento-panel>
+        <div class="demo-content">Editor</div>
+      </bento-panel>
+      <bento-separator aria-label="Resize terminal"></bento-separator>
+      <bento-panel size="35%" min="64px" collapsible>
+        <div class="demo-content">Terminal<code data-demo-only>size="35%"</code></div>
+      </bento-panel>
+    </bento-group>
+  </bento-panel>
+  <bento-separator aria-label="Resize outline"></bento-separator>
+  <bento-panel size="150px" min="110px" collapsible>
+    <div class="demo-content">Outline</div>
+  </bento-panel>
+</bento-group>
 <!-- /demo -->
 
 <h2 id="runtime">Adding panels</h2>
@@ -122,27 +116,16 @@
 </p>
 
 <!-- demo -->
-<div class="demo-frame">
-  <bento-group id="playground">
-    <bento-panel>
-      <div class="demo-content">
-        <strong data-label>Panel 1</strong><span data-live-width></span>
-        <button class="satin-button" type="button" data-remove aria-label="Remove panel 1">
-          Remove
-        </button>
-      </div>
-    </bento-panel>
-  </bento-group>
-</div>
-<template id="playground-panel">
-  <bento-separator></bento-separator>
+<bento-group id="playground">
   <bento-panel min="60px">
     <div class="demo-content">
-      <strong data-label></strong><span data-live-width></span>
-      <button class="satin-button" type="button" data-remove>Remove</button>
+      <span data-label>Panel 1</span><span data-live-width></span>
+      <button class="satin-button" type="button" data-remove aria-label="Remove panel 1">
+        Remove
+      </button>
     </div>
   </bento-panel>
-</template>
+</bento-group>
 <div class="specimen-controls">
   <button id="add-panel" class="satin-button anodized" type="button">Add panel</button>
 </div>
@@ -168,8 +151,10 @@
         Desktop
       </button>
     </div>
-    <div class="device" data-device-frame="phone">
-      <iframe src="modal-frame.html" title="Demo page with a filters panel"></iframe>
+    <div class="device-fit" data-device-frame="phone">
+      <div class="device">
+        <iframe src="modal-frame.html" title="Demo page with a filters panel"></iframe>
+      </div>
     </div>
     <p class="device-caption">Same markup: a sidebar on wide screens, a drawer below 480px.</p>
   </div>
@@ -187,29 +172,32 @@
   <code>beforetoggle</code> to keep unsaved work: type in the notes, then collapse them.
 </p>
 
-<!-- demo -->
-<div class="demo-frame demo-frame-tall">
-  <bento-group id="events-demo">
-    <bento-panel id="notes" size="55%" min="220px" collapsible>
-      <div class="demo-content notes-content">
-        <label for="notes-text"><strong>Notes</strong></label>
-        <textarea id="notes-text">Type here, then collapse this panel.</textarea>
-        <div class="discard-prompt" role="alert" data-discard-prompt hidden>
-          <span>Discard your changes?</span>
-          <button class="satin-button" type="button" data-discard>Discard</button>
-          <button class="satin-button" type="button" data-keep>Keep editing</button>
-        </div>
+<!-- demo tall -->
+<bento-group id="events-demo">
+  <bento-panel id="notes" size="55%" min="220px" collapsible>
+    <div class="demo-content notes-content">
+      <label for="notes-text">Notes</label>
+      <textarea id="notes-text">Type here, then collapse this panel.</textarea>
+      <div class="discard-prompt" role="alert" data-discard-prompt hidden>
+        <span>Discard your changes?</span>
+        <button class="satin-button" type="button" data-discard>Discard</button>
+        <button class="satin-button" type="button" data-keep>Keep editing</button>
       </div>
-    </bento-panel>
-    <bento-separator aria-label="Resize notes"></bento-separator>
-    <bento-panel>
-      <div class="demo-content">
-        <strong>Events in this group</strong>
-        <ol id="events-demo-log" class="event-log demo-log" data-event-log="#events-demo"></ol>
-      </div>
-    </bento-panel>
-  </bento-group>
-</div>
+    </div>
+  </bento-panel>
+  <bento-separator aria-label="Resize notes"></bento-separator>
+  <bento-panel>
+    <div class="demo-content">
+      Events in this group
+      <ol
+        id="events-demo-log"
+        class="event-log demo-log"
+        data-event-log="#events-demo"
+        data-demo-only
+      ></ol>
+    </div>
+  </bento-panel>
+</bento-group>
 <!-- /demo -->
 
 <!-- code: src/demos/unsaved-changes.ts -->

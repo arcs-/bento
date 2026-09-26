@@ -18,15 +18,13 @@
     linear-gradient(90deg, #7e4220, #95542b 35%, #7a3e1d 62%, #8c4c26);
   --wood-lift: 0 14px 30px -10px rgb(70 32 10 / 0.5), 0 0 0 1px rgb(70 32 10 / 0.35);
   --tray-recess: inset 0 2px 5px rgb(20 28 38 / 0.35), inset 0 0 0 1px rgb(20 28 38 / 0.25);
-  /* The metal layers stay inside the frame; the wood fills the border under them. */
-  --metal-tray:
-    var(--sheen) padding-box, linear-gradient(180deg, var(--frame), var(--frame-deep)) padding-box;
 
   block-size: clamp(16rem, 42vh, 24rem);
   padding: 6px;
   border: 6px solid transparent;
   border-radius: 12px;
-  background: var(--metal-tray), var(--wood);
+  /* The site's metal paints inside the border, so the wood under it shows only as the frame. */
+  background: var(--metal), var(--wood);
   box-shadow: var(--tray-recess), var(--wood-lift);
 }
 
@@ -41,24 +39,29 @@
   gap: 6px;
 }
 
-/* Metal dividers instead of the default line; rules of yours always win over bento's. */
+/*
+ * Metal dividers instead of the default line; rules of yours always win over bento's. A vertical
+ * group turns only the face and the bevel, so hover, focus and drag look the same on both.
+ */
 .lunch-box bento-separator {
+  --separator-face: var(--divider);
+  --separator-bevel: inset 1px 0 0 var(--bevel-high), inset -1px 0 0 var(--bevel-low);
+
   inline-size: 8px;
-  background: var(--divider);
+  background: var(--separator-face);
   border-radius: 4px;
-  box-shadow:
-    inset 1px 0 0 var(--bevel-high),
-    inset -1px 0 0 var(--bevel-low);
+  box-shadow: var(--separator-bevel);
 }
 
 .lunch-box bento-group[orientation="vertical"] > bento-separator {
+  --separator-face: var(--divider-vertical);
+  --separator-bevel: var(--bevel);
+
   inline-size: auto;
   block-size: 8px;
-  background: var(--divider-vertical);
 }
 
-.lunch-box bento-separator:hover,
-.lunch-box bento-separator:state(dragging) {
+.lunch-box bento-separator:is(:hover, :focus-visible, :state(dragging)) {
   background: var(--accent);
 }
 
@@ -179,6 +182,6 @@
   inline-size: min(300px, 85vw);
   padding: 6px;
   border: 6px solid transparent;
-  background: var(--metal-tray), var(--wood);
+  background: var(--metal), var(--wood);
   --bento-backdrop: rgb(20 26 34 / 0.4);
 }

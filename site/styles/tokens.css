@@ -29,17 +29,28 @@
   --grip: rgb(26 34 44 / 0.3);
   --toc-line: rgb(26 34 44 / 0.22);
 
+  --brush-highlight: rgb(255 255 255 / 0.16);
+  --brush-groove: rgb(20 28 38 / 0.04);
+  --brush-streak: rgb(255 255 255 / 0.08);
+  --sheen-glint: rgb(255 255 255 / 0.34);
+  /*
+   * Every metal layer paints inside the border, so a border can frame the metal in another
+   * material; without a border that is the whole box.
+   */
   --brushing:
-    repeating-linear-gradient(180deg, rgb(255 255 255 / 0.16) 0 1px, transparent 1px 2px),
-    repeating-linear-gradient(180deg, rgb(20 28 38 / 0.04) 0 1px, transparent 1px 3px),
-    repeating-linear-gradient(180deg, rgb(255 255 255 / 0.08) 0 2px, transparent 2px 7px);
+    repeating-linear-gradient(180deg, var(--brush-highlight) 0 1px, transparent 1px 2px) padding-box,
+    repeating-linear-gradient(180deg, var(--brush-groove) 0 1px, transparent 1px 3px) padding-box,
+    repeating-linear-gradient(180deg, var(--brush-streak) 0 2px, transparent 2px 7px) padding-box;
   --sheen: linear-gradient(
-    105deg,
-    rgb(255 255 255 / 0) 20%,
-    rgb(255 255 255 / 0.34) 45%,
-    rgb(255 255 255 / 0) 70%
-  );
-  --metal: var(--brushing), var(--sheen), linear-gradient(180deg, var(--frame), var(--frame-deep));
+      105deg,
+      rgb(255 255 255 / 0) 20%,
+      var(--sheen-glint) 45%,
+      rgb(255 255 255 / 0) 70%
+    )
+    padding-box;
+  --metal:
+    var(--brushing), var(--sheen),
+    linear-gradient(180deg, var(--frame), var(--frame-deep)) padding-box;
   --button-top: #fdfdfe;
   --button-bottom: #d9dee4;
   --button-grain: rgb(255 255 255 / 0.18);
@@ -95,6 +106,7 @@
   --space-5: 32px;
   --space-6: 48px;
   --space-7: 64px;
+  --space-8: 96px;
 
   --radius: 8px;
   --radius-small: 5px;
@@ -118,16 +130,10 @@
     --grip: rgb(229 233 237 / 0.3);
     --toc-line: rgb(229 233 237 / 0.24);
 
-    --brushing:
-      repeating-linear-gradient(180deg, rgb(255 255 255 / 0.035) 0 1px, transparent 1px 2px),
-      repeating-linear-gradient(180deg, rgb(0 0 0 / 0.1) 0 1px, transparent 1px 3px),
-      repeating-linear-gradient(180deg, rgb(255 255 255 / 0.02) 0 2px, transparent 2px 7px);
-    --sheen: linear-gradient(
-      105deg,
-      rgb(255 255 255 / 0) 20%,
-      rgb(255 255 255 / 0.06) 45%,
-      rgb(255 255 255 / 0) 70%
-    );
+    --brush-highlight: rgb(255 255 255 / 0.035);
+    --brush-groove: rgb(0 0 0 / 0.1);
+    --brush-streak: rgb(255 255 255 / 0.02);
+    --sheen-glint: rgb(255 255 255 / 0.06);
     --button-top: #4f5761;
     --button-bottom: #353c44;
     --button-grain: rgb(255 255 255 / 0.04);

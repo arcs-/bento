@@ -25,8 +25,7 @@ function structuredData(): string {
     "@context": "https://schema.org",
     "@type": "SoftwareSourceCode",
     name: "bento",
-    description:
-      "Resizable panel layouts as web components: drag, collapse to a rail, and drawers on small screens.",
+    description: "A framework independent library that creates nicely resizable panel UIs.",
     programmingLanguage: "TypeScript",
     runtimePlatform: "Web browsers",
     license: "https://opensource.org/licenses/MIT",

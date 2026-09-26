@@ -53,7 +53,7 @@
             class="drawer tray-panel"
             size="248px"
             min="200px"
-            max="360px"
+            max="45%"
             collapsible
             collapsed-size="56px"
             modal="(max-width: 720px)"
@@ -71,7 +71,7 @@
             aria-controls="contents"
             tabindex="0"
           ></bento-separator>
-          <bento-panel id="page-panel" class="page-panel tray-panel">
+          <bento-panel id="page-panel" class="page-panel tray-panel" min="30%">
             <main id="content" class="tray tray-page" tabindex="-1">
               <article class="prose">{{content}}</article>
             </main>
@@ -86,7 +86,7 @@
             class="drawer"
             size="320px"
             min="240px"
-            max="520px"
+            max="45%"
             collapsible{{inspectorCollapsed}}
             modal="(max-width: 1100px)"
             aria-label="Inspector"

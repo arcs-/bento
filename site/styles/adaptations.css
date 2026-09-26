@@ -53,12 +53,7 @@
     border-radius: 0;
   }
 
-  .shell-group > bento-separator:hover,
-  .shell-group > bento-separator:focus-visible {
-    background: Highlight;
-  }
-
-  .shell-group > bento-separator:state(dragging) {
+  .shell-group > bento-separator:is(:hover, :focus-visible, :state(dragging)) {
     background: Highlight;
   }
 

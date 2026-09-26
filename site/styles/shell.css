@@ -188,36 +188,34 @@ body {
   outline: none;
 }
 
-/* The site's dividers: a milled bar, bevelled along its length, with a faint grip. Demos keep bento's own look. */
+/*
+ * The site's dividers: a milled bar, bevelled along its length, with a faint grip. Demos keep
+ * bento's own look. An orientation sets only the parts that turn with it, so the states below
+ * win on either.
+ */
 .shell-group > bento-separator {
+  --separator-grip: repeating-linear-gradient(180deg, var(--grip) 0 1px, transparent 1px 4px) center
+    / 2px 13px no-repeat;
+  --separator-face: var(--divider);
+  --separator-bevel: inset 1px 0 0 var(--bevel-high), inset -1px 0 0 var(--bevel-low);
+
   inline-size: 8px;
-  background:
-    repeating-linear-gradient(180deg, var(--grip) 0 1px, transparent 1px 4px) center / 2px 13px
-      no-repeat,
-    var(--divider);
+  background: var(--separator-grip), var(--separator-face);
   border-radius: 4px;
-  box-shadow:
-    inset 1px 0 0 var(--bevel-high),
-    inset -1px 0 0 var(--bevel-low),
-    var(--raised);
+  box-shadow: var(--separator-bevel), var(--raised);
 }
 
 .shell-group[orientation="vertical"] > bento-separator {
+  --separator-grip: repeating-linear-gradient(90deg, var(--grip) 0 1px, transparent 1px 4px) center
+    / 13px 2px no-repeat;
+  --separator-face: var(--divider-vertical);
+  --separator-bevel: var(--bevel);
+
   inline-size: auto;
   block-size: 8px;
-  background:
-    repeating-linear-gradient(90deg, var(--grip) 0 1px, transparent 1px 4px) center / 13px 2px
-      no-repeat,
-    var(--divider-vertical);
-  box-shadow: var(--bevel), var(--raised);
 }
 
-.shell-group > bento-separator:hover,
-.shell-group > bento-separator:focus-visible {
-  background: var(--accent);
-}
-
-.shell-group > bento-separator:state(dragging) {
+.shell-group > bento-separator:is(:hover, :focus-visible, :state(dragging)) {
   background: var(--accent);
 }
 

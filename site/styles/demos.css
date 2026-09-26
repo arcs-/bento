@@ -1,13 +1,14 @@
 /*
- * Demos show bento as it ships: these rules style only the frame around a demo and the plain
- * content inside its panels, never the group, the panels or the separators.
+ * Demos show bento as it ships: these rules give a demo's group its height and style the plain
+ * content inside its panels, never the look of the group, the panels or the separators. The
+ * height is a zero-specificity rule, so a styled demo's own class wins.
  */
 
-.demo-frame {
+:where(.specimen-stage) > bento-group {
   block-size: 13rem;
 }
 
-.demo-frame-tall {
+:where(.specimen-stage-tall) > bento-group {
   block-size: 20rem;
 }
 
@@ -21,10 +22,6 @@
   overflow: auto;
   font-size: 0.9375rem;
   line-height: 1.4;
-}
-
-.demo-content strong {
-  font-weight: 600;
 }
 
 .demo-content code {
@@ -113,6 +110,7 @@
 
 /* The modal demo: the same page in a device frame, a phone or a desktop wide. */
 .device-stage {
+  grid-template-columns: minmax(0, 1fr);
   justify-items: center;
 }
 
@@ -125,21 +123,42 @@
   box-shadow: var(--inset);
 }
 
-.device {
-  box-sizing: border-box;
-  inline-size: 360px;
-  max-inline-size: 100%;
-  block-size: 640px;
-  padding: 10px;
-  background: var(--metal);
-  border-radius: 30px;
-  box-shadow: var(--bevel), var(--raised);
+/*
+ * The frame keeps its real width, so the page inside sees a phone or a desktop viewport. The
+ * wrapper takes the frame's proportions at the width there is; a script scales the frame to it.
+ */
+.device-fit {
+  --device-width: 360;
+  --device-height: 640;
+  --device-radius: 30px;
+  --screen-radius: 22px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  inline-size: min(100%, var(--device-width) * 1px);
+  min-block-size: 0;
+  aspect-ratio: var(--device-width) / var(--device-height);
 }
 
-.device[data-device-frame="desktop"] {
-  inline-size: 100%;
-  block-size: 420px;
-  border-radius: 14px;
+.device-fit[data-device-frame="desktop"] {
+  --device-width: 720;
+  --device-height: 420;
+  --device-radius: 14px;
+  --screen-radius: var(--radius-small);
+}
+
+.device {
+  flex: none;
+  box-sizing: border-box;
+  inline-size: calc(var(--device-width) * 1px);
+  block-size: calc(var(--device-height) * 1px);
+  padding: 10px;
+  background: var(--metal);
+  border-radius: var(--device-radius);
+  box-shadow: var(--bevel), var(--raised);
+  scale: var(--device-scale, 1);
+  transform-origin: top center;
 }
 
 .device iframe {
@@ -148,11 +167,7 @@
   block-size: 100%;
   background: var(--surface);
   border: 0;
-  border-radius: 22px;
-}
-
-.device[data-device-frame="desktop"] iframe {
-  border-radius: var(--radius-small);
+  border-radius: var(--screen-radius);
 }
 
 @media (prefers-reduced-motion: no-preference) {

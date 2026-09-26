@@ -5,7 +5,7 @@ import { EventLog } from "./event-log.ts";
 import { showLiveSizes } from "./live-readouts.ts";
 import { PanelInspector } from "./panel-inspector.ts";
 import { wireSectionLinks } from "./section-links.ts";
-import { wireDeviceSwitch } from "./device-switch.ts";
+import { scaleDeviceToFit, wireDeviceSwitch } from "./device-switch.ts";
 import { wirePanelControls } from "./panel-controls.ts";
 
 function startEventLogs(): void {
@@ -21,16 +21,17 @@ function startEventLogs(): void {
 
 function startDemos(): void {
   const switcher = document.querySelector(".device-switch");
-  const device = document.querySelector<HTMLElement>("[data-device-frame]");
-  if (switcher && device) wireDeviceSwitch(switcher, device);
+  const deviceFit = document.querySelector<HTMLElement>("[data-device-frame]");
+  const device = deviceFit?.querySelector<HTMLElement>(".device");
+  if (switcher && deviceFit) wireDeviceSwitch(switcher, deviceFit);
+  if (deviceFit && device) scaleDeviceToFit(deviceFit, device);
 
   const editor = document.querySelector<BentoPanelElement>("bento-panel#notes");
   if (editor) guardUnsavedChanges(editor);
 
   const addButton = document.querySelector<HTMLButtonElement>("#add-panel");
   const panelGroup = document.querySelector("#playground");
-  const panelTemplate = document.querySelector<HTMLTemplateElement>("#playground-panel");
-  if (addButton && panelGroup && panelTemplate) playground(panelGroup, addButton, panelTemplate);
+  if (addButton && panelGroup) playground(panelGroup, addButton);
 }
 
 /** The inspector starts empty and inspects whatever panel is clicked, focused or hovered. */
