@@ -5,6 +5,7 @@ import { guardUnsavedChanges } from "./demos/unsaved-changes.ts";
 import { EventLog } from "./event-log.ts";
 import { showLiveSizes } from "./live-readouts.ts";
 import { PanelInspector } from "./panel-inspector.ts";
+import { wireSectionLinks } from "./section-links.ts";
 import { wirePanelControls } from "./panel-controls.ts";
 
 function startEventLogs(): void {
@@ -53,7 +54,15 @@ function startPanelInspector(): void {
   inspector.inspect(first);
 }
 
+function startSectionLinks(): void {
+  const links = [...document.querySelectorAll<HTMLAnchorElement>(".toc-link")];
+  const scroller = document.querySelector<HTMLElement>("#content");
+  const drawer = document.querySelector<BentoPanelElement>("bento-panel#contents");
+  if (links.length > 0 && scroller && drawer) wireSectionLinks(links, scroller, drawer);
+}
+
 startEventLogs();
+startSectionLinks();
 startPanelInspector();
 startDemos();
 wirePanelControls();

@@ -172,26 +172,33 @@ function checkUniqueIds(html: string, page: string): void {
 
 const stripTags = (html: string) => html.replaceAll(/<[^>]+>/g, "").trim();
 
+/**
+ * The site navigation, then the current page's sections as their own list, so hiding that list
+ * in the rail moves nothing above it.
+ */
 function navigationHtml(currentFile: string, content: string): string {
-  const sections = [...content.matchAll(/<h2 id="([^"]+)"[^>]*>([\s\S]*?)<\/h2>/g)];
   const items = navigation.map(({ file, label, icon }) => {
-    const current = file === currentFile;
-    const toc =
-      current && sections.length > 0
-        ? `<ul class="toc">${sections
-            .map(
-              ([, id = "", heading = ""]) => `<li><a href="#${id}">${stripTags(heading)}</a></li>`,
-            )
-            .join("")}</ul>`
-        : "";
+    const current = file === currentFile ? ' aria-current="page"' : "";
     return `<li>
-      <a class="nav-link" href="${file}"${current ? ' aria-current="page"' : ""}>
+      <a class="nav-link" href="${file}"${current}>
         <svg class="nav-icon" viewBox="0 0 20 20" aria-hidden="true">${icon}</svg>
         <span class="nav-label">${label}</span>
-      </a>${toc}
+      </a>
     </li>`;
   });
-  return `<ul class="nav-list">${items.join("")}</ul>`;
+  const sections = [...content.matchAll(/<h2 id="([^"]+)"[^>]*>([\s\S]*?)<\/h2>/g)];
+  const sectionItems = sections.map(
+    ([, id = "", heading = ""]) =>
+      `<li><a class="toc-link" href="#${id}">${stripTags(heading)}</a></li>`,
+  );
+  const toc =
+    sectionItems.length > 0
+      ? `<nav class="toc-section" aria-labelledby="toc-title">
+      <p id="toc-title" class="toc-title">On this page</p>
+      <ol class="toc">${sectionItems.join("")}</ol>
+    </nav>`
+      : "";
+  return `<nav aria-label="Site"><ul class="nav-list">${items.join("")}</ul></nav>${toc}`;
 }
 
 interface PageMeta {
