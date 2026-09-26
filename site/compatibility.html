@@ -1,0 +1,57 @@
+<title>Browsers and CSP</title>
+<meta
+  name="description"
+  content="bento supports every Baseline Widely available browser and runs under a strict Content Security Policy."
+/>
+
+<h1>Browsers and Content Security Policy</h1>
+
+<p class="lead">
+  bento supports Baseline Widely available: as of September 2026, browsers from March 2024 on,
+  roughly Chrome and Edge 123, Firefox 124 and Safari 17.4. Newer features may enhance a behavior,
+  never carry it.
+</p>
+
+<h2 id="baseline">What bento uses</h2>
+
+<p>
+  These tables are rendered from the
+  <a href="decisions.html#0005-baseline-widely-available">compatibility record</a> when this site is
+  built, so they cannot drift from it.
+</p>
+
+<!-- decision-section: 0005-baseline-widely-available.md | What Bento uses -->
+
+<h2 id="not-used">What bento does not use yet</h2>
+
+<!-- decision-section: 0005-baseline-widely-available.md | What Bento does not use, and when that could change -->
+
+<h2 id="first-paint">First paint</h2>
+
+<!-- decision-section: 0005-baseline-widely-available.md | First paint of server-rendered HTML -->
+
+<h2 id="csp">Content Security Policy</h2>
+
+<p>
+  bento needs no exception in a Content Security Policy. Its styles are constructed stylesheets,
+  adopted by each element's shadow root. They are CSSOM objects, not
+  <code>&lt;style&gt;</code> elements or <code>style</code> attributes, so
+  <code>style-src</code> does not apply to them: no nonce, no hash, no <code>'unsafe-inline'</code>.
+  The one script is a file you serve, so <code>script-src 'self'</code> covers it.
+</p>
+
+<p>Every page of this site carries this policy, and every demo on it runs:</p>
+
+<!-- snippet html -->
+<meta
+  http-equiv="Content-Security-Policy"
+  content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self'; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'"
+/>
+<!-- /snippet -->
+
+<p>
+  Your own markup still counts: a <code>style="…"</code> attribute you write needs
+  <code>'unsafe-inline'</code>, and so does inlining the bento script into the page. Serve it as a
+  file, or allow it by hash.
+  <a href="decisions.html#0012-no-document-stylesheet">Why there is no document stylesheet</a>
+</p>

@@ -1,0 +1,720 @@
+<title>Guide</title>
+<meta
+  name="description"
+  content="Every bento feature as a live demo next to its code: sizes, collapsing, rails, nesting, keyboard, modal panels, events and styling."
+/>
+<meta name="inspector" content="open" />
+
+<h1>Guide</h1>
+
+<p class="lead">
+  Each demo below is live markup, and the code under it is that markup, taken from this page when it
+  was built. Drag, collapse and tab through them; the inspector logs every event they fire.
+</p>
+
+<h2 id="groups">A group of panels</h2>
+
+<p>
+  A <code>&lt;bento-group&gt;</code> lays out its panels in a row. Panels without a
+  <code>size</code> share the space equally. Put a <code>&lt;bento-separator&gt;</code> between two
+  panels to let the user drag the line between them.
+</p>
+
+<!-- demo -->
+<bento-group class="demo-box">
+  <bento-panel>
+    <div class="tray"><strong>One</strong><span data-live-width></span></div>
+  </bento-panel>
+  <bento-separator aria-label="Resize one and two"></bento-separator>
+  <bento-panel>
+    <div class="tray"><strong>Two</strong><span data-live-width></span></div>
+  </bento-panel>
+  <bento-separator aria-label="Resize two and three"></bento-separator>
+  <bento-panel>
+    <div class="tray"><strong>Three</strong><span data-live-width></span></div>
+  </bento-panel>
+</bento-group>
+<!-- /demo -->
+
+<p>
+  One panel always stays flexible, so the row is always full. Dragging between two flexible panels
+  gives the earlier one a size, and the later one keeps filling. With no flexible panel at all, the
+  last one fills.
+</p>
+
+<p>
+  A separator resizes and collapses its <em>primary panel</em>: of its two neighbours, the one with
+  a <code>size</code> or <code>collapsible</code>, the later one when both or neither have one, or
+  the one its <code>aria-controls</code> names. It has no attributes of its own. Separators are
+  yours to write; bento never inserts one, so it cannot fight a framework that owns the DOM.
+</p>
+
+<h2 id="sizes">Size, min and max</h2>
+
+<p>
+  <code>size</code> is where a panel starts, <code>min</code> and <code>max</code> bound what the
+  user can drag it to. Lengths are pixels or percentages of the group's space; any other unit falls
+  back to the default. Dragging always writes pixels.
+</p>
+
+<!-- demo -->
+<bento-group class="demo-box">
+  <bento-panel size="200px" min="120px" max="320px">
+    <div class="tray">
+      <strong>Fixed</strong><code>200px, 120px to 320px</code><span data-live-width></span>
+    </div>
+  </bento-panel>
+  <bento-separator aria-label="Resize fixed panel"></bento-separator>
+  <bento-panel>
+    <div class="tray">
+      <strong>Flexible</strong><code>no size</code><span data-live-width></span>
+    </div>
+  </bento-panel>
+  <bento-separator aria-label="Resize share panel"></bento-separator>
+  <bento-panel size="25%" min="15%">
+    <div class="tray">
+      <strong>Share</strong><code>25%, at least 15%</code><span data-live-width></span>
+    </div>
+  </bento-panel>
+</bento-group>
+<!-- /demo -->
+
+<p>
+  A panel clips its content, and the content keeps at least <code>min</code>, so it is cut off
+  rather than squished. DOM order is priority: earlier panels keep their space. Dragging pushes the
+  panels further along down to their <code>min</code>, and when the group itself gets too small, it
+  collapses collapsible panels from the end and expands them once the space returns.
+</p>
+
+<p class="see-also">
+  Attributes are the whole markup interface. <a href="decisions.html#0004-attributes-only">Why</a>
+</p>
+
+<h2 id="collapsing">Collapsing and snapping</h2>
+
+<p>
+  A <code>collapsible</code> panel can collapse to its <code>collapsed-size</code>, 0 by default.
+  Drag it below its <code>min</code> and it holds there; drag past halfway to its collapsed size and
+  it snaps shut. Drag back past halfway and it opens again. Press Enter on the separator to collapse
+  or expand it. Expanding restores the size it had before.
+</p>
+
+<!-- demo -->
+<bento-group class="demo-box">
+  <bento-panel id="snapping" size="220px" min="160px" collapsible>
+    <div class="tray">
+      <strong>Collapsible</strong><code>min="160px"</code><span data-live-width></span>
+    </div>
+  </bento-panel>
+  <bento-separator aria-label="Resize collapsible panel"></bento-separator>
+  <bento-panel>
+    <div class="tray"><strong>Main</strong></div>
+  </bento-panel>
+  <bento-separator aria-label="Resize closed panel"></bento-separator>
+  <bento-panel id="starts-closed" size="180px" collapsible collapsed>
+    <div class="tray"><strong>Starts collapsed</strong><code>collapsed</code></div>
+  </bento-panel>
+</bento-group>
+<div class="specimen-controls">
+  <button class="satin-button" type="button" data-toggle-panel="snapping" aria-controls="snapping">
+    Collapsible
+  </button>
+  <button
+    class="satin-button"
+    type="button"
+    data-toggle-panel="starts-closed"
+    aria-controls="starts-closed"
+  >
+    Starts collapsed
+  </button>
+</div>
+<!-- /demo -->
+
+<p>
+  The buttons write the panel's <code>collapsed</code> property, which animates like a toggle.
+  Collapsing and snapping animate; a plain drag, the first layout and a window resize never do. A
+  panel collapsed to 0 hides its content with <code>display: none</code>, so focus and assistive
+  technology skip it. The separator stays next to it, so it can open it again.
+</p>
+
+<p>
+  Arrow keys snap as soon as they go below <code>min</code>, so a keyboard user never gets stuck at
+  the hold.
+</p>
+
+<p class="see-also">
+  Why halfway: <a href="decisions.html#0009-snap-at-halfway">snap at halfway</a>. How it animates:
+  <a href="decisions.html#0014-animate-with-web-animations">Web Animations</a>. Under reduced
+  motion: <a href="decisions.html#0001-reduced-motion">a cross-fade</a>.
+</p>
+
+<h2 id="rails">Rails</h2>
+
+<p>
+  With a <code>collapsed-size</code>, a collapsed panel becomes a rail and keeps its content, sized
+  to the rail. The content is a size container, so it adapts with a container query rather than a
+  script. The navigation of this site is one: press Enter on its divider.
+</p>
+
+<!-- demo -->
+<bento-group class="demo-box">
+  <bento-panel size="200px" min="150px" collapsible collapsed-size="48px">
+    <div class="tray rail-tray">
+      <ul class="rail-list">
+        <li class="rail-item">
+          <svg viewBox="0 0 20 20" aria-hidden="true">
+            <circle cx="9" cy="9" r="5" />
+            <path d="m13 13 4 4" />
+          </svg>
+          <span>Search</span>
+        </li>
+        <li class="rail-item">
+          <svg viewBox="0 0 20 20" aria-hidden="true">
+            <path d="M3 5h14M3 10h14M3 15h9" />
+          </svg>
+          <span>Documents</span>
+        </li>
+        <li class="rail-item">
+          <svg viewBox="0 0 20 20" aria-hidden="true">
+            <circle cx="10" cy="10" r="3" />
+            <path d="M10 2v3M10 15v3M2 10h3M15 10h3" />
+          </svg>
+          <span>Settings</span>
+        </li>
+      </ul>
+    </div>
+  </bento-panel>
+  <bento-separator aria-label="Resize navigation"></bento-separator>
+  <bento-panel>
+    <div class="tray"><strong>Main</strong></div>
+  </bento-panel>
+</bento-group>
+<!-- /demo -->
+
+<!-- code: styles/demo-rail.css -->
+
+<p>
+  A rail's panel is never smaller than its rail: its <code>min</code> is at least its
+  <code>collapsed-size</code>. Container queries inside a panel must be unnamed; a named container
+  does not match across the panel's shadow boundary.
+</p>
+
+<h2 id="nesting">Nested groups</h2>
+
+<p>
+  A group can be the content of a panel. Each group lays out its own panels, in its own direction.
+</p>
+
+<!-- demo -->
+<bento-group class="demo-box demo-tall">
+  <bento-panel size="160px" min="120px" collapsible>
+    <div class="tray"><strong>Files</strong></div>
+  </bento-panel>
+  <bento-separator aria-label="Resize files"></bento-separator>
+  <bento-panel>
+    <bento-group orientation="vertical">
+      <bento-panel>
+        <div class="tray"><strong>Editor</strong></div>
+      </bento-panel>
+      <bento-separator aria-label="Resize terminal"></bento-separator>
+      <bento-panel size="35%" min="64px" collapsible>
+        <div class="tray"><strong>Terminal</strong></div>
+      </bento-panel>
+    </bento-group>
+  </bento-panel>
+  <bento-separator aria-label="Resize outline"></bento-separator>
+  <bento-panel size="150px" min="110px" collapsible>
+    <div class="tray"><strong>Outline</strong></div>
+  </bento-panel>
+</bento-group>
+<!-- /demo -->
+
+<h2 id="vertical">Vertical groups</h2>
+
+<p>
+  <code>orientation="vertical"</code> stacks panels top to bottom. The up and down arrow keys move
+  its separators.
+</p>
+
+<!-- demo -->
+<bento-group orientation="vertical" class="demo-box demo-tall">
+  <bento-panel>
+    <div class="tray"><strong>Preview</strong></div>
+  </bento-panel>
+  <bento-separator aria-label="Resize console"></bento-separator>
+  <bento-panel size="120px" min="80px" collapsible>
+    <div class="tray"><strong>Console</strong><code>size="120px"</code></div>
+  </bento-panel>
+</bento-group>
+<!-- /demo -->
+
+<h2 id="right-to-left">Right to left</h2>
+
+<p>
+  A horizontal group follows the writing direction. Layout, dragging and the arrow keys work in
+  start and end, never left and right, so in a right-to-left document the first panel sits on the
+  right, and the arrow keys still move the separator the way they point.
+</p>
+
+<!-- demo -->
+<bento-group dir="rtl" class="demo-box">
+  <bento-panel size="200px" min="140px" collapsible>
+    <div class="tray"><strong>Start</strong><code>size="200px"</code></div>
+  </bento-panel>
+  <bento-separator aria-label="Resize start panel"></bento-separator>
+  <bento-panel>
+    <div class="tray"><strong>End</strong></div>
+  </bento-panel>
+</bento-group>
+<!-- /demo -->
+
+<h2 id="keyboard">Keyboard</h2>
+
+<p>
+  Every separator is focusable. It adds <code>tabindex="0"</code> when you did not write one. Keys
+  act on its primary panel:
+</p>
+
+<div class="table-well" tabindex="0">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Key</th>
+        <th scope="col">Does</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Left and Right arrows, or Up and Down in a vertical group</td>
+        <td>Move the separator 10 pixels; with Shift, 100 pixels.</td>
+      </tr>
+      <tr>
+        <td>Enter</td>
+        <td>Collapse or expand the primary panel, when it is collapsible.</td>
+      </tr>
+      <tr>
+        <td>Home</td>
+        <td>Move the primary panel to its <code>min</code>.</td>
+      </tr>
+      <tr>
+        <td>End</td>
+        <td>Move the primary panel to its <code>max</code>, or as far as the others allow.</td>
+      </tr>
+      <tr>
+        <td>Double-click</td>
+        <td>Reset the primary panel to its default size and collapsed state.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+  Here both panels have a <code>size</code>, which would make the later one primary. The separator's
+  <code>aria-controls</code> names the first instead. Tab to it and try Home and End.
+</p>
+
+<!-- demo -->
+<bento-group class="demo-box">
+  <bento-panel id="left-pane" size="35%" min="20%" max="60%" collapsible>
+    <div class="tray">
+      <strong>Primary</strong><code>min="20%" max="60%"</code><span data-live-width></span>
+    </div>
+  </bento-panel>
+  <bento-separator aria-label="Resize primary pane" aria-controls="left-pane"></bento-separator>
+  <bento-panel size="30%" min="20%">
+    <div class="tray"><strong>Other</strong></div>
+  </bento-panel>
+</bento-group>
+<!-- /demo -->
+
+<p>
+  F6, which the window splitter pattern suggests for moving between panes, is left to your app: it
+  is a page-wide shortcut. <a href="accessibility.html">More on accessibility</a>
+</p>
+
+<h2 id="runtime">Adding and removing panels</h2>
+
+<p>
+  Panels may appear, disappear or collapse at any moment, even in the middle of a drag. The group
+  lays itself out again whenever its children change.
+</p>
+
+<!-- demo -->
+<bento-group id="runtime-demo" class="demo-box">
+  <bento-panel>
+    <div class="tray"><strong>Results</strong></div>
+  </bento-panel>
+</bento-group>
+<template id="added-panel">
+  <bento-separator data-added aria-label="Resize details"></bento-separator>
+  <bento-panel id="details" data-added size="220px" min="160px" collapsible>
+    <div class="tray"><strong>Details</strong><code>size="220px"</code></div>
+  </bento-panel>
+</template>
+<div class="specimen-controls">
+  <button id="add-panel" class="satin-button" type="button" aria-pressed="false">
+    Show details
+  </button>
+</div>
+<!-- /demo -->
+
+<!-- code: src/demos/runtime-panel.ts -->
+
+<h2 id="modal-panels">Modal panels</h2>
+
+<p>
+  On a small screen there is no room for sidebars. Give a panel a <code>modal</code> media query,
+  and while it matches, the panel leaves the group and shows as a modal dialog over it, while it is
+  not collapsed. Entering modal mode collapses it, so it arrives closed. Leaving restores the
+  collapsed state it had beside the content.
+</p>
+
+<p>
+  Drag the divider to make the frame below narrower than 480 pixels. Its filters panel becomes a
+  drawer, and a button appears to open it. Close it with Escape, the Close button, or a tap outside.
+</p>
+
+<!-- demo -->
+<bento-group class="demo-box frame-bench">
+  <bento-panel id="frame-panel" size="600px" min="280px">
+    <div class="tray frame-tray">
+      <iframe src="modal-frame.html" title="Demo page with a filters panel"></iframe>
+    </div>
+  </bento-panel>
+  <bento-separator aria-label="Resize demo frame" aria-controls="frame-panel"></bento-separator>
+  <bento-panel>
+    <div class="tray bench-rest"></div>
+  </bento-panel>
+</bento-group>
+<!-- /demo -->
+
+<p>The page inside the frame, and its styles:</p>
+
+<!-- code: modal-frame.html#live | modal-frame.html -->
+
+<!-- code: styles/demo-modal.css -->
+
+<ul>
+  <li>
+    <strong>Opening is yours.</strong> Write <code>collapsed = false</code>, from a button. Only
+    closing can come from the user.
+  </li>
+  <li>
+    <strong>Closing is collapsing.</strong> Escape, the back gesture and a tap outside collapse the
+    panel, so they fire a cancelable <code>beforetoggle</code>, and your app can keep the drawer
+    open.
+    <a href="decisions.html#0008-modal-closes-by-collapsing">Why there is no open attribute</a>
+  </li>
+  <li>
+    <strong>One at a time.</strong> Showing one modal panel collapses any other, like
+    <code>popover="auto"</code>.
+  </li>
+  <li>
+    <strong>Style the panel itself.</strong> By default the sheet is full height, on the side of the
+    group the panel sits on, as wide as its <code>size</code> and never wider than the viewport. In
+    modal mode, the panel's size, padding, background, border, radius and shadow go to the sheet, so
+    a bottom sheet or a full screen is plain CSS on the panel.
+    <a href="decisions.html#0013-modal-styled-through-the-panel">Why no part is exposed</a>
+  </li>
+  <li>
+    <strong>The backdrop</strong> takes its color from <code>--bento-backdrop</code> on the panel.
+  </li>
+  <li><strong>Name it.</strong> The panel's <code>aria-label</code> names the dialog.</li>
+  <li>
+    <strong>Menus render inside.</strong> The rest of the page is inert while a modal panel shows,
+    so a menu opened in it must render inside it.
+  </li>
+  <li>The separator next to a modal panel hides.</li>
+</ul>
+
+<p>
+  This site does the same: make the window narrower than 1100 pixels and the inspector becomes a
+  drawer, narrower than 720 and the navigation does too.
+</p>
+
+<h2 id="events">Events</h2>
+
+<p>
+  Events fire on the panel and never bubble. To hear them on a parent, listen in the capture phase.
+  None fires when your code writes a property, and none for the first layout.
+</p>
+
+<div class="table-well" tabindex="0">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">Event</th>
+        <th scope="col">Fires</th>
+        <th scope="col">Cancelable</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>resize</code></td>
+        <td>
+          When the user changes the panel's <code>size</code>, directly or by pushing it, at most
+          once per frame.
+        </td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td><code>resizeend</code></td>
+        <td>
+          When the drag or key press is done, on pointer or key up, like <code>scrollend</code>.
+        </td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td><code>beforetoggle</code></td>
+        <td>Before the panel collapses or expands, for every change you did not write yourself.</td>
+        <td>Only when the user caused it</td>
+      </tr>
+      <tr>
+        <td><code>toggle</code></td>
+        <td>After it collapsed or expanded.</td>
+        <td>No</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>
+  <code>beforetoggle</code> and <code>toggle</code> are <code>ToggleEvent</code>s whose
+  <code>oldState</code> and <code>newState</code> are <code>"open"</code> (expanded) or
+  <code>"closed"</code> (collapsed). The user causes a toggle with Enter, a drag that snaps, a
+  double-click, or by closing a modal panel. A group collapsing panels as it shrinks, a panel
+  entering modal mode, or one modal panel closing another fire the same pair, but
+  <code>beforetoggle</code> cannot be canceled then: the space is gone.
+</p>
+
+<p>
+  Canceling is how an editor keeps unsaved changes. Type in the notes, then collapse them by Enter,
+  drag or double-click:
+</p>
+
+<!-- demo -->
+<bento-group id="events-demo" class="demo-box demo-tall">
+  <bento-panel id="notes" size="55%" min="220px" collapsible>
+    <div class="tray notes-tray">
+      <label for="notes-text"><strong>Notes</strong></label>
+      <textarea id="notes-text">Type here, then collapse this panel.</textarea>
+      <div class="discard-prompt" role="alert" data-discard-prompt hidden>
+        <span>Discard your changes?</span>
+        <button class="satin-button" type="button" data-discard>Discard</button>
+        <button class="satin-button" type="button" data-keep>Keep editing</button>
+      </div>
+    </div>
+  </bento-panel>
+  <bento-separator aria-label="Resize notes"></bento-separator>
+  <bento-panel>
+    <div class="tray">
+      <strong>Events in this group</strong>
+      <ol id="events-demo-log" class="event-log demo-log" data-event-log="#events-demo"></ol>
+    </div>
+  </bento-panel>
+</bento-group>
+<!-- /demo -->
+
+<!-- code: src/demos/unsaved-changes.ts -->
+
+<p>
+  For an asynchronous confirm, cancel, ask, then write <code>collapsed</code>. The write fires no
+  event, so it cannot loop.
+  <a href="decisions.html#0010-veto-with-beforetoggle">Why only the user's changes can be vetoed</a>
+</p>
+
+<p>
+  The log in that demo, and the inspector, are this listener. Capture-phase listeners run before the
+  panel's own, so whether the <code>beforetoggle</code> was canceled is read after the dispatch:
+</p>
+
+<!-- code: src/event-log.ts -->
+
+<p class="see-also">
+  Why these names, and why nothing bubbles:
+  <a href="decisions.html#0002-names">names follow ARIA and HTML</a>.
+</p>
+
+<h2 id="saving">Saving sizes</h2>
+
+<p>
+  bento does not store sizes. Your app saves the live state when the user is done, on
+  <code>resizeend</code> and <code>toggle</code>, and renders it back as the attributes. Resize or
+  collapse this panel, then reload the page:
+</p>
+
+<!-- demo -->
+<bento-group class="demo-box">
+  <bento-panel id="remembered" size="240px" min="160px" collapsible>
+    <div class="tray"><strong>Remembered</strong><span data-live-width></span></div>
+  </bento-panel>
+  <bento-separator aria-label="Resize remembered panel"></bento-separator>
+  <bento-panel>
+    <div class="tray"><strong>Main</strong></div>
+  </bento-panel>
+</bento-group>
+<!-- /demo -->
+
+<!-- code: src/demos/saved-layout.ts -->
+
+<p>
+  A server-rendered app writes the saved values straight into the markup, for example from a cookie,
+  so the first paint already has them. Double-click then resets to the saved size, since that is now
+  the default.
+</p>
+
+<h2 id="live-state">Live state and defaults</h2>
+
+<p>
+  <code>size</code> and <code>collapsed</code> work like <code>value</code> and
+  <code>checked</code> on an <code>&lt;input&gt;</code>. The attribute is the default, reflected by
+  <code>defaultSize</code> and <code>defaultCollapsed</code>. The property is the live state:
+  dragging, collapsing and writing it change it, and the attribute stays as written. While nobody
+  has changed the live state, a changed attribute applies to it, without animating. Every other
+  property simply reflects its attribute.
+</p>
+
+<p>
+  Writing <code>collapsed</code> animates like a toggle and fires no event, because your code knows
+  what it wrote. That makes buttons simple, like the ones in this site's title bar:
+</p>
+
+<!-- code: src/panel-controls.ts -->
+
+<p class="see-also">
+  <a href="decisions.html#0007-defaults-and-live-state">Why attributes are defaults</a>
+</p>
+
+<h2 id="styling">Styling</h2>
+
+<p>
+  bento's own styles are barebones, like the browser's for an <code>&lt;input&gt;</code>, and live
+  inside the elements as <code>:host</code> rules. Any rule of yours wins, Tailwind classes
+  included, whatever their layer or specificity. They use system colors, so dark mode and forced
+  colors work before you style anything.
+</p>
+
+<h3 id="content-element">Put one element in each panel</h3>
+
+<p>
+  Your content sits in an internal wrapper that clips it. Put one element in the panel that carries
+  layout, padding and scrolling, such as <code>h-full overflow-auto</code> in Tailwind, or the
+  <code>.tray</code> in these demos. Padding and borders on the sides that collapse go on that
+  element, not the panel, or the panel stops collapsing at its padding. Margins on panels and
+  separators are not supported; <code>gap</code> on the group is.
+</p>
+
+<p>
+  Layout is bento's: a <code>flex</code> or <code>flex-basis</code> of yours on a panel overrides
+  it.
+</p>
+
+<h3 id="toggle-timing">Toggle timing and live state</h3>
+
+<p>
+  Collapsing animates with the panel's own <code>transition-duration</code> and
+  <code>transition-timing-function</code>, 200 milliseconds <code>ease</code> by default. So
+  <code>duration-700 ease-out</code> slows it down. Any other <code>transition</code> on a panel
+  would animate drags too. Live state is a custom state: <code>:state(collapsed)</code> and
+  <code>:state(modal)</code> on a panel, <code>:state(dragging)</code> on a separator. The
+  attributes are readable as <code>--bento-size</code>, <code>--bento-min</code>,
+  <code>--bento-max</code> and <code>--bento-collapsed-size</code>.
+</p>
+
+<!-- demo -->
+<bento-group class="demo-box styled-demo">
+  <bento-panel
+    id="styled"
+    class="duration-700 ease-out"
+    size="240px"
+    min="150px"
+    collapsible
+    collapsed-size="40px"
+  >
+    <div class="tray">
+      <strong>Slow</strong>
+      <span class="min-marker">min</span>
+    </div>
+  </bento-panel>
+  <bento-separator aria-label="Resize slow panel"></bento-separator>
+  <bento-panel>
+    <div class="tray"><strong>Main</strong></div>
+  </bento-panel>
+</bento-group>
+<div class="specimen-controls">
+  <button class="satin-button" type="button" data-toggle-panel="styled" aria-controls="styled">
+    Slow panel
+  </button>
+</div>
+<!-- /demo -->
+
+<!-- code: styles/demo-styling.css -->
+
+<p>
+  Custom states are Baseline Widely available from November 2026. bento feature-detects them and
+  never needs them itself; in older browsers only your <code>:state()</code> rules go without
+  effect.
+</p>
+
+<h3 id="tailwind">With Tailwind</h3>
+
+<p>
+  Classes land on the elements as written. In modal mode, sizes and colors on the panel go to the
+  sheet, and an arbitrary property sets the backdrop:
+</p>
+
+<!-- snippet html -->
+<bento-panel
+  class="duration-300 ease-out bg-white max-md:w-[85vw] [--bento-backdrop:rgb(0_0_0/.4)]"
+  size="320px"
+  min="240px"
+  collapsible
+  modal="(max-width: 768px)"
+  aria-label="Filters"
+>
+  <div class="h-full overflow-auto p-4">…</div>
+</bento-panel>
+<!-- /snippet -->
+
+<p class="see-also">
+  Why styles live in the elements:
+  <a href="decisions.html#0012-no-document-stylesheet">no document stylesheet</a>.
+</p>
+
+<h2 id="react-and-vue">React and Vue</h2>
+
+<p>
+  No wrapper: React 19 and Vue render custom elements natively, properties and events included.
+  <a href="decisions.html#0003-no-framework-adapters">Why there are no adapters</a>
+</p>
+
+<h3 id="react">React 19</h3>
+
+<p>
+  Reference <code>bento/react</code> for the JSX typings. Props use the attribute names. Events are
+  <code>onresize</code>, <code>onresizeend</code>, <code>onbeforetoggle</code> and
+  <code>ontoggle</code>, in lower case, with a <code>Capture</code> suffix to hear them on a parent.
+  When React hydrates server-rendered separators, render <code>tabIndex={0}</code> yourself, so the
+  markup matches.
+</p>
+
+<!-- code: snippets/react-layout.tsx | Layout.tsx -->
+
+<h3 id="vue">Vue</h3>
+
+<p>
+  Tell Vue's compiler that <code>bento-</code> tags are custom elements. Typings for Vue templates
+  are not shipped yet.
+</p>
+
+<!-- code: snippets/vue-vite.config.ts | vite.config.ts -->
+
+<!-- snippet html -->
+<bento-group>
+  <bento-panel id="sidebar" size="320px" collapsible aria-label="Sidebar" @resizeend="saveSize">
+    <nav class="h-full overflow-auto">…</nav>
+  </bento-panel>
+  <bento-separator aria-label="Resize sidebar" aria-controls="sidebar"></bento-separator>
+  <bento-panel><main class="h-full overflow-auto">…</main></bento-panel>
+</bento-group>
+<!-- /snippet -->

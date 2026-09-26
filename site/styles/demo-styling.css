@@ -1,0 +1,27 @@
+/* Toggle timing is the panel's own transition-duration and timing function, named as Tailwind names them. */
+.duration-700 {
+  transition-duration: 700ms;
+}
+
+.ease-out {
+  transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+}
+
+/* Live state for CSS: a folded panel, and a separator while it is dragged. */
+.styled-demo bento-panel:state(collapsed) > .tray {
+  background: var(--frame);
+}
+
+.styled-demo bento-separator:state(dragging) {
+  background: var(--accent);
+}
+
+/* The attribute defaults are readable: this bar is exactly as wide as the panel's min. */
+.min-marker {
+  inline-size: var(--bento-min);
+  padding: 2px 6px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  background: repeating-linear-gradient(135deg, rgb(27 74 140 / 0.18) 0 4px, transparent 4px 8px);
+  border-inline-end: 2px solid var(--accent);
+}

@@ -1,0 +1,380 @@
+/* The box: a brushed frame holding satin compartments, with fine metal dividers between them. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  block-size: 100%;
+  margin: 0;
+}
+
+body {
+  font: 400 1rem/1.6 var(--font-body);
+  color: var(--ink);
+  background: var(--metal);
+  background-attachment: fixed;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  inset-inline-start: 16px;
+  inset-block-start: -100px;
+  padding: 8px 14px;
+  color: var(--ink);
+  background: var(--surface);
+  border-radius: var(--radius-small);
+  box-shadow: var(--raised);
+}
+
+.skip-link:focus {
+  inset-block-start: 16px;
+}
+
+/* The outer box: the title bar, the compartments and the status bar sit on the frame itself. */
+.box {
+  gap: 4px;
+  padding: 0 12px 4px;
+}
+
+.titlebar-plate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  block-size: 100%;
+  padding-inline: 8px 0;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--ink);
+  font: 700 1.3125rem/1 var(--font-plate);
+  letter-spacing: 0.01em;
+  text-decoration: none;
+}
+
+.wordmark-mark {
+  inline-size: 22px;
+  block-size: 22px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.5;
+}
+
+.titlebar-controls {
+  display: flex;
+  gap: 8px;
+}
+
+/* A quiet satin button; a small lamp shows whether its panel is open. */
+.satin-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-block-size: 32px;
+  padding: 4px 12px;
+  color: var(--ink);
+  font: 600 0.875rem/1 var(--font-plate);
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  background: var(--satin);
+  border: 0;
+  border-radius: var(--radius-small);
+  box-shadow: var(--raised);
+}
+
+.satin-button:active {
+  box-shadow: var(--inset);
+}
+
+.satin-button[aria-expanded]::before {
+  content: "";
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: 50%;
+  background: var(--ink-faint);
+  opacity: 0.45;
+}
+
+.satin-button[aria-expanded="true"]::before {
+  background: var(--accent);
+  opacity: 1;
+}
+
+/* The compartments. One content element per panel carries the padding and the scrolling. */
+.layout {
+  gap: 6px;
+}
+
+.tray {
+  block-size: 100%;
+  overflow: auto;
+  padding: 16px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--inset);
+}
+
+.tray-page {
+  padding: clamp(24px, 5cqi, 64px) clamp(20px, 6cqi, 72px) 80px;
+  scroll-padding-block-start: 24px;
+}
+
+.tray-page:focus {
+  outline: none;
+}
+
+/* Dividers: a fine milled bar with a faint grip. */
+bento-separator {
+  inline-size: 6px;
+  background:
+    repeating-linear-gradient(180deg, var(--grip) 0 1px, transparent 1px 4px) center / 2px 13px
+      no-repeat,
+    var(--divider);
+  border-radius: 3px;
+  box-shadow: var(--raised);
+}
+
+bento-group[orientation="vertical"] > bento-separator {
+  inline-size: auto;
+  block-size: 6px;
+  background:
+    repeating-linear-gradient(90deg, var(--grip) 0 1px, transparent 1px 4px) center / 13px 2px
+      no-repeat,
+    var(--divider-vertical);
+}
+
+bento-separator:hover,
+bento-separator:focus-visible {
+  background: var(--accent);
+}
+
+bento-separator:state(dragging) {
+  background: var(--accent);
+}
+
+/* Navigation. Below 120px the panel is a rail, and its content says so by container query. */
+.tray-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 12px 10px;
+}
+
+.nav-list,
+.toc {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-list > li + li {
+  margin-block-start: 2px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-block-size: 38px;
+  padding: 6px 10px;
+  color: var(--ink-soft);
+  font: 600 0.9375rem/1.2 var(--font-plate);
+  letter-spacing: 0.01em;
+  text-decoration: none;
+  border-radius: var(--radius-small);
+}
+
+.nav-link:hover {
+  color: var(--ink);
+  background: var(--hairline);
+}
+
+.nav-link[aria-current="page"] {
+  color: var(--accent);
+  background: var(--accent-tint);
+}
+
+.nav-icon {
+  flex: none;
+  inline-size: 18px;
+  block-size: 18px;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.toc {
+  margin: 6px 0 12px 40px;
+}
+
+.toc a {
+  display: block;
+  padding: 4px 8px;
+  color: var(--ink-faint);
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  text-decoration: none;
+}
+
+.toc a:hover {
+  color: var(--ink);
+}
+
+@container (max-width: 120px) {
+  .tray-nav {
+    padding-inline: 6px;
+  }
+
+  .nav-link {
+    justify-content: center;
+    padding-inline: 0;
+  }
+
+  .nav-label,
+  .toc {
+    display: none;
+  }
+}
+
+/* Drawers: in modal mode the panel's own box styles go to the sheet. */
+.drawer-close {
+  display: none;
+  align-self: flex-start;
+}
+
+.drawer:state(modal) {
+  padding: 8px;
+  background: var(--metal);
+  box-shadow: var(--floating);
+  --bento-backdrop: rgb(20 26 34 / 0.35);
+}
+
+.drawer:state(modal) .drawer-close {
+  display: inline-flex;
+}
+
+@media (max-width: 720px) {
+  #contents:state(modal) {
+    inline-size: min(320px, 86vw);
+  }
+}
+
+/* The inspector: an event log, newest first. */
+.tray-inspector {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.inspector-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.inspector-head h2 {
+  flex: 1;
+  margin: 0;
+  font: 700 1.0625rem/1.2 var(--font-plate);
+}
+
+.inspector-note {
+  margin: 0;
+  color: var(--ink-faint);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.event-log {
+  flex: 1;
+  min-block-size: 0;
+  margin: 0;
+  padding: 8px;
+  overflow: auto;
+  color: var(--log-detail);
+  font: 0.75rem/1.55 var(--font-code);
+  list-style: none;
+  background: var(--log-bg);
+  border-radius: var(--radius-small);
+}
+
+.event-log li {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 8px;
+  padding: 3px 4px;
+}
+
+.event-type {
+  color: var(--log-type);
+  font-weight: 600;
+}
+
+.event-log [data-type="beforetoggle"] .event-type,
+.event-log [data-type="toggle"] .event-type {
+  color: var(--log-toggle);
+}
+
+.event-target {
+  color: var(--log-target);
+}
+
+.event-canceled {
+  color: var(--lacquer);
+  font-weight: 600;
+}
+
+.event-log:empty::before {
+  content: "No events yet.";
+}
+
+/* The status bar: quiet figures on the frame. */
+.statusbar-row {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  block-size: 100%;
+  padding-inline: 8px;
+  color: var(--ink-soft);
+  font: 500 0.75rem/1 var(--font-plate);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.status-cell {
+  min-inline-size: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.status-cell-wide {
+  flex: 1;
+}
+
+@media (max-width: 720px) {
+  .status-cell-end,
+  [data-status-of="contents"],
+  [data-status-of="inspector"] {
+    display: none;
+  }
+
+  .satin-button {
+    padding-inline: 10px;
+  }
+}

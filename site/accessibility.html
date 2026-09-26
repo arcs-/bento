@@ -1,0 +1,104 @@
+<title>Accessibility</title>
+<meta
+  name="description"
+  content="How bento follows the WAI-ARIA window splitter pattern, what you must label, and how it treats motion, color and touch."
+/>
+
+<h1>Accessibility</h1>
+
+<p class="lead">
+  Separators follow the
+  <a href="https://www.w3.org/WAI/ARIA/apg/patterns/windowsplitter/" rel="external"
+    >WAI-ARIA window splitter pattern</a
+  >, including its optional keys where they fit. What bento cannot know, the names, stays with you.
+</p>
+
+<h2 id="what-you-write">What you write</h2>
+
+<ul>
+  <li>
+    <strong>A label on every separator.</strong> An <code>aria-label</code>, or
+    <code>aria-labelledby</code> pointing at its panel's visible title. bento cannot know a good
+    label.
+  </li>
+  <li>
+    <strong><code>aria-controls</code></strong> with the primary panel's <code>id</code>, for
+    browsers without ARIA element reflection. Where reflection exists, bento points the separator at
+    its primary panel itself; your attribute also picks the primary panel.
+  </li>
+  <li>
+    <strong>An <code>aria-label</code> on a modal panel.</strong> It names the dialog.
+  </li>
+  <li>
+    <strong><code>tabindex="0"</code> on separators</strong> when a framework hydrates them, so the
+    server's markup matches. Elsewhere bento adds it.
+  </li>
+</ul>
+
+<!-- snippet html -->
+<bento-panel id="sidebar" size="320px" collapsible modal="(max-width: 768px)" aria-label="Sidebar">
+  <nav class="h-full overflow-auto">…</nav>
+</bento-panel>
+<bento-separator aria-label="Resize sidebar" aria-controls="sidebar"></bento-separator>
+<!-- /snippet -->
+
+<h2 id="what-bento-does">What bento does</h2>
+
+<ul>
+  <li>
+    The separator has the role <code>separator</code>, an orientation, and
+    <code>aria-valuenow</code>, <code>aria-valuemin</code> and <code>aria-valuemax</code>: the
+    primary panel's share of the group, 0 to 100. All of it goes through
+    <code>ElementInternals</code>, so none of it appears as an attribute in your DOM or fights your
+    framework. <a href="decisions.html#0011-aria-through-element-internals">Why</a>
+  </li>
+  <li>
+    The separator itself is focusable, so it carries your label. Arrow keys resize by 10 pixels, 100
+    with Shift; Enter collapses; Home and End go to <code>min</code> and <code>max</code>.
+    <a href="guide.html#keyboard">Keyboard</a>
+  </li>
+  <li>
+    Arrow keys snap a collapsible panel as soon as they go below <code>min</code>, so the drag's
+    halfway threshold never stops a keyboard user.
+    <a href="decisions.html#0009-snap-at-halfway">Why</a>
+  </li>
+  <li>
+    A panel collapsed to 0 hides its content with <code>display: none</code>: focus and assistive
+    technology skip it. A rail keeps its content.
+  </li>
+  <li>
+    A modal panel is a real modal <code>&lt;dialog&gt;</code>: it sits in the top layer, the rest of
+    the page is inert, and Escape and the back gesture close it.
+  </li>
+  <li>
+    F6, the pattern's key for cycling between panes, is left to your app. It is a page-wide
+    shortcut, and only the app knows its landmarks.
+  </li>
+</ul>
+
+<h2 id="motion">Motion</h2>
+
+<p>
+  Collapsing and snapping animate, so you can see what moved. Under
+  <code>prefers-reduced-motion: reduce</code>, the size changes at once and the content cross-fades
+  instead: out, then the jump, when collapsing; the jump, then in, when expanding. Dragging is never
+  animated; the content follows the pointer, which is direct manipulation.
+  <a href="decisions.html#0001-reduced-motion">Why a fade rather than nothing</a>
+</p>
+
+<h2 id="color-and-touch">Color and touch</h2>
+
+<p>
+  bento's default styles use system colors, so dark mode and forced colors work before you style
+  anything. The separator is a 1 pixel line whose hit area reaches 12 pixels to each side, 20 on
+  touch screens.
+</p>
+
+<h2 id="this-site">This site</h2>
+
+<p>
+  The docs are dogfood: the navigation, content and inspector are bento panels. The metal is
+  decoration: text sits on flat surfaces with high contrast, every control has a visible focus ring,
+  and in forced colors mode the brushed metal gives way to plain outlines in system colors. Dark
+  mode turns the steel into titanium.
+</p>

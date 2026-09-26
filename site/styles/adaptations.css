@@ -1,0 +1,47 @@
+/* Forced colors: the metal is decoration, so it gives way to plain system-colored outlines. */
+@media (forced-colors: active) {
+  body,
+  .satin-button,
+  .specimen-stage,
+  [class*="food-"] {
+    background: Canvas;
+  }
+
+  .drawer:state(modal) {
+    background: Canvas;
+  }
+
+  .tray,
+  .satin-button,
+  .specimen-stage,
+  .code,
+  .event-log {
+    border: 1px solid CanvasText;
+  }
+
+  .satin-button[aria-expanded]::before {
+    display: none;
+  }
+
+  bento-separator {
+    background: CanvasText;
+    border-radius: 0;
+  }
+
+  bento-separator:hover,
+  bento-separator:focus-visible {
+    background: Highlight;
+  }
+
+  bento-separator:state(dragging) {
+    background: Highlight;
+  }
+
+  .nav-link[aria-current="page"] {
+    outline: 2px solid CanvasText;
+  }
+
+  .satin-button[aria-expanded="true"] {
+    outline: 2px solid Highlight;
+  }
+}

@@ -1,0 +1,107 @@
+/*
+ * A machined steel bento box: satin stainless by day, titanium by night. One anodized blue,
+ * used sparingly, for what you can act on; a lacquer red only where a decision is asked.
+ */
+:root {
+  color-scheme: light dark;
+
+  --font-plate:
+    "DIN Alternate", "Bahnschrift", "DIN 2014", "D-DIN", "Roboto Condensed", system-ui, sans-serif;
+  --font-body: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --font-code: ui-monospace, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  --ink: #1a222c;
+  --ink-soft: #4a5562;
+  --ink-faint: #66707c;
+  --accent: #245199;
+  --accent-tint: rgb(36 81 153 / 0.08);
+  --lacquer: #9e1f19;
+  --focus: #245199;
+
+  /* The box is brushed steel; its compartments are a finer, lighter satin. */
+  --frame: #d5dadf;
+  --frame-deep: #c9cfd5;
+  --surface: #f6f7f8;
+  --surface-raised: #fbfbfc;
+  --hairline: rgb(26 34 44 / 0.08);
+  --grip: rgb(26 34 44 / 0.3);
+
+  --brushing:
+    repeating-linear-gradient(180deg, rgb(255 255 255 / 0.1) 0 1px, transparent 1px 2px),
+    repeating-linear-gradient(180deg, rgb(20 28 38 / 0.025) 0 1px, transparent 1px 3px);
+  --sheen: linear-gradient(
+    105deg,
+    rgb(255 255 255 / 0) 20%,
+    rgb(255 255 255 / 0.24) 45%,
+    rgb(255 255 255 / 0) 70%
+  );
+  --metal: var(--brushing), var(--sheen), linear-gradient(180deg, var(--frame), var(--frame-deep));
+  --satin: linear-gradient(180deg, var(--surface-raised), #eef0f2);
+  --divider: linear-gradient(90deg, #f3f5f7, #bcc3cb 50%, #e1e5e9);
+  --divider-vertical: linear-gradient(180deg, #f3f5f7, #bcc3cb 50%, #e1e5e9);
+
+  /* Elevation, used the same way everywhere: set in, raised, floating. */
+  --inset: inset 0 1px 2px rgb(20 28 38 / 0.1), inset 0 0 0 1px rgb(20 28 38 / 0.04);
+  --raised: 0 1px 2px rgb(20 28 38 / 0.12), 0 0 0 1px rgb(20 28 38 / 0.06);
+  --floating: 0 16px 48px rgb(20 28 38 / 0.28), 0 0 0 1px rgb(20 28 38 / 0.06);
+
+  --log-bg: #eceef1;
+  --log-type: #245199;
+  --log-toggle: #7a2e6b;
+  --log-target: #1a222c;
+  --log-detail: #5c6672;
+  --code-bg: #242a31;
+  --code-ink: #e3e7ec;
+  --tok-tag: #a9c7f0;
+  --tok-attr: #e6c88f;
+  --tok-value: #b9d99e;
+  --tok-comment: #929dab;
+  --tok-keyword: #e3aacb;
+  --tok-number: #e6c88f;
+
+  --radius: 8px;
+  --radius-small: 5px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e5e9ed;
+    --ink-soft: #b1bac4;
+    --ink-faint: #8e98a3;
+    --accent: #93b8f0;
+    --accent-tint: rgb(147 184 240 / 0.1);
+    --lacquer: #ff9a8f;
+    --focus: #93b8f0;
+
+    --frame: #30363d;
+    --frame-deep: #292e34;
+    --surface: #1d2126;
+    --surface-raised: #3a4148;
+    --hairline: rgb(229 233 237 / 0.08);
+    --grip: rgb(229 233 237 / 0.3);
+
+    --brushing:
+      repeating-linear-gradient(180deg, rgb(255 255 255 / 0.025) 0 1px, transparent 1px 2px),
+      repeating-linear-gradient(180deg, rgb(0 0 0 / 0.06) 0 1px, transparent 1px 3px);
+    --sheen: linear-gradient(
+      105deg,
+      rgb(255 255 255 / 0) 20%,
+      rgb(255 255 255 / 0.035) 45%,
+      rgb(255 255 255 / 0) 70%
+    );
+    --satin: linear-gradient(180deg, #3d444c, #343a41);
+    --divider: linear-gradient(90deg, #4a525b, #5d6670 50%, #444c55);
+    --divider-vertical: linear-gradient(180deg, #4a525b, #5d6670 50%, #444c55);
+
+    --inset: inset 0 1px 2px rgb(0 0 0 / 0.35), inset 0 0 0 1px rgb(0 0 0 / 0.2);
+    --raised: 0 1px 2px rgb(0 0 0 / 0.4), 0 0 0 1px rgb(255 255 255 / 0.05);
+    --floating: 0 16px 48px rgb(0 0 0 / 0.55), 0 0 0 1px rgb(255 255 255 / 0.06);
+
+    --log-bg: #16191d;
+    --log-type: #93b8f0;
+    --log-toggle: #e3aacb;
+    --log-target: #e5e9ed;
+    --log-detail: #939daa;
+    --code-bg: #15181c;
+  }
+}
