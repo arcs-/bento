@@ -24,8 +24,8 @@
 
   block-size: clamp(16rem, 42vh, 24rem);
   padding: 6px;
-  border: 10px solid transparent;
-  border-radius: 16px;
+  border: 6px solid transparent;
+  border-radius: 12px;
   background: var(--metal-tray), var(--wood);
   box-shadow: var(--tray-recess), var(--wood-lift);
 }
@@ -178,7 +178,7 @@
 #sides:state(modal) {
   inline-size: min(300px, 85vw);
   padding: 6px;
-  border: 10px solid transparent;
+  border: 6px solid transparent;
   background: var(--metal-tray), var(--wood);
   --bento-backdrop: rgb(20 26 34 / 0.4);
 }
