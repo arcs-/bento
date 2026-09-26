@@ -102,6 +102,28 @@ body {
     0 1px 2px var(--button-drop);
 }
 
+a.satin-button {
+  text-decoration: none;
+}
+
+.button-mark {
+  inline-size: 14px;
+  block-size: 14px;
+  fill: currentColor;
+}
+
+/* On phones the title bar keeps the mark only; the name stays for assistive tech. */
+@media (max-width: 480px) {
+  .narrow-hidden {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
 .satin-button::after {
   content: "";
   position: absolute;

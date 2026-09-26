@@ -29,6 +29,7 @@ function structuredData(): string {
     programmingLanguage: "TypeScript",
     runtimePlatform: "Web browsers",
     license: "https://opensource.org/licenses/MIT",
+    codeRepository: "https://github.com/arcs-/bento",
     author: { "@type": "Person", name: "Patrick Stillhart", url: "https://stillh.art" },
     ...(siteUrl ? { url: siteUrl.href } : {}),
   };
