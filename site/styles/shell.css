@@ -47,7 +47,6 @@ body {
 }
 
 .titlebar-plate {
-  box-shadow: var(--chrome-edge);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -227,6 +226,7 @@ body {
   flex-direction: column;
   gap: 20px;
   padding: 12px 10px;
+  overflow: hidden auto;
 }
 
 .nav-list {
@@ -274,39 +274,26 @@ body {
   stroke-linejoin: round;
 }
 
-/* The page's sections: dots on a thin rail, aligned under the icons; the one in view is lit. */
-.toc-title {
-  margin: 0 0 6px;
-  padding-inline-start: 39px;
-  color: var(--ink-faint);
-  font: 600 0.75rem/1.2 var(--font-plate);
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-
+/*
+ * The page's sections, nested under its link: a dot under the icon and a label. The rail keeps
+ * the dots and hides only the words, so nothing changes height when the nav collapses.
+ */
 .toc {
-  position: relative;
-  margin: 0;
+  margin: 2px 0 var(--space-1);
   padding: 0;
   list-style: none;
-}
-
-.toc::before {
-  content: "";
-  position: absolute;
-  inset-block: 12px;
-  inset-inline-start: 17.5px;
-  inline-size: 1px;
-  background: var(--toc-line);
 }
 
 .toc-link {
   position: relative;
   display: block;
   padding: 4px 8px 4px 39px;
+  overflow: hidden;
   color: var(--ink-faint);
   font-size: 0.8125rem;
   line-height: 1.35;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   text-decoration: none;
   border-radius: var(--radius-small);
 }
@@ -314,21 +301,16 @@ body {
 .toc-link::before {
   content: "";
   position: absolute;
-  inset-block-start: calc(4px + 0.675em - 3.5px);
-  inset-inline-start: 14.5px;
-  inline-size: 7px;
-  block-size: 7px;
+  inset-block-start: calc(4px + 0.675em - 3px);
+  inset-inline-start: 15px;
+  inline-size: 6px;
+  block-size: 6px;
   border-radius: 50%;
-  background: var(--surface);
   box-shadow: 0 0 0 1.5px var(--toc-line);
 }
 
 .toc-link:hover {
   color: var(--ink);
-}
-
-.toc-link:hover::before {
-  box-shadow: 0 0 0 1.5px var(--ink-soft);
 }
 
 .toc-link[aria-current="true"] {
@@ -337,23 +319,16 @@ body {
 
 .toc-link[aria-current="true"]::before {
   background: var(--accent);
-  box-shadow:
-    0 0 0 1.5px var(--accent-ink),
-    0 0 0 4px var(--accent-tint);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .toc-link::before {
-    transition:
-      background-color 150ms ease,
-      box-shadow 150ms ease;
-  }
+  box-shadow: 0 0 0 1.5px var(--accent-ink);
 }
 
 @container (max-width: 120px) {
-  .nav-label,
-  .toc-section {
+  .nav-label {
     display: none;
+  }
+
+  .toc-label {
+    visibility: hidden;
   }
 }
 

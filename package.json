@@ -35,7 +35,8 @@
     "check": "oxlint && oxfmt --check && pnpm typecheck && vitest --run && node scripts/size.js",
     "site:dev": "vite --config site/vite.config.ts",
     "site:build": "tsc -p site && vite build --config site/vite.config.ts",
-    "site:preview": "vite preview --config site/vite.config.ts"
+    "site:preview": "vite preview --config site/vite.config.ts",
+    "site:og": "node site/scripts/og-image.ts"
   },
   "devDependencies": {
     "@types/node": "26.6.1",

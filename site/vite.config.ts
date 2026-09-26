@@ -11,6 +11,7 @@ const baselineWidelyAvailable = ["chrome123", "edge123", "firefox124", "safari17
  */
 export default defineConfig({
   root: siteRoot,
+  appType: "mpa",
   base: process.env.BENTO_SITE_BASE ?? "/",
   publicDir: "public",
   plugins: [bentoScript(), sitePages()],
