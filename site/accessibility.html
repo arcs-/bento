@@ -25,6 +25,39 @@
   <li><code>tabindex="0"</code> on separators a framework hydrates; elsewhere bento adds it.</li>
 </ul>
 
+<h2 id="keys">Keys</h2>
+
+<div class="table-well" tabindex="0">
+  <table>
+    <thead>
+      <tr>
+        <th scope="col">On a focused separator</th>
+        <th scope="col">Does</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Arrows along the group</td>
+        <td>10px, 100px with Shift; below <code>min</code> they snap</td>
+      </tr>
+      <tr>
+        <td>Enter</td>
+        <td>Toggle a collapsible primary panel</td>
+      </tr>
+      <tr>
+        <td>Home, End</td>
+        <td>Primary panel to its <code>min</code>, <code>max</code></td>
+      </tr>
+      <tr>
+        <td>Double-click</td>
+        <td>Back to the starting size and state</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<p>Keys with Alt, Ctrl or Meta go to the browser. F6 is left to your app.</p>
+
 <h2 id="what-bento-does">What bento does</h2>
 
 <ul>
@@ -33,11 +66,6 @@
     through <code>ElementInternals</code>.
     <a href="decisions.html#0011-aria-through-element-internals">Why</a>
   </li>
-  <li>
-    Arrows, Enter, Home and End on the focused separator; keys with Alt, Ctrl or Meta go to the
-    browser. F6 is left to your app.
-  </li>
-  <li>Arrow keys snap at <code>min</code>, so the drag threshold never traps a keyboard.</li>
   <li>
     A panel collapsed to 0 hides its content with <code>display: none</code>. If focus was inside,
     it moves to the separator.

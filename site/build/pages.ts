@@ -153,11 +153,26 @@ function expandMarkers(content: string): string {
     .replaceAll("<!-- decisions -->", () => decisionFiles().map(renderDecision).join("\n"));
 }
 
-/** Fails the build on a link to a record that does not exist. */
-function checkDecisionLinks(html: string, page: string): void {
-  const anchors = new Set(decisionFiles().map(decisionAnchor));
-  for (const [, anchor = ""] of html.matchAll(/decisions\.html#(\d{4}-[\w-]+?)"/g)) {
-    if (!anchors.has(anchor)) throw new Error(`${page} links to a missing record: ${anchor}`);
+/** Every page's ids and the page#anchor links it makes, checked once all pages are rendered. */
+const idsByPage = new Map<string, ReadonlySet<string>>();
+const anchorLinksByPage = new Map<string, readonly string[]>();
+
+function recordAnchors(html: string, page: string): void {
+  idsByPage.set(page, new Set([...html.matchAll(/\sid="([^"]+)"/g)].map(([, id = ""]) => id)));
+  const links = [...html.matchAll(/\shref="([\w-]+\.html)?#([^"]+)"/g)].map(
+    ([, target = page, anchor = ""]) => `${target}#${anchor}`,
+  );
+  anchorLinksByPage.set(page, links);
+}
+
+/** Fails the build on a link to an anchor that no rendered page has. */
+function checkAnchorLinks(): void {
+  for (const [page, links] of anchorLinksByPage) {
+    for (const link of links) {
+      const [target = "", anchor = ""] = link.split("#");
+      const ids = idsByPage.get(target);
+      if (ids && !ids.has(anchor)) throw new Error(`${page} links to a missing anchor: ${link}`);
+    }
   }
 }
 
@@ -236,7 +251,6 @@ export function renderPage(file: string, source: string): string {
   }
   const { meta, content } = takeMeta(source);
   const expanded = expandMarkers(content);
-  checkDecisionLinks(expanded, file);
   const page = fill(readFileSync(layoutPath, "utf8"), {
     title: escapeHtml(file === "index.html" ? meta.title : `${meta.title} – bento`),
     description: escapeAttribute(meta.description),
@@ -246,6 +260,7 @@ export function renderPage(file: string, source: string): string {
     content: expanded,
   });
   checkUniqueIds(page, file);
+  recordAnchors(page, file);
   return page;
 }
 
@@ -256,6 +271,7 @@ export function sitePages(): Plugin {
       order: "pre",
       handler: (html, context) => renderPage(basename(context.filename), html),
     },
+    generateBundle: checkAnchorLinks,
     configureServer(server) {
       const reloadOn = [layoutPath, decisionsRoot];
       server.watcher.add(reloadOn);

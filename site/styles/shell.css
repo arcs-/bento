@@ -15,6 +15,7 @@ body {
 body {
   font: 400 1rem/1.6 var(--font-body);
   color: var(--ink);
+  accent-color: var(--accent);
   background: var(--metal);
   background-attachment: fixed;
 }
@@ -132,8 +133,8 @@ body {
   }
 }
 
-/* Anodized: a button that is pressed on. */
-.satin-button[aria-pressed="true"] {
+/* Anodized: the one main action of a demo. */
+.satin-button.anodized {
   color: var(--anodized-ink);
   text-shadow: none;
   background:
@@ -258,7 +259,7 @@ body {
 }
 
 .nav-link[aria-current="page"] {
-  color: var(--accent);
+  color: var(--accent-ink);
   background: var(--accent-tint);
 }
 
@@ -337,7 +338,7 @@ body {
 .toc-link[aria-current="true"]::before {
   background: var(--accent);
   box-shadow:
-    0 0 0 1.5px var(--accent),
+    0 0 0 1.5px var(--accent-ink),
     0 0 0 4px var(--accent-tint);
 }
 
@@ -454,7 +455,7 @@ body {
 
 /* The inspected demo panel, marked quietly in place. */
 .specimen-stage [data-inspected] {
-  outline: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  outline: 2px solid color-mix(in srgb, var(--accent-ink) 60%, transparent);
   outline-offset: -2px;
 }
 

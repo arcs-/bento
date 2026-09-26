@@ -62,7 +62,7 @@
 }
 
 .prose a {
-  color: var(--accent);
+  color: var(--accent-ink);
   text-decoration-thickness: 1px;
   text-decoration-color: color-mix(in srgb, currentcolor 40%, transparent);
   text-underline-offset: 0.2em;
