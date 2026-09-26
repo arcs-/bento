@@ -297,6 +297,8 @@ describe("a nested group its collapsed panel hides", () => {
 
     await pressKeys(separator("handle"), "{Enter}");
     await settleAt(() => width(panel("outer")), 0);
+    await expect.poll(() => group("inner").checkVisibility()).toBe(false);
+    await frames(2);
     innerEnd.collapsed = true;
     await frames();
     await pressKeys(separator("handle"), "{Enter}");

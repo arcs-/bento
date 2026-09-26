@@ -1,9 +1,10 @@
-import type { BentoSeparatorElement } from "./bento.ts";
-import { setState } from "./elements.ts";
-import { groupOf } from "./group-link.ts";
+import type { BentoSeparatorElement } from "../bento.ts";
+import { setState } from "./element.ts";
+import { groupOf } from "../group/link.ts";
 import { BentoPanel, panelAccess } from "./panel.ts";
-import type { SeparatorRender } from "./render.ts";
-import { type Axis, separatorRules, separatorSheet } from "./styles.ts";
+import type { SeparatorRender } from "../model/render.ts";
+import type { Axis } from "../model/render.ts";
+import { separatorRules, separatorSheet } from "../style/styles.ts";
 
 type PointerState =
   | { readonly kind: "idle" }

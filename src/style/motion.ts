@@ -1,10 +1,11 @@
 /**
  * Toggle animations with Web Animations: each changed panel's `flex` runs from the layout
  * before to the layout after, over the final rules, so nothing is committed to `style`. While
- * it runs, every changed panel's content is frozen, so nothing reflows per frame.
+ * it runs, the content of each panel that collapses or expands is frozen, so it never
+ * squishes; the other panels whose size changes reflow live, as during a drag.
  */
-import { sameShape, type Snapshot, stillEdge } from "./layout.ts";
-import type { ContentState } from "./styles.ts";
+import { sameShape, type Snapshot, stillEdge } from "../model/layout.ts";
+import type { ContentState } from "../model/render.ts";
 
 export interface Timing {
   readonly duration: number;
@@ -77,7 +78,8 @@ export class Motion<Panel extends Element> {
     const frozen = new Map<Panel, ContentState>();
     after.panels.forEach((panel, index) => {
       const change = changes.find((candidate) => candidate.panel === panel);
-      if (!change) return;
+      const toggles = after.layout[index]?.collapsed !== before.layout[index]?.collapsed;
+      if (!change || !toggles) return;
       const anchor = stillEdge(before.layout, after.layout, index);
       frozen.set(panel, { kind: "frozen", size: Math.max(change.from, change.to), anchor });
     });

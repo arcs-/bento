@@ -1,6 +1,6 @@
 /**
  * The public types of bento, and nothing else: its declaration is the package's whole type
- * surface. The runtime is src/define.ts, which registers the elements.
+ * surface. The runtime is src/index.ts, which registers the elements.
  */
 
 export type Orientation = "horizontal" | "vertical";

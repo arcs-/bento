@@ -1,7 +1,7 @@
-import type { BentoGroupElement, Orientation } from "./bento.ts";
-import { GroupCoordinator } from "./coordinator.ts";
-import { upgradeProperties } from "./elements.ts";
-import { groupRules, groupSheet } from "./styles.ts";
+import type { BentoGroupElement, Orientation } from "../bento.ts";
+import { GroupCoordinator } from "../group/coordinator.ts";
+import { upgradeProperties } from "./element.ts";
+import { groupRules, groupSheet } from "../style/styles.ts";
 
 /** `<bento-group>`: its only surface is `orientation`; the coordinator does the rest. */
 export class BentoGroup extends HTMLElement implements BentoGroupElement {

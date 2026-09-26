@@ -1,6 +1,6 @@
-import type { BentoPanel } from "./panel.ts";
-import type { BentoSeparator } from "./separator.ts";
-import type { Axis } from "./styles.ts";
+import type { BentoPanel } from "../elements/panel.ts";
+import type { BentoSeparator } from "../elements/separator.ts";
+import type { Axis } from "../model/render.ts";
 
 /** Why a group lays out again. */
 export type Relayout =

@@ -3,12 +3,25 @@
  * on its separators into moves and toggles. It lives beside the group element, so none of it
  * is part of the element's surface; children reach it through the group link.
  */
-import type { BentoGroupElement } from "./bento.ts";
-import { deltaFromStart, type DragState, idle, moved, pressed, rebased } from "./drag.ts";
-import { Announcements } from "./announcements.ts";
-import { dispatchBeforeToggle, dispatchResize, dispatchToggle, ResizeQueue } from "./events.ts";
-import { rescueFocus } from "./focus.ts";
-import { type GroupLink, joinGroup, leaveGroup, type Relayout } from "./group-link.ts";
+import type { BentoGroupElement } from "../bento.ts";
+import {
+  deltaFromStart,
+  type DragState,
+  idle,
+  moved,
+  pressed,
+  rebased,
+} from "../model/machines.ts";
+import {
+  Announcements,
+  dispatchBeforeToggle,
+  dispatchResize,
+  dispatchToggle,
+  ResizeQueue,
+} from "./events.ts";
+import { type GroupLink, joinGroup, leaveGroup, type Relayout } from "./link.ts";
+import { GroupMeasure } from "./measure.ts";
+import { renderChildren, rescueFocus, separatorHidden, shownCollapsed } from "./children.ts";
 import {
   hidingPanels,
   layoutGroup,
@@ -20,20 +33,14 @@ import {
   sameShape,
   type SnapRule,
   type Snapshot,
-} from "./layout.ts";
-import { Motion } from "./motion.ts";
-import { BentoPanel, panelAccess } from "./panel.ts";
-import { measuredRender, modalRender, separatorRender, unmeasuredRender } from "./render.ts";
-import { BentoSeparator, separatorAccess } from "./separator.ts";
-import type { Axis } from "./styles.ts";
+} from "../model/layout.ts";
+import { Motion } from "../style/motion.ts";
+import { BentoPanel, panelAccess } from "../elements/panel.ts";
+import type { Axis } from "../model/render.ts";
+import { BentoSeparator, separatorAccess } from "../elements/separator.ts";
 
 /** The group's panels, what they asked and what they got, at one moment. */
 type GroupSnapshot = Snapshot<BentoPanel>;
-
-interface AxisSizes {
-  readonly inline: number;
-  readonly block: number;
-}
 
 /** The group before its first layout. */
 const emptySnapshot: GroupSnapshot = {
@@ -44,12 +51,6 @@ const emptySnapshot: GroupSnapshot = {
   space: null,
 };
 
-const isModalPanel = (element: Element | null) =>
-  element instanceof BentoPanel && panelAccess.isModal(element);
-
-const separatorHidden = (separator: Element) =>
-  isModalPanel(separator.previousElementSibling) || isModalPanel(separator.nextElementSibling);
-
 /** What changed while a group was hidden applies at once when it shows again. */
 const unanimated = (reason: Relayout): Relayout =>
   reason.kind === "written" ? { ...reason, animate: false } : reason;
@@ -57,24 +58,10 @@ const unanimated = (reason: Relayout): Relayout =>
 /** How a double-click's reset of the collapsed state went. */
 type ResetOutcome = "unchanged" | "toggled" | "vetoed";
 
-/** The separator next to `panel` that resizes it, while visible. */
-function separatorOf(panel: HTMLElement): HTMLElement | null {
-  const siblings = [panel.previousElementSibling, panel.nextElementSibling];
-  const separator = siblings.find(
-    (sibling) =>
-      sibling instanceof BentoSeparator &&
-      separatorAccess.primary(sibling) === panel &&
-      !separatorHidden(sibling),
-  );
-  return separator instanceof HTMLElement ? separator : null;
-}
-
 export class GroupCoordinator implements GroupLink {
   readonly #host: BentoGroupElement;
-  readonly #observer = new ResizeObserver((entries) => this.#measured(entries));
-  readonly #sizes = new Map<Element, AxisSizes>();
+  readonly #measure: GroupMeasure;
   readonly #motion = new Motion<BentoPanel>(panelAccess.content, () => this.#writeChildren());
-  #gap = 0;
   #children: readonly Element[] = [];
   #committed: GroupSnapshot = emptySnapshot;
   readonly #announcements = new Announcements();
@@ -90,16 +77,20 @@ export class GroupCoordinator implements GroupLink {
 
   constructor(host: BentoGroupElement) {
     this.#host = host;
+    this.#measure = new GroupMeasure(
+      host,
+      () => this.axis(),
+      () => this.#measured(),
+    );
   }
 
   connected(): void {
-    this.#observer.observe(this.#host);
+    this.#measure.start();
     this.childrenChanged();
   }
 
   disconnected(): void {
-    this.#observer.disconnect();
-    this.#sizes.clear();
+    this.#measure.stop();
     this.#children = [];
   }
 
@@ -108,13 +99,12 @@ export class GroupCoordinator implements GroupLink {
     for (const child of this.#children) {
       if (children.includes(child)) continue;
       leaveGroup(child, this);
-      this.#observer.unobserve(child);
-      this.#sizes.delete(child);
+      this.#measure.untrack(child);
       if (child instanceof BentoPanel) this.#announcements.forget(child);
     }
     for (const child of children) {
       joinGroup(child, this);
-      if (!(child instanceof BentoPanel)) this.#observer.observe(child, { box: "border-box" });
+      if (!(child instanceof BentoPanel)) this.#measure.track(child);
     }
     this.#children = children;
     this.#priority = this.#priority.filter((panel) => children.includes(panel));
@@ -223,17 +213,7 @@ export class GroupCoordinator implements GroupLink {
     if (this.#queued.length > 0) this.#render([]);
   }
 
-  #measured(entries: readonly ResizeObserverEntry[]): void {
-    for (const entry of entries) {
-      const own = entry.target === this.#host;
-      const [box] = own ? entry.contentBoxSize : entry.borderBoxSize;
-      if (box) this.#sizes.set(entry.target, { inline: box.inlineSize, block: box.blockSize });
-      if (own) {
-        const style = getComputedStyle(this.#host);
-        const gap = this.axis() === "inline" ? style.columnGap : style.rowGap;
-        this.#gap = Number.parseFloat(gap) || 0;
-      }
-    }
+  #measured(): void {
     this.#render([{ kind: "resettle" }]);
   }
 
@@ -241,25 +221,12 @@ export class GroupCoordinator implements GroupLink {
     return this.#children.filter((child) => child instanceof BentoPanel);
   }
 
-  /**
-   * The px the panels share: the group's content box less the other children and the gaps.
-   * Null while unmeasured, or measured at 0×0 because an ancestor hides the group.
-   */
+  /** The px the panels in the group share; null while unmeasured or hidden. */
   #space(inGroup: readonly BentoPanel[]): number | null {
-    const groupSize = this.#sizes.get(this.#host);
-    if (!groupSize || (groupSize.inline === 0 && groupSize.block === 0)) return null;
-    const axis = this.axis();
-    const others = this.#children.filter((child) => {
-      const size = this.#sizes.get(child);
-      const hasBox = size !== undefined && (size.inline > 0 || size.block > 0);
-      return !(child instanceof BentoPanel) && !separatorHidden(child) && hasBox;
-    });
-    const othersSize = others.reduce(
-      (total, child) => total + (this.#sizes.get(child)?.[axis] ?? 0),
-      0,
+    const others = this.#children.filter(
+      (child) => !(child instanceof BentoPanel) && !separatorHidden(child),
     );
-    const items = inGroup.length + others.length;
-    return Math.max(0, groupSize[axis] - othersSize - this.#gap * Math.max(0, items - 1));
+    return this.#measure.space(others, inGroup.length);
   }
 
   #priorityOrder(inGroup: readonly BentoPanel[]): number[] {
@@ -307,7 +274,7 @@ export class GroupCoordinator implements GroupLink {
     const shown = new Map(allPanels.map((panel) => [panel, shownCollapsed(next, panel)]));
     const quiet = new Set(written.map(({ panel }) => panel));
     const announced = space === null ? null : this.#announcements.announce(shown, quiet);
-    rescueFocus(hidingPanels(before, next), separatorOf);
+    rescueFocus(hidingPanels(before, next));
     this.#motion.transition(before, next, written.find(({ animate }) => animate)?.panel ?? null);
     this.#committed = next;
     this.#writeChildren();
@@ -315,37 +282,9 @@ export class GroupCoordinator implements GroupLink {
   }
 
   #writeChildren(): void {
-    const committed = this.#committed;
-    const { panels: inGroup, resolved, layout, space } = committed;
-    const axis = this.axis();
-    const firstFiller = inGroup[layout.findIndex((box) => box.fills)];
-    for (const child of this.#children) {
-      if (child instanceof BentoPanel) {
-        const index = inGroup.indexOf(child);
-        const request = resolved[index];
-        const box = layout[index];
-        if (!request || !box) {
-          const precedes =
-            !firstFiller ||
-            Boolean(child.compareDocumentPosition(firstFiller) & Node.DOCUMENT_POSITION_FOLLOWING);
-          const side = precedes ? "start" : "end";
-          panelAccess.render(
-            child,
-            modalRender(axis, panelAccess.askedCollapsed(child), side, child.size),
-          );
-        } else if (space === null) {
-          panelAccess.render(child, unmeasuredRender(axis, child.size, request, box));
-        } else {
-          panelAccess.render(child, measuredRender(axis, request, box, this.#motion.frozen(child)));
-        }
-      }
-      if (child instanceof BentoSeparator) {
-        const primary = separatorAccess.primary(child);
-        const primaryIndex = primary ? inGroup.indexOf(primary) : -1;
-        const hidden = separatorHidden(child);
-        separatorAccess.render(child, separatorRender(axis, hidden, committed, primaryIndex));
-      }
-    }
+    renderChildren(this.#children, this.#committed, this.axis(), (panel) =>
+      this.#motion.frozen(panel),
+    );
   }
 
   /**
@@ -436,12 +375,5 @@ function changedPanels(before: GroupSnapshot, next: GroupSnapshot): Set<BentoPan
       const now = next.requests[index];
       return earlier !== undefined && now !== undefined && !sameRequest(earlier, now);
     }),
-  );
-}
-
-/** Collapsed as shown in `snapshot`: its layout for a panel in the group, as asked for a modal one. */
-function shownCollapsed(snapshot: GroupSnapshot, panel: BentoPanel): boolean {
-  return (
-    snapshot.layout[snapshot.panels.indexOf(panel)]?.collapsed ?? panelAccess.askedCollapsed(panel)
   );
 }

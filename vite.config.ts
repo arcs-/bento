@@ -13,7 +13,7 @@ export default defineConfig({
     target: baselineWidelyAvailable,
     minify: true,
     lib: {
-      entry: "src/define.ts",
+      entry: "src/index.ts",
       name: "bento",
       formats: ["iife"],
       fileName: () => "bento.js",

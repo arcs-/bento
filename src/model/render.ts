@@ -4,7 +4,34 @@
  */
 import type { PanelBox, ResolvedRequest, Snapshot } from "./layout.ts";
 import { formatPixels } from "./length.ts";
-import type { Axis, ContentState, PanelLook } from "./styles.ts";
+
+/** The group's axis in logical terms: `horizontal` is the inline axis, so right-to-left is free. */
+export type Axis = "inline" | "block";
+
+export type ContentState =
+  | { readonly kind: "shown"; readonly min: string }
+  | { readonly kind: "hidden" }
+  | { readonly kind: "rail" }
+  /** During a toggle: kept at a fixed size, anchored at the edge that does not move. */
+  | { readonly kind: "frozen"; readonly size: number; readonly anchor: "start" | "end" };
+
+/** How a panel looks in its group, beside the content or as a modal sheet. */
+export type PanelLook =
+  | {
+      readonly kind: "inline";
+      readonly axis: Axis;
+      /** A CSS length, or null while the panel fills. */
+      readonly basis: string | null;
+      readonly fillMin: string;
+      readonly fillMax: string | null;
+      readonly content: ContentState;
+    }
+  | {
+      readonly kind: "modal";
+      readonly axis: Axis;
+      readonly side: "start" | "end";
+      readonly size: string | null;
+    };
 
 export interface PanelRender {
   /** Collapsed as shown, a collapse by the group included. */

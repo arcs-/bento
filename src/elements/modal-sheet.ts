@@ -4,7 +4,7 @@
  * page behind come from the browser. It fades in and out, timed like the panel's toggles;
  * a fade is no motion, so reduced motion keeps it.
  */
-import { toggleTiming } from "./motion.ts";
+import { toggleTiming } from "../style/motion.ts";
 
 export interface SheetOwner {
   readonly host: HTMLElement;
@@ -15,8 +15,9 @@ export interface SheetOwner {
 }
 
 /**
- * The dialog is open in `shown` and `hiding` and closed in `closed`; only a shown sheet takes
- * close requests. A fading sheet holds its fade, so a newer fade can tell it replaced it.
+ * Only a `shown` sheet has its dialog open, modal, and takes close requests. A `hiding` one is
+ * a leftover: its dialog is closed, so the page is live at once, and it stays drawn, inert,
+ * while it fades out. A fading sheet holds its fade, so a newer fade can tell it replaced it.
  */
 type SheetState =
   | { readonly kind: "closed" }
@@ -72,6 +73,7 @@ export class ModalSheet {
   show(): void {
     const state = this.#state;
     if (state.kind === "shown" || !this.#dialog.isConnected) return;
+    this.#dialog.inert = false;
     if (!this.#dialog.open) this.#dialog.showModal();
     this.#state = {
       kind: "shown",
@@ -85,28 +87,35 @@ export class ModalSheet {
     }
   }
 
-  /** Fades the sheet out, then closes the dialog; the page stays inert until then. */
+  /**
+   * Closes the dialog, so the page behind is live and gets its focus back at once, and fades
+   * the sheet out as an inert leftover. Outside the top layer, later positioned content may
+   * paint over the leftover, and the backdrop goes at once.
+   */
   hide(): void {
     const state = this.#state;
     if (state.kind !== "shown") return;
     shownSheets.delete(this);
+    this.#dialog.close();
     const fadeOut = this.#fadeFrom(state.fadeIn, 0);
     if (!fadeOut) {
-      this.close();
+      this.#state = closed;
       return;
     }
+    this.#dialog.inert = true;
     this.#state = { kind: "hiding", fadeOut };
     fadeOut.onfinish = () => {
       if (this.#state.kind === "hiding" && this.#state.fadeOut === fadeOut) this.close();
     };
   }
 
-  /** Closes at once, as when the panel leaves the page or modal mode. */
+  /** Closes at once, leftover included, as when the panel leaves the page or modal mode. */
   close(): void {
     const state = this.#state;
     this.#state = closed;
     shownSheets.delete(this);
     if (state.kind === "hiding") state.fadeOut.cancel();
+    this.#dialog.inert = false;
     this.#dialog.close();
   }
 
@@ -116,14 +125,13 @@ export class ModalSheet {
 
   /**
    * A `close` event while the sheet is shown and the dialog closed: the browser closed it
-   * without asking. One that arrives after the sheet opened again is stale.
+   * without asking. One from the sheet's own close, or after it opened again, is stale.
    */
   #closedByBrowser(): void {
-    if (this.#state.kind === "closed" || this.#dialog.open) return;
-    const wasShown = this.#state.kind === "shown";
+    if (this.#state.kind !== "shown" || this.#dialog.open) return;
     this.#state = closed;
     shownSheets.delete(this);
-    if (wasShown) this.#owner.closedWithoutAsking();
+    this.#owner.closedWithoutAsking();
   }
 
   /**

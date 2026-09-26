@@ -298,11 +298,53 @@ describe("the sheet's fade", () => {
     for (const color of fadingBack) expect(greenness(color)).toBeGreaterThan(reopenedAt - 20);
     expect(fadingBack.some((color) => greenness(color) < 118)).toBe(true);
     expect(block("nav-content").checkVisibility()).toBe(true);
+    expect(elementAtCenterOf(button("main-button"))).not.toBe(button("main-button"));
   });
 });
 
 describe("a sheet while it fades or moves", () => {
   const fading = `<style>.drawer { transition-duration: 600ms }</style>${drawerLayout({ aside: modalAside() })}`;
+
+  test("the page is live the moment the sheet starts closing; the fade is an inert leftover", async () => {
+    await render(fading);
+    const heading = document.createElement("h2");
+    heading.tabIndex = -1;
+    heading.textContent = "Results";
+    panel("main").prepend(heading);
+    await enterModalMode();
+    await show("nav", "nav-content");
+
+    panel("nav").collapsed = true;
+    heading.focus();
+
+    expect(document.activeElement).toBe(heading);
+    expect(elementAtCenterOf(button("main-button"))).toBe(button("main-button"));
+    expect(block("nav-content").checkVisibility()).toBe(true);
+    button("nav-button").focus();
+    expect(document.activeElement).toBe(heading);
+    await animationsDone();
+    expect(block("nav-content").checkVisibility()).toBe(false);
+    expect(document.activeElement).toBe(heading);
+  });
+
+  test("after the user closes it, clicks and keys during the fade reach the page", async () => {
+    await render(fading);
+    await enterModalMode();
+    await show("nav", "nav-content");
+    await clickThrough(button("nav-button"));
+    const recorded = recordEvents(panel("nav"), ["beforetoggle", "toggle"]);
+    const clicks = recordEvents(button("main-button"), ["click"]);
+
+    await userEvent.keyboard("{Escape}");
+    await clickThrough(button("main-button"));
+
+    expect(clicks).toHaveLength(1);
+    expect(block("nav-content").checkVisibility()).toBe(true);
+    expect(toggleStates(recorded)).toEqual([
+      "beforetoggle open→closed cancelable",
+      "toggle open→closed",
+    ]);
+  });
 
   test("a second Escape or backdrop click during the fade-out asks nothing again", async () => {
     await render(fading);

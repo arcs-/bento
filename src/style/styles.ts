@@ -2,9 +2,7 @@
  * Every style bento ships: shared constructed sheets per element type, and builders for the
  * per-element sheet of live values. All are shadow rules, so any rule of the app wins.
  */
-
-/** The group's axis in logical terms: `horizontal` is the inline axis, so right-to-left is free. */
-export type Axis = "inline" | "block";
+import type { Axis, ContentState, PanelLook } from "../model/render.ts";
 
 function sheet(rules: string): CSSStyleSheet {
   const constructed = new CSSStyleSheet();
@@ -29,7 +27,7 @@ dialog {
   min-block-size: inherit; max-block-size: inherit; inset: inherit; margin: inherit;
   padding: inherit; background: inherit; border: inherit; border-radius: inherit; box-shadow: inherit
 }
-dialog[open] { display: flex; flex-direction: column }
+dialog[open], dialog[inert] { display: flex; flex-direction: column }
 dialog::backdrop { background: var(--bento-backdrop, rgb(0 0 0 / 0.1)) }`);
 
 export const separatorSheet = sheet(`
@@ -54,31 +52,6 @@ export interface BentoCustomProperties {
   readonly max: string | null;
   readonly collapsedSize: string;
 }
-
-export type ContentState =
-  | { readonly kind: "shown"; readonly min: string }
-  | { readonly kind: "hidden" }
-  | { readonly kind: "rail" }
-  /** During a toggle: kept at a fixed size, anchored at the edge that does not move. */
-  | { readonly kind: "frozen"; readonly size: number; readonly anchor: "start" | "end" };
-
-/** How a panel looks in its group, beside the content or as a modal sheet. */
-export type PanelLook =
-  | {
-      readonly kind: "inline";
-      readonly axis: Axis;
-      /** A CSS length, or null while the panel fills. */
-      readonly basis: string | null;
-      readonly fillMin: string;
-      readonly fillMax: string | null;
-      readonly content: ContentState;
-    }
-  | {
-      readonly kind: "modal";
-      readonly axis: Axis;
-      readonly side: "start" | "end";
-      readonly size: string | null;
-    };
 
 function customPropertiesRule({ size, min, max, collapsedSize }: BentoCustomProperties): string {
   return `:host { --bento-size: ${size ?? "initial"}; --bento-min: ${min}; --bento-max: ${max ?? "initial"}; --bento-collapsed-size: ${collapsedSize} }`;

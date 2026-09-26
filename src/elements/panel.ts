@@ -1,14 +1,14 @@
-import type { BentoPanelElement } from "./bento.ts";
-import { setState, upgradeProperties } from "./elements.ts";
-import { dispatchBeforeToggle, dispatchToggle } from "./events.ts";
-import { groupOf } from "./group-link.ts";
-import type { PanelRequest } from "./layout.ts";
-import { formatLength, type Length, parseLength, pixelLength } from "./length.ts";
-import { ModalSheet } from "./modal.ts";
-import { isCollapsed, type ModeEvent, nextMode, type PanelMode } from "./panel-mode.ts";
-import type { PanelRender } from "./render.ts";
-import { StartingState } from "./starting-state.ts";
-import { type BentoCustomProperties, panelRules, panelSheet } from "./styles.ts";
+import type { BentoPanelElement } from "../bento.ts";
+import { setState, upgradeProperties } from "./element.ts";
+import { dispatchBeforeToggle, dispatchToggle } from "../group/events.ts";
+import { groupOf } from "../group/link.ts";
+import type { PanelRequest } from "../model/layout.ts";
+import { formatLength, type Length, parseLength, pixelLength } from "../model/length.ts";
+import { ModalSheet } from "./modal-sheet.ts";
+import { isCollapsed, type ModeEvent, nextMode, type PanelMode } from "../model/machines.ts";
+import type { PanelRender } from "../model/render.ts";
+import { StartingState } from "../model/machines.ts";
+import { type BentoCustomProperties, panelRules, panelSheet } from "../style/styles.ts";
 
 /** The group's access to its panels, kept off the element's public surface. */
 export interface PanelAccess {

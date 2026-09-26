@@ -19,6 +19,7 @@ import {
   pixels,
   press,
   pressKeys,
+  recordErrors,
   recordEvents,
   release,
   render,
@@ -194,24 +195,59 @@ describe("animation", () => {
     await settleAt(measureSidebar, 200);
   });
 
-  test("while collapsing, content keeps its start size; the neighbour's has its end size", async () => {
+  test("while collapsing, its content keeps its start size; the neighbour's reflows live", async () => {
     await render(sidebarLayout('size="300px" collapsible'));
-    const endWidthOfMain = width(group("layout")) - width(separator("handle"));
     const contentWidths: number[] = [];
-    const mainContentWidths: number[] = [];
+    const mainTracking: { panel: number; content: number }[] = [];
 
     await pressKeys(separator("handle"), "{Enter}");
     await sampleUntilAt(() => {
       const currentWidth = measureSidebar();
       if (currentWidth > 1) contentWidths.push(width(block("sidebar-content")));
-      mainContentWidths.push(width(block("main-content")));
+      mainTracking.push({ panel: width(panel("main")), content: width(block("main-content")) });
       return currentWidth;
     }, 0);
 
     for (const contentWidth of contentWidths) expect(contentWidth).toBeCloseTo(300, 0);
-    for (const contentWidth of mainContentWidths) {
-      expect(contentWidth).toBeCloseTo(endWidthOfMain, 0);
+    for (const { panel: mainWidth, content } of mainTracking) {
+      expect(content).toBeCloseTo(mainWidth, 0);
     }
+    expect(contentWidths.some((contentWidth) => contentWidth > 1)).toBe(true);
+  });
+
+  test("a group nested in a neighbour that reflows relayouts every frame, unanimated", async () => {
+    await render(`
+      <style>#sidebar { transition-duration: 600ms }</style>
+      ${layout(`
+        <bento-panel id="sidebar" size="300px" collapsible></bento-panel>
+        <bento-separator id="handle"></bento-separator>
+        <bento-panel id="main">
+          <bento-group id="inner" style="height: 100px">
+            <bento-panel id="inner-first"></bento-panel>
+            <bento-separator id="inner-handle"></bento-separator>
+            <bento-panel id="inner-second" size="200px" collapsible></bento-panel>
+          </bento-group>
+        </bento-panel>`)}`);
+    const errors = recordErrors();
+    const innerPanels = [panel("inner-first"), panel("inner-second")];
+    const innerFills: { main: number; inner: number }[] = [];
+
+    await pressKeys(separator("handle"), "{Enter}");
+    await sampleUntilAt(() => {
+      const [first, second] = innerPanels.map(width);
+      innerFills.push({
+        main: width(panel("main")),
+        inner: (first ?? 0) + width(separator("inner-handle")) + (second ?? 0),
+      });
+      expect(innerPanels.flatMap((innerPanel) => innerPanel.getAnimations())).toEqual([]);
+      return measureSidebar();
+    }, 0);
+
+    const moving = innerFills.filter(({ main }) => isBetween(main, 699, 999));
+    expect(moving.length).toBeGreaterThan(0);
+    for (const { main, inner } of moving) expect(inner).toBeCloseTo(main, 0);
+    expect(width(panel("inner-second"))).toBeCloseTo(200, 0);
+    expect(errors()).toEqual([]);
   });
 
   test("while expanding, content has its end size from the start", async () => {
