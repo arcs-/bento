@@ -1,4 +1,4 @@
-# Bento
+# bento
 
 A framework independent library that creates nicely resizable panel UIs.
 
