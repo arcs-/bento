@@ -25,7 +25,7 @@ Every attribute is optional. Defaults: `orientation` `horizontal`, no `size` mea
 - a panel is a layout box: padding and borders on the collapsing sides go on its content, or the panel stops collapsing at its padding; its content sits in the internal wrapper, so one content element carries layout, padding and scrolling
 - attributes are the whole markup interface; at upgrade the elements derive `--bento-size`, `--bento-min`, `--bento-max` and `--bento-collapsed-size` from them, on every panel, and consumer CSS may read those ([why](decisions/0004-attributes-only.md))
 - a changed `size` or `collapsed` attribute applies only while the live state is clean, like `value` on an `<input>` nobody typed in; it never animates
-- flex layout: a panel with `size` is fixed at it, panels without share the rest; lengths are `px` or `%`, other units fall back to the default, dragging writes px; weights come when someone needs them
+- flex layout: a panel with `size` is fixed at it, panels without share the rest; lengths are `px` or `%` of the group's space, other units fall back to the default, dragging writes px; weights come when someone needs them
 - one panel always stays flexible: between two flexible panels, dragging gives the earlier one a size; with none flexible, the last one fills
 - DOM order is priority, earlier panels keep their space: dragging pushes further panels down to their `min`; a shrinking group collapses panels from the end and re-expands them when space returns; a collapse by the user stays; a panel the user or app expands moves to the front, most recent first, so expanding always shows it
 - `horizontal` follows the writing direction: layout math, drag and arrow keys use start and end, never left and right, so right-to-left works

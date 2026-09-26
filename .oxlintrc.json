@@ -1,0 +1,24 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["eslint", "typescript", "unicorn", "oxc", "import", "vitest"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error"
+  },
+  "rules": {
+    "typescript/no-explicit-any": "error",
+    "import/no-unassigned-import": [
+      "error",
+      {
+        "allow": ["**/define.ts", "**/react.ts"]
+      }
+    ],
+    "vitest/expect-expect": [
+      "error",
+      {
+        "assertFunctionNames": ["expect", "expect.*", "settleAt"]
+      }
+    ]
+  },
+  "ignorePatterns": ["dist"]
+}

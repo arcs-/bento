@@ -62,7 +62,7 @@ If you load it later, hide the elements until then:
 :is(bento-group, bento-panel, bento-separator):not(:defined) { visibility: hidden }
 ```
 
-React and Vue need no wrapper. JSX typings and Vue compiler settings: TBD.
+React and Vue need no wrapper. For React 19 JSX typings, reference `bento/react`; props use the attribute names, and events are `onresize`, `onresizeend`, `onbeforetoggle` and `ontoggle`, with a `Capture` suffix on parents. Vue compiler settings: TBD.
 
 ## Styling
 

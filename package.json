@@ -2,35 +2,41 @@
   "name": "bento",
   "version": "0.0.0",
   "description": "Resizable panels as web components",
-  "license": "MIT",
   "keywords": [
-    "web-components",
-    "resizable",
+    "layout",
     "panels",
+    "resizable",
     "splitter",
-    "layout"
+    "web-components"
   ],
-  "type": "module",
-  "sideEffects": true,
+  "license": "MIT",
   "files": [
     "dist"
   ],
+  "type": "module",
+  "sideEffects": true,
   "exports": {
     ".": {
       "types": "./dist/bento.d.ts",
       "default": "./dist/bento.js"
     },
+    "./react": {
+      "types": "./dist/react.d.ts"
+    },
     "./package.json": "./package.json"
   },
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && tsc -p tsconfig.build.json && node scripts/size.js",
+    "size": "node scripts/size.js",
     "test": "vitest",
     "lint": "oxlint",
     "format": "oxfmt",
-    "typecheck": "tsc --noEmit",
-    "check": "oxlint && oxfmt --check && tsc --noEmit && vitest --run"
+    "typecheck": "tsc --noEmit && tsc --noEmit -p tsconfig.node.json",
+    "check": "oxlint && oxfmt --check && pnpm typecheck && vitest --run"
   },
   "devDependencies": {
+    "@types/node": "26.6.1",
+    "@types/react": "19.3.0",
     "@vitest/browser-playwright": "5.0.2",
     "oxfmt": "0.70.0",
     "oxlint": "1.85.0",
@@ -38,6 +44,14 @@
     "typescript": "7.0.2",
     "vite": "8.3.1",
     "vitest": "5.0.2"
+  },
+  "peerDependencies": {
+    "@types/react": ">=19"
+  },
+  "peerDependenciesMeta": {
+    "@types/react": {
+      "optional": true
+    }
   },
   "packageManager": "pnpm@12.6.0"
 }

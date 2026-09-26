@@ -1,0 +1,290 @@
+import { describe, expect, test } from "vitest";
+import { commands, page, server, userEvent } from "vitest/browser";
+import {
+  block,
+  byId,
+  clickThrough,
+  colorAt,
+  frames,
+  group,
+  isColor,
+  moveBy,
+  panel,
+  press,
+  recordEvents,
+  release,
+  render,
+  separator,
+  settleAt,
+  toggleStates,
+  width,
+} from "./fixtures.ts";
+import { testViewport } from "./viewport.ts";
+
+const narrowViewport = { width: 600, height: 600 };
+const modalQuery = "(max-width: 700px)";
+const green = { red: 0, green: 128, blue: 0 };
+const darkRed = { red: 128, green: 0, blue: 0 };
+
+/** `#nav` becomes modal below 700px; `#main` holds a button off to the side, over the backdrop. */
+function drawerLayout({ navContent = "", aside = "" } = {}): string {
+  return `
+    <style>body { margin: 0 }</style>
+    <bento-group id="layout" style="width: 100%; height: 300px">
+      <bento-panel id="nav" class="drawer" size="300px" collapsible modal="${modalQuery}"
+        aria-label="Navigation">
+        <div id="nav-content" style="height: 100px">
+          <button id="nav-button">inside</button>
+          ${navContent}
+        </div>
+      </bento-panel>
+      <bento-separator id="handle" aria-label="Navigation"></bento-separator>
+      <bento-panel id="main">
+        <div style="height: 100px"><button id="main-button" style="margin-inline-start: 400px">outside</button></div>
+      </bento-panel>
+      ${aside}
+    </bento-group>`;
+}
+
+const modalAside = (attributes = "") => `
+  <bento-separator id="aside-handle"></bento-separator>
+  <bento-panel id="aside" class="drawer" size="200px" collapsible modal="${modalQuery}" ${attributes}>
+    <div id="aside-content" style="height: 100px"></div>
+  </bento-panel>`;
+
+async function enterModalMode(): Promise<void> {
+  await page.viewport(narrowViewport.width, narrowViewport.height);
+  await expect.poll(() => panel("nav").collapsed).toBe(true);
+}
+
+async function leaveModalMode(): Promise<void> {
+  await page.viewport(testViewport.width, testViewport.height);
+  await expect.poll(() => panel("nav").collapsed).toBe(false);
+}
+
+async function show(panelId: string, contentId: string): Promise<void> {
+  panel(panelId).collapsed = false;
+  await expect.poll(() => block(contentId).checkVisibility()).toBe(true);
+  await frames(10);
+}
+
+const button = (id: string) => byId("button", id);
+
+const veto = (event: Event) => event.preventDefault();
+
+function centerOf(target: Element): { x: number; y: number } {
+  const box = target.getBoundingClientRect();
+  return { x: box.left + box.width / 2, y: box.top + box.height / 2 };
+}
+
+function elementAtCenterOf(target: Element): Element | null {
+  const { x, y } = centerOf(target);
+  return document.elementFromPoint(x, y);
+}
+
+describe("entering modal mode", () => {
+  test("takes the panel out of the group, collapsed, and hides its separator", async () => {
+    await render(drawerLayout());
+    const nav = panel("nav");
+    const recorded = recordEvents(nav, ["beforetoggle", "toggle"]);
+    nav.addEventListener("beforetoggle", (event) => event.preventDefault());
+
+    await enterModalMode();
+    await frames();
+
+    expect(width(panel("main"))).toBeCloseTo(width(group("layout")), 0);
+    expect(separator("handle").checkVisibility({ visibilityProperty: true })).toBe(false);
+    expect(block("nav-content").checkVisibility()).toBe(false);
+    expect(toggleStates(recorded)).toEqual(["beforetoggle open→closed", "toggle open→closed"]);
+  });
+
+  test.runIf(CSS.supports("selector(:state(modal))"))(
+    ":state(modal) matches while the panel is modal",
+    async () => {
+      await render(drawerLayout());
+      expect(panel("nav").matches(":state(modal)")).toBe(false);
+
+      await enterModalMode();
+      expect(panel("nav").matches(":state(modal)")).toBe(true);
+
+      await leaveModalMode();
+      expect(panel("nav").matches(":state(modal)")).toBe(false);
+    },
+  );
+
+  test("leaving it restores the collapsed state from before entering", async () => {
+    await render(drawerLayout({ aside: modalAside("collapsed") }));
+    await enterModalMode();
+    await show("aside", "aside-content");
+
+    await leaveModalMode();
+
+    await settleAt(() => width(panel("nav")), 300);
+    expect(separator("handle").checkVisibility({ visibilityProperty: true })).toBe(true);
+    expect(panel("aside").collapsed).toBe(true);
+    expect(width(panel("aside"))).toBeCloseTo(0, 0);
+  });
+});
+
+describe("a shown modal panel", () => {
+  test("is a modal dialog in the top layer; the rest of the page is inert", async () => {
+    await render(`${drawerLayout()}<div id="cover" style="position: fixed; inset: 0"></div>`);
+    await enterModalMode();
+
+    await show("nav", "nav-content");
+
+    expect(elementAtCenterOf(button("nav-button"))).toBe(button("nav-button"));
+    expect(elementAtCenterOf(button("main-button"))).not.toBe(button("main-button"));
+    button("main-button").focus();
+    expect(document.activeElement).not.toBe(button("main-button"));
+    button("nav-button").focus();
+    expect(document.activeElement).toBe(button("nav-button"));
+  });
+
+  test("keeps menus rendered inside it on top and interactive", async () => {
+    await render(
+      drawerLayout({
+        navContent: `<button id="menu" style="position: fixed; left: 400px; top: 200px; width: 120px; height: 40px">menu</button>`,
+      }),
+    );
+    await enterModalMode();
+    await show("nav", "nav-content");
+    const menu = button("menu");
+    const clicks = recordEvents(menu, ["click"]);
+
+    expect(elementAtCenterOf(menu)).toBe(menu);
+    await clickThrough(menu);
+
+    expect(clicks).toHaveLength(1);
+    expect(panel("nav").collapsed).toBe(false);
+  });
+
+  test("shows alone: showing another collapses it", async () => {
+    await render(drawerLayout({ aside: modalAside() }));
+    await enterModalMode();
+    await show("nav", "nav-content");
+    const recorded = recordEvents(panel("nav"), ["beforetoggle", "toggle"]);
+
+    await show("aside", "aside-content");
+
+    expect(panel("nav").collapsed).toBe(true);
+    expect(block("nav-content").checkVisibility()).toBe(false);
+    expect(toggleStates(recorded)).toEqual(["beforetoggle open→closed", "toggle open→closed"]);
+  });
+
+  test("Escape closes it by collapsing, after a cancelable beforetoggle", async () => {
+    await render(drawerLayout());
+    await enterModalMode();
+    await show("nav", "nav-content");
+    await clickThrough(button("nav-button"));
+    const recorded = recordEvents(panel("nav"), ["beforetoggle", "toggle"]);
+
+    await userEvent.keyboard("{Escape}");
+
+    await expect.poll(() => panel("nav").collapsed).toBe(true);
+    await expect.poll(() => block("nav-content").checkVisibility()).toBe(false);
+    expect(toggleStates(recorded)).toEqual([
+      "beforetoggle open→closed cancelable",
+      "toggle open→closed",
+    ]);
+  });
+
+  test("a drag that starts inside the sheet and ends outside does not close it", async () => {
+    await render(drawerLayout());
+    await enterModalMode();
+    await show("nav", "nav-content");
+
+    await press(button("nav-button"));
+    await moveBy(300);
+    await release();
+    await frames(5);
+
+    expect(panel("nav").collapsed).toBe(false);
+  });
+
+  test.runIf(server.browser === "chromium")("its aria-label names the dialog", async () => {
+    await render(drawerLayout());
+    await enterModalMode();
+    await show("nav", "nav-content");
+
+    const [dialog] = await commands.accessibleNodes("dialog");
+
+    expect(dialog?.name).toBe("Navigation");
+  });
+
+  test("a click on the backdrop closes it; canceling beforetoggle keeps it open", async () => {
+    await render(drawerLayout());
+    const nav = panel("nav");
+    await enterModalMode();
+    await show("nav", "nav-content");
+    await clickThrough(button("nav-button"));
+    nav.addEventListener("beforetoggle", veto);
+
+    await userEvent.keyboard("{Escape}");
+    await clickThrough(button("main-button"));
+    await frames(5);
+    expect(nav.collapsed).toBe(false);
+    expect(block("nav-content").checkVisibility()).toBe(true);
+
+    nav.removeEventListener("beforetoggle", veto);
+    await clickThrough(button("main-button"));
+    await expect.poll(() => nav.collapsed).toBe(true);
+  });
+});
+
+describe("styling a modal panel", () => {
+  test("by default the sheet is full height, on the panel's side, as wide as its size", async () => {
+    await render(`
+      <style>.drawer { background-color: rgb(0, 128, 0) }</style>
+      ${drawerLayout({ aside: modalAside() })}`);
+    await enterModalMode();
+    const bottom = narrowViewport.height - 5;
+
+    await show("nav", "nav-content");
+    expect(isColor(await colorAt(150, bottom), green)).toBe(true);
+    expect(isColor(await colorAt(280, bottom), green)).toBe(true);
+    expect(isColor(await colorAt(320, bottom), green)).toBe(false);
+
+    await show("aside", "aside-content");
+    expect(isColor(await colorAt(narrowViewport.width - 100, bottom), green)).toBe(true);
+    expect(isColor(await colorAt(narrowViewport.width - 220, bottom), green)).toBe(false);
+  });
+
+  test("the panel's own box styles go to the sheet, --bento-backdrop colors the backdrop", async () => {
+    await render(`
+      <style>
+        @media ${modalQuery} {
+          .drawer { width: 200px; padding-inline-start: 20px; background-color: rgb(0, 128, 0) }
+        }
+        .drawer { --bento-backdrop: rgb(128, 0, 0) }
+      </style>
+      ${drawerLayout()}`);
+    await enterModalMode();
+
+    await show("nav", "nav-content");
+
+    expect(block("nav-content").getBoundingClientRect().left).toBeCloseTo(20, 0);
+    expect(isColor(await colorAt(100, 250), green)).toBe(true);
+    expect(isColor(await colorAt(260, 250), darkRed)).toBe(true);
+    expect(isColor(await colorAt(500, 250), darkRed)).toBe(true);
+  });
+
+  test("a bottom sheet is plain CSS on the panel", async () => {
+    await render(`
+      <style>
+        @media ${modalQuery} {
+          .drawer {
+            inset: auto 0 0 0; width: 100%; height: 50%; background-color: rgb(0, 128, 0);
+          }
+        }
+      </style>
+      ${drawerLayout()}`);
+    await enterModalMode();
+
+    await show("nav", "nav-content");
+
+    expect(isColor(await colorAt(narrowViewport.width / 2, 100), green)).toBe(false);
+    expect(isColor(await colorAt(narrowViewport.width / 2, 500), green)).toBe(true);
+    expect(isColor(await colorAt(narrowViewport.width - 10, 500), green)).toBe(true);
+  });
+});
