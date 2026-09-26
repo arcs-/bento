@@ -11,6 +11,7 @@
     <title>{{title}}</title>
     <meta name="description" content="{{description}}" />
     <script src="{{bentoScript}}" vite-ignore></script>
+    <link rel="icon" type="image/png" href="/icon.png" />
     <link rel="stylesheet" href="/styles/site.css" />
     <script type="module" src="/src/main.ts"></script>
   </head>
@@ -20,10 +21,7 @@
       <bento-panel id="titlebar" class="titlebar" size="52px">
         <header class="titlebar-plate">
           <a class="wordmark" href="index.html" aria-label="bento, home">
-            <svg class="wordmark-mark" viewBox="0 0 20 20" aria-hidden="true">
-              <rect x="2" y="3.5" width="16" height="13" rx="2" />
-              <path d="M8.5 3.5v13M8.5 10h9.5" />
-            </svg>
+            <img class="wordmark-mark" src="/icon.png" alt="" width="28" height="28" />
             <span>bento</span>
           </a>
           <div class="titlebar-controls">
