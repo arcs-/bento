@@ -1,4 +1,4 @@
-/* The box: brushed steel, with a gap between the compartments. */
+/* The box is the group itself: brushed steel, padded, with a gap between the compartments. */
 .lunch-box {
   block-size: clamp(16rem, 42vh, 24rem);
   padding: 10px;
@@ -6,6 +6,7 @@
   border-radius: var(--radius);
 }
 
+.lunch-box,
 .lunch-box bento-group {
   gap: 6px;
 }
@@ -31,7 +32,14 @@
   background: var(--accent);
 }
 
-/* One content element per panel: a recessed compartment in the colour of what it holds. */
+/* Each dish is a panel: recessed, in the colour of what it holds. */
+.dish {
+  color: #1f1a14;
+  border-radius: var(--radius);
+  box-shadow: var(--inset);
+}
+
+/* Padding and the label's layout still need one content element inside the panel. */
 .compartment {
   display: flex;
   flex-direction: column;
@@ -39,9 +47,6 @@
   gap: 4px;
   block-size: 100%;
   padding: 12px;
-  color: #1f1a14;
-  border-radius: var(--radius);
-  box-shadow: var(--inset);
 }
 
 .compartment [data-live-width] {
@@ -103,9 +108,9 @@
   }
 }
 
-/* Live state: a collapsed compartment dims. */
-.lunch-box bento-panel:state(collapsed) > .compartment {
-  filter: saturate(0.4);
+/* Live state: a collapsed dish dims. */
+.dish:state(collapsed) {
+  opacity: 0.7;
 }
 
 /* Tailwind-style utilities on a panel set its toggle timing. */

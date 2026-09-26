@@ -1,45 +1,50 @@
-<div class="lunch-box">
-  <bento-group>
-    <bento-panel id="onigiri" size="26%" min="130px" collapsible collapsed-size="44px">
-      <div class="compartment food-onigiri">
-        <strong>Onigiri</strong>
-        <code>collapsed-size="44px"</code>
-        <span data-live-width></span>
-      </div>
-    </bento-panel>
-    <bento-separator aria-label="Resize onigiri" aria-controls="onigiri"></bento-separator>
-    <bento-panel id="rice">
-      <div class="compartment food-rice">
-        <span class="food-rice-plum"></span>
-        <strong>Rice</strong>
-        <span data-live-width></span>
-      </div>
-    </bento-panel>
-    <bento-separator aria-label="Resize side dishes" aria-controls="sides"></bento-separator>
-    <bento-panel
-      id="sides"
-      class="duration-500 ease-out"
-      size="30%"
-      min="150px"
-      collapsible
-      modal="(max-width: 560px)"
-      aria-label="Side dishes"
-    >
-      <bento-group orientation="vertical">
-        <bento-panel id="tamagoyaki">
-          <div class="compartment food-tamagoyaki">
-            <strong>Tamagoyaki</strong>
-            <span data-live-width></span>
-          </div>
-        </bento-panel>
-        <bento-separator aria-label="Resize pickles" aria-controls="pickles"></bento-separator>
-        <bento-panel id="pickles" size="40%" min="56px" collapsible>
-          <div class="compartment food-pickles"><strong>Pickles</strong></div>
-        </bento-panel>
-      </bento-group>
-    </bento-panel>
-  </bento-group>
-</div>
+<bento-group class="lunch-box">
+  <bento-panel
+    id="onigiri"
+    class="dish food-onigiri"
+    size="26%"
+    min="130px"
+    collapsible
+    collapsed-size="44px"
+  >
+    <div class="compartment">
+      <strong>Onigiri</strong>
+      <code>collapsed-size="44px"</code>
+      <span data-live-width></span>
+    </div>
+  </bento-panel>
+  <bento-separator aria-label="Resize onigiri" aria-controls="onigiri"></bento-separator>
+  <bento-panel id="rice" class="dish food-rice">
+    <div class="compartment">
+      <span class="food-rice-plum"></span>
+      <strong>Rice</strong>
+      <span data-live-width></span>
+    </div>
+  </bento-panel>
+  <bento-separator aria-label="Resize side dishes" aria-controls="sides"></bento-separator>
+  <bento-panel
+    id="sides"
+    class="duration-500 ease-out"
+    size="30%"
+    min="150px"
+    collapsible
+    modal="(max-width: 560px)"
+    aria-label="Side dishes"
+  >
+    <bento-group orientation="vertical">
+      <bento-panel id="tamagoyaki" class="dish food-tamagoyaki">
+        <div class="compartment">
+          <strong>Tamagoyaki</strong>
+          <span data-live-width></span>
+        </div>
+      </bento-panel>
+      <bento-separator aria-label="Resize pickles" aria-controls="pickles"></bento-separator>
+      <bento-panel id="pickles" class="dish food-pickles" size="40%" min="56px" collapsible>
+        <div class="compartment"><strong>Pickles</strong></div>
+      </bento-panel>
+    </bento-group>
+  </bento-panel>
+</bento-group>
 <div class="specimen-controls">
   <button class="satin-button" type="button" data-toggle-panel="sides" aria-controls="sides">
     Side dishes
