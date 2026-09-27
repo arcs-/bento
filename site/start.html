@@ -1,111 +1,46 @@
 <title>Getting started</title>
 <meta
   name="description"
-  content="Install bento and load it for plain HTML, server-rendered or browser-only apps, then write a first layout."
+  content="Install bento, load it without layout shifts when server rendering, and write a first layout."
 />
 
 <h1>Getting started</h1>
 
-<h2 id="install">Install</h2>
+<h2 id="install">1. Install</h2>
 
 <!-- snippet sh -->
 npm install bento
 <!-- /snippet -->
 
-<p>How you load it depends on who renders the HTML:</p>
-
-<table>
-  <thead>
-    <tr>
-      <th>Your app</th>
-      <th>Load bento</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td><a href="#plain-html">Plain HTML</a></td>
-      <td>a blocking <code>&lt;script&gt;</code> in the <code>&lt;head&gt;</code></td>
-    </tr>
-    <tr>
-      <td><a href="#server-rendered">Server rendered</a>: Next.js, Nuxt, Astro, …</td>
-      <td>the same, served from your own origin</td>
-    </tr>
-    <tr>
-      <td><a href="#browser-only">Rendered in the browser only</a>: Vite with React or Vue, …</td>
-      <td><code>import "bento"</code> in your entry file</td>
-    </tr>
-  </tbody>
-</table>
-
-<p>
-  To prevent layout shifts ensure <code>bento.js</code> is loaded as a blocking script in the
-  <code>&lt;head&gt;</code> whenever the HTML arrives already rendered: a plain script, not a
-  module, <code>async</code> or <code>defer</code>. It brings its own styles and needs no CSP
-  exception.
-</p>
-
-<h3 id="plain-html">Plain HTML</h3>
-
-<!-- snippet html -->
-<head>
-  <script src="https://cdn.jsdelivr.net/npm/bento@1/dist/bento.js"></script>
-</head>
-<!-- /snippet -->
-
-<p>Or copy <code>node_modules/bento/dist/bento.js</code> next to your pages and load that.</p>
-
-<h3 id="server-rendered">Server rendered</h3>
-
-<p>Copy the script into your public folder on install, then load it in the root layout's head:</p>
+<p>Import it once, and hide the elements until they are defined:</p>
 
 <!-- snippet ts -->
-"scripts": { "postinstall": "node -e \"require('fs').copyFileSync(require.resolve('bento'),
-'public/bento.js')\"" }
-<!-- /snippet -->
-
-<!-- snippet ts -->
-// Next.js: app/layout.tsx. next/script's beforeInteractive does not block, a plain script does.
-export default function RootLayout({ children }: { children: React.ReactNode }) { return (
-<html lang="en">
-  <head>
-    <script src="/bento.js" />
-  </head>
-  <body>
-    {children}
-  </body>
-</html>
-); }
-<!-- /snippet -->
-
-<!-- snippet ts -->
-// Nuxt: nuxt.config.ts export default defineNuxtConfig({ app: { head: { script: [{ src:
-"/bento.js", tagPosition: "head" }] } }, });
-<!-- /snippet -->
-
-<h3 id="browser-only">Rendered in the browser only</h3>
-
-<p>
-  Import it before your app renders; elements your app creates then upgrade at once. If
-  <code>index.html</code> itself holds bento markup, hide it until the import has run.
-</p>
-
-<!-- snippet ts -->
-// main.ts import "bento";
+import "bento";
 <!-- /snippet -->
 
 <!-- snippet css -->
 :is(bento-group, bento-panel, bento-separator):not(:defined) { visibility: hidden }
 <!-- /snippet -->
 
-<h3 id="typescript">TypeScript</h3>
+<h2 id="server-rendering">2. Server rendering</h2>
 
 <p>
-  <code>import "bento"</code> brings the element types; for React 19 JSX, add
-  <code>/// &lt;reference types="bento/react" /&gt;</code> once, and for Vue see
-  <a href="guide.html#react-and-vue">React and Vue</a>.
+  To prevent layout shifts ensure <code>bento.js</code> is loaded as a blocking script in the
+  <code>&lt;head&gt;</code>, so server-rendered panels are laid out before the first paint and
+  hydration moves nothing. Serve it from your public folder, e.g. copied there on install:
 </p>
 
-<h2 id="first-layout">A first layout</h2>
+<!-- snippet html -->
+<head>
+  <script src="/bento.js"></script>
+</head>
+<!-- /snippet -->
+
+<!-- snippet ts -->
+"postinstall": "node -e \"require('fs').copyFileSync(require.resolve('bento'), 'public/bento.js')\""
+<!-- /snippet -->
+
+<h2 id="first-layout">3. A first layout</h2>
 
 <p>
   The group fills its parent's height. Padding goes on an element inside each panel, so the panel
