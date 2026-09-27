@@ -25,6 +25,5 @@ jobs:
         run: test "v$(node -p 'require("./package.json").version')" = "$GITHUB_REF_NAME"
       - run: pnpm install --frozen-lockfile
       - run: pnpm exec playwright install --with-deps chromium firefox webkit
+      # Trusted publishing: npm verifies this workflow through OIDC and adds provenance; no token.
       - run: npm publish ${{ github.event_name == 'push' && '' || '--dry-run' }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
