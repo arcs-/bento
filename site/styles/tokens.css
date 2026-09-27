@@ -26,7 +26,7 @@
   --surface: #f6f7f8;
   --surface-raised: #fbfbfc;
   --hairline: rgb(26 34 44 / 0.08);
-  --grip: rgb(26 34 44 / 0.3);
+  --grip: rgb(26 34 44 / 0.6);
   --toc-line: rgb(26 34 44 / 0.22);
 
   --brush-highlight: rgb(255 255 255 / 0.16);
@@ -127,7 +127,7 @@
     --surface: #1d2126;
     --surface-raised: #3a4148;
     --hairline: rgb(229 233 237 / 0.08);
-    --grip: rgb(229 233 237 / 0.3);
+    --grip: rgb(229 233 237 / 0.55);
     --toc-line: rgb(229 233 237 / 0.24);
 
     --brush-highlight: rgb(255 255 255 / 0.035);
