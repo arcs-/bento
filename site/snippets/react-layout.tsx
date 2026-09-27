@@ -1,5 +1,5 @@
-/// <reference types="bento/react" />
-import type { BentoPanelElement } from "bento";
+/// <reference types="bento-panels/react" />
+import type { BentoPanelElement } from "bento-panels";
 import { type ReactNode, useEffect, useRef } from "react";
 
 export function Layout({ sidebarOpen, children }: { sidebarOpen: boolean; children: ReactNode }) {

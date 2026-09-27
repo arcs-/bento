@@ -1,5 +1,5 @@
 /**
- * JSX typings for React 19, published as the types-only subpath `bento/react`.
+ * JSX typings for React 19, published as the types-only subpath `bento-panels/react`.
  *
  * React 19 sets a prop as a property when the element has one and as an attribute otherwise,
  * and renders every prop as an attribute on the server. So the props are named like the

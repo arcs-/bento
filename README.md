@@ -20,7 +20,7 @@ A framework independent library that creates nicely resizable panel UIs.
 ## Install
 
 ```sh
-npm install bento
+npm install bento-panels
 ```
 
 To prevent layout shifts ensure `bento.js` is loaded as a blocking script in the `<head>`. See the [Getting started](https://arcs-.github.io/bento/start.html) guide.
@@ -36,7 +36,7 @@ To prevent layout shifts ensure `bento.js` is loaded as a blocking script in the
 - Every attribute is optional and has a property. `size` and `collapsed` are live.
 - Panels fire `resize`, `resizeend`, `beforetoggle` (cancel it to veto a user's collapse) and `toggle`.
 - Style everything with your own CSS or utility classes; `:state(collapsed)` and `:state(modal)` expose live state.
-- React 19 typings: `bento/react`.
+- React 19 typings: `bento-panels/react`.
 
 Docs and live examples: [arcs-.github.io/bento](https://arcs-.github.io/bento/). Browser support: Baseline Widely available, browsers from March 2024 on.
 

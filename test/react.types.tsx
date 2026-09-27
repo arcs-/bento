@@ -1,7 +1,7 @@
 import "../src/react.ts";
 
 /**
- * Compile-time checks of the `bento/react` JSX typings. This file is typechecked, never run:
+ * Compile-time checks of the `bento-panels/react` JSX typings. This file is typechecked, never run:
  * every line marked `@ts-expect-error` must fail to compile.
  */
 

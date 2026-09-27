@@ -53,7 +53,7 @@ If you load it later, hide the elements until then:
 :is(bento-group, bento-panel, bento-separator):not(:defined) { visibility: hidden }
 ```
 
-React and Vue need no wrapper. For React 19 JSX typings, reference `bento/react`; props use the attribute names, and events are `onresize`, `onresizeend`, `onbeforetoggle` and `ontoggle`, with a `Capture` suffix on parents. The first props are the starting state; later ones are live writes, so `collapsed` can be controlled. React 19 does not yet attach these handlers while hydrating server-rendered HTML ([facebook/react#35446](https://github.com/facebook/react/issues/35446)); there, add listeners through a ref. Vue needs `compilerOptions.isCustomElement` for tags starting with `bento-`.
+React and Vue need no wrapper. For React 19 JSX typings, reference `bento-panels/react`; props use the attribute names, and events are `onresize`, `onresizeend`, `onbeforetoggle` and `ontoggle`, with a `Capture` suffix on parents. The first props are the starting state; later ones are live writes, so `collapsed` can be controlled. React 19 does not yet attach these handlers while hydrating server-rendered HTML ([facebook/react#35446](https://github.com/facebook/react/issues/35446)); there, add listeners through a ref. Vue needs `compilerOptions.isCustomElement` for tags starting with `bento-`.
 
 ### Styling
 

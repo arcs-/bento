@@ -5,7 +5,7 @@ const baselineWidelyAvailable = ["chrome123", "edge123", "firefox124", "safari17
 
 /**
  * One minified, self-contained IIFE: it runs as a blocking classic `<script>` in the head and
- * as an `import 'bento'` side-effect module, and leaks no global. The entry exports nothing,
+ * as an `import 'bento-panels'` side-effect module, and leaks no global. The entry exports nothing,
  * so the IIFE assigns nothing to `name`, which Vite merely requires to be set.
  */
 export default defineConfig({

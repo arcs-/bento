@@ -239,9 +239,11 @@ panel.addEventListener("resizeend", save); panel.addEventListener("toggle", save
 <h2 id="react-and-vue">React and Vue</h2>
 
 <p>
-  No wrapper needed. React 19 takes typings from <code>bento/react</code>, and later props are live
-  writes, so <code>collapsed</code> can be controlled; listen through a ref, since hydration skips
-  <code>on*</code> handlers (<a href="https://github.com/facebook/react/issues/35446" rel="external"
+  No wrapper needed. React 19 takes typings from <code>bento-panels/react</code>, and later props
+  are live writes, so <code>collapsed</code> can be controlled; listen through a ref, since
+  hydration skips <code>on*</code> handlers (<a
+    href="https://github.com/facebook/react/issues/35446"
+    rel="external"
     >react#35446</a
   >).
 </p>

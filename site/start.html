@@ -9,13 +9,13 @@
 <h2 id="install">1. Install</h2>
 
 <!-- snippet sh -->
-npm install bento
+npm install bento-panels
 <!-- /snippet -->
 
 <p>Import it once, and hide the elements until they are defined:</p>
 
 <!-- snippet ts -->
-import "bento";
+import "bento-panels";
 <!-- /snippet -->
 
 <!-- snippet css -->
@@ -37,7 +37,8 @@ import "bento";
 <!-- /snippet -->
 
 <!-- snippet ts -->
-"postinstall": "node -e \"require('fs').copyFileSync(require.resolve('bento'), 'public/bento.js')\""
+"postinstall": "node -e \"require('fs').copyFileSync(require.resolve('bento-panels'),
+'public/bento.js')\""
 <!-- /snippet -->
 
 <h2 id="first-layout">3. A first layout</h2>
