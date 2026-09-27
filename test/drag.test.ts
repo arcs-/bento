@@ -254,6 +254,121 @@ describe("drag", () => {
   });
 });
 
+/**
+ * Panels a drag of `#push-handle` pushes: `#near`, then collapsible `#middle` and `#far`, all
+ * 200px with a min of 100px; `#main` is on the other side. `reversed` puts them after the
+ * separator instead, so the drag towards the end pushes them.
+ */
+function pushedPanels({ reversed = false, groupAttributes = "" } = {}): string {
+  const pushed = [
+    '<bento-panel id="far" size="200px" min="100px" collapsible></bento-panel>',
+    '<bento-panel id="middle" size="200px" min="100px" collapsible></bento-panel>',
+    '<bento-panel id="near" size="200px" min="100px"></bento-panel>',
+  ];
+  const sides = [
+    (reversed ? pushed.toReversed() : pushed).join("<bento-separator></bento-separator>"),
+    '<bento-panel id="main"></bento-panel>',
+  ];
+  return layout(
+    (reversed ? sides.toReversed() : sides).join(
+      '<bento-separator id="push-handle"></bento-separator>',
+    ),
+    groupAttributes,
+  );
+}
+
+const collapsedStates = () => ["middle", "far"].map((id) => panel(id).collapsed);
+
+describe("collapse on push", () => {
+  test("pushed panels at min collapse past halfway, nearest first, and stay collapsed", async () => {
+    await render(pushedPanels());
+    const middleEvents = recordEvents(panel("middle"), ["beforetoggle", "toggle"]);
+
+    await press(separator("push-handle"));
+    await moveBy(-240);
+    expect(width(panel("near"))).toBeCloseTo(100, 0);
+    expect(width(panel("middle"))).toBeCloseTo(100, 0);
+    expect(collapsedStates()).toEqual([false, false]);
+    await moveBy(-20);
+    expect(collapsedStates()).toEqual([true, false]);
+    await moveBy(-200);
+    expect(collapsedStates()).toEqual([true, true]);
+    await release();
+
+    expect(toggleStates(middleEvents)).toEqual([
+      "beforetoggle open→closed cancelable",
+      "toggle open→closed",
+    ]);
+    group("layout").style.width = "1200px";
+    await frames(5);
+    expect(collapsedStates()).toEqual([true, true]);
+  });
+
+  test("dragging back expands them again, in reverse order", async () => {
+    await render(pushedPanels());
+
+    await press(separator("push-handle"));
+    await moveBy(-460);
+    expect(collapsedStates()).toEqual([true, true]);
+    await moveBy(20);
+    expect(collapsedStates()).toEqual([true, false]);
+    await moveBy(200);
+    expect(collapsedStates()).toEqual([false, false]);
+    await moveBy(240);
+    await release();
+
+    for (const id of ["near", "middle", "far"]) expect(width(panel(id))).toBeCloseTo(200, 0);
+  });
+
+  test("a veto holds a pushed panel at min, and the drag pushes past it", async () => {
+    await render(pushedPanels());
+    panel("middle").addEventListener("beforetoggle", (event) => event.preventDefault());
+
+    await press(separator("push-handle"));
+    await moveBy(-300);
+    expect(width(panel("middle"))).toBeCloseTo(100, 0);
+    expect(width(panel("far"))).toBeCloseTo(100, 0);
+    await moveBy(-200);
+    await release();
+
+    expect(collapsedStates()).toEqual([false, true]);
+    expect(width(panel("middle"))).toBeCloseTo(100, 0);
+  });
+
+  test("a panel that is not collapsible stops at its min", async () => {
+    await render(pushedPanels().replaceAll(" collapsible", ""));
+
+    await drag(separator("push-handle"), -600);
+
+    for (const id of ["near", "middle", "far"]) expect(width(panel(id))).toBeCloseTo(100, 0);
+  });
+
+  test("arrow keys collapse a pushed panel as soon as it would go below min", async () => {
+    await render(pushedPanels());
+    await drag(separator("push-handle"), -195);
+    expect(width(panel("middle"))).toBeCloseTo(105, 0);
+
+    await pressKeys(separator("push-handle"), "{ArrowLeft}");
+
+    expect(collapsedStates()).toEqual([true, false]);
+  });
+
+  test("the same works towards the end, and in right-to-left", async () => {
+    await render(pushedPanels({ reversed: true }));
+    await press(separator("push-handle"));
+    await moveBy(260);
+    expect(collapsedStates()).toEqual([true, false]);
+    await release();
+    removeRendered();
+
+    await render(pushedPanels({ groupAttributes: 'dir="rtl"' }));
+    await press(separator("push-handle"));
+    await moveBy(260);
+    expect(collapsedStates()).toEqual([true, false]);
+    await release();
+  });
+});
+
 describe("collapse by drag", () => {
   test("holds at min, snaps past halfway to collapsed-size and back", async () => {
     await render(sidebarLayout('size="300px" min="200px" collapsible'));

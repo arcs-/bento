@@ -216,8 +216,9 @@ function snapsCollapsed(request: ResolvedRequest, target: number, snap: SnapRule
 
 /**
  * Moves one separator from the `start` layout, like react-resizable-panels: the nearest panel
- * on one side grows, the nearest on the other gives down to its `min` or snaps collapsed, and
- * further panels are pushed down to their `min`. Returns the new requests, sizes in px, and
+ * on one side grows, and the panels on the other give, nearest first: each down to its `min`,
+ * then, if it is collapsible and not vetoed, snapping collapsed once the move takes it past
+ * its threshold, and so on to the next one. Returns the new requests, sizes in px, and
  * changes nothing but the neighbours and the pushed panels. One flexible neighbour, the later
  * one of two, stays flexible; every other flexible panel gets its current size, so it keeps
  * it. A panel
@@ -255,18 +256,12 @@ export function moveSeparator(
     const box = start[index];
     if (!request || !box || box.collapsed) continue;
     const target = box.size - (wanted - given);
-    if (
-      index === nearestShrinking &&
-      request.collapsible &&
-      !vetoed.has(index) &&
-      snapsCollapsed(request, target, snap)
-    ) {
-      next[index] = { ...request, collapsed: true };
-      sizes[index] = request.collapsedSize;
-      given += box.size - request.collapsedSize;
-      break;
-    }
-    const gives = clamp(wanted - given, 0, Math.max(0, box.size - request.min));
+    const collapses =
+      request.collapsible && !vetoed.has(index) && snapsCollapsed(request, target, snap);
+    const gives = collapses
+      ? box.size - request.collapsedSize
+      : clamp(wanted - given, 0, Math.max(0, box.size - request.min));
+    if (collapses) next[index] = { ...request, collapsed: true };
     sizes[index] = box.size - gives;
     given += gives;
     if (given >= wanted) break;

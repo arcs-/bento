@@ -29,7 +29,7 @@ const forwardedLayout =
 export const panelSheet = sheet(`
 :host {
   display: block; position: relative; overflow: clip; container-type: size;
-  min-inline-size: 0; min-block-size: 0; transition: none 0.2s ease
+  min-inline-size: 0; min-block-size: 0; transition: none 150ms cubic-bezier(0.2, 0, 0, 1)
 }
 .clip { position: absolute; inset: 0; overflow: inherit; ${forwardedLayout} }
 .content {

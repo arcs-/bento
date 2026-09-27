@@ -319,23 +319,35 @@ export class GroupCoordinator implements GroupLink {
         snap,
         vetoed: new Set([...holding].map((panel) => inGroup.indexOf(panel))),
       });
-    /** Only the separator's neighbours toggle in a move; others keep what shows. */
+    /**
+     * The panels whose shown state the move changes: those it toggles from the drag start, and
+     * those it un-snaps. A panel the group collapsed mid-drag is the group's, not the move's.
+     */
     const togglesIn = (proposal: readonly ResolvedRequest[]) =>
-      [inGroup[before], inGroup[before + 1]].filter(
-        (panel): panel is BentoPanel =>
-          panel !== undefined &&
-          proposal[inGroup.indexOf(panel)]?.collapsed !==
-            currentLayout[inGroup.indexOf(panel)]?.collapsed,
-      );
+      inGroup.filter((panel, index) => {
+        const proposed = proposal[index]?.collapsed;
+        const shown = currentLayout[index]?.collapsed;
+        const fromStart = proposed !== startShown[index]?.collapsed;
+        const usersOwn = panelAccess.askedCollapsed(panel) === shown;
+        return proposed !== shown && (fromStart || usersOwn);
+      });
 
     const stillToggling = new Set(togglesIn(propose(new Set())));
     const holding = new Set([...vetoed].filter((panel) => stillToggling.has(panel)));
+    const asked = new Set<BentoPanel>();
     let proposal = propose(holding);
-    for (const panel of togglesIn(proposal)) {
-      const collapsed = proposal[inGroup.indexOf(panel)]?.collapsed ?? false;
-      if (!dispatchBeforeToggle(panel, collapsed, "user")) holding.add(panel);
+    for (
+      let unasked = togglesIn(proposal);
+      unasked.length > 0;
+      unasked = togglesIn(proposal).filter((panel) => !asked.has(panel))
+    ) {
+      for (const panel of unasked) {
+        asked.add(panel);
+        const collapsed = proposal[inGroup.indexOf(panel)]?.collapsed ?? false;
+        if (!dispatchBeforeToggle(panel, collapsed, "user")) holding.add(panel);
+      }
+      proposal = propose(holding);
     }
-    proposal = propose(holding);
     const toggled = togglesIn(proposal);
 
     const resized: BentoPanel[] = [];
