@@ -32,6 +32,10 @@
     },
     "./package.json": "./package.json"
   },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "scripts": {
     "build": "vite build && tsc -p tsconfig.build.json && node scripts/size.js",
     "size": "node scripts/size.js",
@@ -43,7 +47,8 @@
     "site:dev": "vite --config site/vite.config.ts",
     "site:build": "tsc -p site && vite build --config site/vite.config.ts",
     "site:preview": "vite preview --config site/vite.config.ts",
-    "site:og": "node site/scripts/og-image.ts"
+    "site:og": "node site/scripts/og-image.ts",
+    "prepublishOnly": "pnpm build && pnpm check"
   },
   "devDependencies": {
     "@types/node": "26.6.1",
